@@ -12,4 +12,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:80
-ENTRYPOINT ["dotnet", "api-generic.dll"]
+ENTRYPOINT ["dotnet", "api-infor-cell.dll"]
