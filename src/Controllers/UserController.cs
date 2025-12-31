@@ -29,7 +29,7 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Message, response.Result });
         }
         
-        [Authorize]
+        // [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO user)
         {
