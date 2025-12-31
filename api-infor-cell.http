@@ -1,0 +1,6 @@
+@api_infor_cell_HostAddress = http://localhost:5097
+
+GET {{api_infor_cell_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
