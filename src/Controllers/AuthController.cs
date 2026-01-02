@@ -14,12 +14,42 @@ namespace api_infor_cell.src.Controllers
     {
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> LoginAsync([FromBody] LoginDTO user)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginDTO body)
         {
-            if (user == null) return BadRequest("Dados inválidos");
+            if (body == null) return BadRequest("Dados inválidos");
 
-            ResponseApi<AuthResponse> response = await authService.LoginAsync(user);
-            return StatusCode(response.StatusCode, new { response.Message, response.Data });
+            ResponseApi<AuthResponse> response = await authService.LoginAsync(body);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos");
+
+            ResponseApi<dynamic> response = await authService.RegisterAsync(body);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [HttpPost]
+        [Route("confirm-account")]
+        public async Task<IActionResult> ConfirmAccountAsync([FromBody] ConfirmAccountDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos");
+
+            ResponseApi<dynamic> response = await authService.ConfirmAccountAsync(body);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [HttpPost]
+        [Route("new-code-confirm")]
+        public async Task<IActionResult> NewCodeConfirmAsync([FromBody] RegisterDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos");
+
+            ResponseApi<dynamic> response = await authService.NewCodeConfirmAsync(body);
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [HttpPost]
@@ -27,7 +57,7 @@ namespace api_infor_cell.src.Controllers
         public async Task<IActionResult> RefreshTokenAsync()
         {
             ResponseApi<AuthResponse> response = await authService.RefreshTokenAsync(Request.Headers.Authorization[0]!.Split(" ")[1]);
-            return response.IsSuccess ? Ok(new {response.Data}) : BadRequest(new{response.Data, response.Message});
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -38,7 +68,7 @@ namespace api_infor_cell.src.Controllers
             if (request == null) return BadRequest("Dados inválidos");
 
             ResponseApi<User> response = await authService.ResetPasswordAsync(request);
-            return response.IsSuccess ? Ok(new {response.Message}) : BadRequest(new{response.Message});
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [HttpPut]
@@ -48,17 +78,17 @@ namespace api_infor_cell.src.Controllers
             if (request == null) return BadRequest("Dados inválidos");
 
             ResponseApi<User> response = await authService.RequestForgotPasswordAsync(request);
-            return StatusCode(response.StatusCode, new { response.Message, response.Data });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [HttpPut]
-        [Route("forgot-password")]
-        public async Task<IActionResult> ForgotPasswordAsync([FromBody] ResetPasswordDTO request)
+        [Route("reset-forgot-password")]
+        public async Task<IActionResult> ResetPassordForgotAsync([FromBody] ResetPasswordDTO request)
         {
             if (request == null) return BadRequest("Dados inválidos");
 
-            ResponseApi<User> response = await authService.ForgotPasswordAsync(request);
-            return response.IsSuccess ? Ok(new {response.Message}) : BadRequest(new{response.Message});
+            ResponseApi<User> response = await authService.ResetPassordForgotAsync(request);
+            return StatusCode(response.StatusCode, new { response.Result });
         }
     }
 }

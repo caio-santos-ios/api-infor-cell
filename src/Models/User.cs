@@ -25,6 +25,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("phone")]
         public string Phone {get;set;} = string.Empty;
+        
+        [BsonElement("whatsapp")]
+        public string Whatsapp {get;set;} = string.Empty;
 
         [BsonElement("role")]
         [BsonRepresentation(BsonType.String)] 
@@ -47,6 +50,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("photo")]
         public string Photo {get;set;} = string.Empty;
+
+        [BsonElement("companies")]
+        public List<string> Companies {get;set;} = [];
         
         [BsonElement("modules")]
         public List<Module> Modules {get;set;} = [];

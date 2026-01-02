@@ -26,10 +26,10 @@ namespace api_infor_cell.src.Controllers
         public async Task<IActionResult> GetByIdAsync(string id)
         {
             ResponseApi<dynamic?> response = await userService.GetByIdAggregateAsync(id);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
-        // [Authorize]
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO user)
         {
@@ -101,11 +101,9 @@ namespace api_infor_cell.src.Controllers
         [HttpGet("logged")]
         public async Task<IActionResult> GetLoggedAsync()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            // var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            // var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            ResponseApi<dynamic?> response = await userService.GetByIdAggregateAsync(userId!);
+            ResponseApi<dynamic?> response = await userService.GetLoggedAsync(userId!);
             return StatusCode(response.StatusCode, new { response.Message, response.Result });
         }
 

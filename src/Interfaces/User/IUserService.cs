@@ -8,6 +8,7 @@ namespace api_infor_cell.src.Interfaces
     {
         Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request, string userId);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
+        Task<ResponseApi<dynamic?>> GetLoggedAsync(string id);
         Task<ResponseApi<List<dynamic>>> GetSelectBarberAsync(GetAllDTO request);
         Task<ResponseApi<User?>> CreateAsync(CreateUserDTO user);
         Task<ResponseApi<User?>> UpdateAsync(UpdateUserDTO user);

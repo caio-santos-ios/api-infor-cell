@@ -97,6 +97,33 @@ namespace api_infor_cell.src.Repository
                         {"_id", new ObjectId(id)},
                         {"deleted", false}
                     }),
+                    new("$addFields", new BsonDocument {
+                        {"id", new BsonDocument("$toString", "$_id")},
+                    }),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                    }),
+                ];
+
+                BsonDocument? response = await context.Users.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+                dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
+                return result is null ? new(null, 404, "Usuário não encontrado") : new(result);
+            }
+            catch(Exception e)
+            {
+                return new(null, 500, e.Message); ;
+            }
+        }
+        public async Task<ResponseApi<dynamic?>> GetLoggedAsync(string id)
+        {
+            try
+            {
+                BsonDocument[] pipeline = [
+                    new("$match", new BsonDocument{
+                        {"_id", new ObjectId(id)},
+                        {"deleted", false}
+                    }),
                     new("$project", new BsonDocument
                     {
                         {"_id", 0},
@@ -106,7 +133,10 @@ namespace api_infor_cell.src.Repository
                         {"modules", 1},
                         {"admin", 1},
                         {"blocked", 1},
-                        {"photo", 1}
+                        {"photo", 1},
+                        {"phone", 1},
+                        {"whatsapp", 1},
+                        {"logoCompany", ""}
                     }),
                 ];
 
@@ -171,7 +201,7 @@ namespace api_infor_cell.src.Repository
         {
             try
             {
-                User? user = await context.Users.Find(x => x.CodeAccess == codeAccess && !x.Deleted).FirstOrDefaultAsync();
+                User? user = await context.Users.Find(x => x.CodeAccess == codeAccess && !x.ValidatedAccess && !x.Deleted).FirstOrDefaultAsync();
                 return new(user);
             }
             catch

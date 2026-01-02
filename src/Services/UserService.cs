@@ -113,6 +113,19 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
+        public async Task<ResponseApi<dynamic?>> GetLoggedAsync(string id)
+        {
+            try
+            {
+                ResponseApi<dynamic?> user = await userRepository.GetLoggedAsync(id);
+                if(user.Data is null) return new(null, 404, "Usuário não encontrado");
+                return new(user.Data);
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
+        }
         public async Task<ResponseApi<List<dynamic>>> GetSelectBarberAsync(GetAllDTO request)
         {
             try
@@ -146,41 +159,15 @@ namespace api_infor_cell.src.Services
             try
             {
                 ResponseApi<User?> user = await userRepository.GetByIdAsync(request.Id);
-                if(user.Data is null || Validator.IsEmail(request.Email)) return new(null, 404, "Falha ao atualizar");
-                if(!Validator.IsEmail(request.Email)) return new(null, 404, "E-mail inválido.");
-
-                // string code = new Random().Next(100000, 999999).ToString();
-                // string messageCode = $"Seu código de verificação é: {code}";
-                
-                // if (user.Data.Email != request.Email)
-                // {
-                //     ResponseApi<User?> isEmail = await userRepository.GetByEmailAsync(request.Email);
-                //     if(isEmail.Data is not null) return new(null, 400, "E-mail inválido.");                    
-                //     await mailHandler.SendMailAsync(request.Email, "Código de verificação", messageCode);
-                //     user.Data.CodeAccess = code;
-                //     user.Data.ValidatedAccess = false;
-                // };
-
-                // if (user.Data.Phone != request.Phone)
-                // {
-                //     ResponseApi<User?> isPhone = await userRepository.GetByPhoneAsync(request.Phone);
-                //     if(isPhone.Data is not null) return new(null, 400, "Celular inválido.");
-                //     await smsHandler.SendMessageAsync(user.Data.Phone, messageCode);
-                //     user.Data.CodeAccess = code;
-                //     user.Data.ValidatedAccess = false;
-                // };
-             
-                // if (user.Data.UserName != request.UserName)
-                // {
-                //     ResponseApi<User?> isUserName = await userRepository.GetByUserNameAsync(request.UserName);
-                //     if(isUserName.Data is not null) return new(null, 400, "Nome de usuário inválido.");
-                // };
+                Util.ConsoleLog(Validator.IsEmail(request.Email));
+                if(user.Data is null || !Validator.IsEmail(request.Email)) return new(null, 404, "Falha ao atualizar");
                 
                 user.Data.UpdatedAt = DateTime.UtcNow;
                 user.Data.UserName = request.UserName;
                 user.Data.Email = request.Email;
                 user.Data.Phone = request.Phone;
                 user.Data.Name = request.Name;
+                user.Data.Whatsapp = request.Whatsapp;
 
                 ResponseApi<User?> response = await userRepository.UpdateAsync(user.Data);
                 if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
@@ -308,7 +295,7 @@ namespace api_infor_cell.src.Services
 
                 ResponseApi<User?> response = await userRepository.UpdateAsync(user.Data);
                 if(!response.IsSuccess) return new(null, 400, "Falha ao salvar foto de perfil");
-                return new(response.Data, 201, "Foto de perfil salva com sucesso");
+                return new(new () { Photo = response.Data!.Photo }, 201, "Foto de perfil salva com sucesso");
             }
             catch
             {

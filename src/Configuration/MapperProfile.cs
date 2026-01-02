@@ -9,6 +9,9 @@ namespace api_infor_cell.src.Configuration
         public MapperProfile()
         {
             #region MASTER DATA
+            CreateMap<CreateCompanyDTO, Company>().ReverseMap();
+            CreateMap<UpdateCompanyDTO, Company>().ReverseMap();
+            
             CreateMap<CreateGenericTableDTO, GenericTable>().ReverseMap();
             CreateMap<UpdateGenericTableDTO, GenericTable>().ReverseMap();
             

@@ -61,10 +61,14 @@ namespace api_infor_cell.src.Configuration
         public static void AddBuilderServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddTransient<IAuthService, AuthService>();                  
+            
+            // MASTER DATA
+            builder.Services.AddTransient<ICompanyService, CompanyService>();
+            builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();                       
+            
             builder.Services.AddTransient<IUserService, UserService>();
             builder.Services.AddTransient<IUserRepository, UserRepository>();    
             
-            // MASTER DATA
             builder.Services.AddTransient<IGenericTableService, GenericTableService>();
             builder.Services.AddTransient<IGenericTableRepository, GenericTableRepository>();                       
             builder.Services.AddTransient<IAddressService, AddressService>();

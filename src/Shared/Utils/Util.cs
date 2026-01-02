@@ -9,11 +9,11 @@ namespace api_infor_cell.src.Shared.Utils
             Console.WriteLine(JsonConvert.SerializeObject(obj, Formatting.Indented));
         }
 
-        public static dynamic GenerateCodeAccess()
+        public static dynamic GenerateCodeAccess(int minutesExpiration = 15)
         {
             return new {
                 CodeAccess = new Random().Next(100000, 999999).ToString(),
-                CodeAccessExpiration = DateTime.UtcNow.AddMinutes(15)
+                CodeAccessExpiration = DateTime.UtcNow.AddMinutes(minutesExpiration)
             };
         }
     }
