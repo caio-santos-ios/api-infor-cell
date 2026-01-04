@@ -43,7 +43,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<Address?> address = await addressRepository.GetByParentIdAsync(parentId, parent);
-            if(address.Data is null) return new(null, 404, "Item não encontrado");
+            if(address.Data is null) return new(null, 404, "Endereço não encontrado");
             return new(address.Data);
         }
         catch
@@ -61,8 +61,8 @@ namespace api_infor_cell.src.Services
             Address address = _mapper.Map<Address>(request);
             ResponseApi<Address?> response = await addressRepository.CreateAsync(address);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Item.");
-            return new(response.Data, 201, "Item criado com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao salvar Endereço.");
+            return new(response.Data, 201, "Endereço criado com sucesso.");
         }
         catch
         { 
@@ -77,14 +77,14 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<Address?> addressResponse = await addressRepository.GetByIdAsync(request.Id);
-            if(addressResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            if(addressResponse.Data is null) return new(null, 404, "Falha ao atualizar Endereço");
             
             Address address = _mapper.Map<Address>(request);
             address.UpdatedAt = DateTime.UtcNow;
 
             ResponseApi<Address?> response = await addressRepository.UpdateAsync(address);
-            if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
-            return new(response.Data, 201, "Atualizado com sucesso");
+            if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar Endereço");
+            return new(response.Data, 201, "Endereço atualizado com sucesso");
         }
         catch
         {
@@ -100,7 +100,7 @@ namespace api_infor_cell.src.Services
         {
             ResponseApi<Address> address = await addressRepository.DeleteAsync(id);
             if(!address.IsSuccess) return new(null, 400, address.Message);
-            return new(null, 204, "Excluído com sucesso");
+            return new(null, 204, "Endereço Excluído com sucesso");
         }
         catch
         {
