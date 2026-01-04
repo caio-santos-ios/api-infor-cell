@@ -114,8 +114,8 @@ namespace api_infor_cell.src.Services
                 if (string.IsNullOrEmpty(request.Code)) return new(null, 400, "Código de confirmação é obrigatório");
                 
                 ResponseApi<User?> user = await repository.GetByCodeAccessAsync(request.Code);
-                if(user.Data is null && !user.Data!.ValidatedAccess) return new(null, 400, "Código inválido.");
-                if(!user.Data.ValidatedAccess) return new(null, 400, "Código inválido.");
+                if(user.Data is null) return new(null, 400, "Código inválido.");
+                // if(!user.Data.ValidatedAccess) return new(null, 400, "Código inválido.");
 
                 if(user.Data.CodeAccessExpiration < DateTime.UtcNow) return new(null, 400, "Código expirou, solicite um novo código.");
 
