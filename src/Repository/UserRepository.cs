@@ -124,6 +124,58 @@ namespace api_infor_cell.src.Repository
                         {"_id", new ObjectId(id)},
                         {"deleted", false}
                     }),
+
+                    new("$addFields", new BsonDocument
+                    {
+                        {"addressId", MongoUtil.First("_address._id")},
+                        {"street",  MongoUtil.First("_address.street")},
+                        {"number", MongoUtil.First("_address.number") },
+                        {"complement", MongoUtil.First("_address.complement") },
+                        {"neighborhood", MongoUtil.First("_address.neighborhood") },
+                        {"city", MongoUtil.First("_address.city") },
+                        {"state", MongoUtil.First("_address.state") },
+                        {"zipCode", MongoUtil.First("_address.zipCode") },
+                        {"parent", MongoUtil.First("_address.parent") },
+                        {"parentId", MongoUtil.First("_address.parentId") },
+                    }),
+                    new("$addFields", new BsonDocument
+                    {
+                        {"id", new BsonDocument("$toString", "$_id")},
+                    }),
+
+                    MongoUtil.Lookup("addresses", ["$id"], ["$parentId"], "_address", [["deleted", false]], 1),
+
+                    new("$addFields", new BsonDocument
+                    {
+                        {"addressId", MongoUtil.First("_address._id")},
+                        {"street",  MongoUtil.First("_address.street")},
+                        {"number", MongoUtil.First("_address.number") },
+                        {"complement", MongoUtil.First("_address.complement") },
+                        {"neighborhood", MongoUtil.First("_address.neighborhood") },
+                        {"city", MongoUtil.First("_address.city") },
+                        {"state", MongoUtil.First("_address.state") },
+                        {"zipCode", MongoUtil.First("_address.zipCode") },
+                        {"parent", MongoUtil.First("_address.parent") },
+                        {"parentId", MongoUtil.First("_address.parentId") },
+                    }),
+
+                    new("$addFields", new BsonDocument
+                    {
+                        {"address", new BsonDocument
+                            {
+                                {"id", MongoUtil.ToString("$addressId")},
+                                {"street",  MongoUtil.ValidateNull("street", "")},
+                                {"number", MongoUtil.ValidateNull("number", "") },
+                                {"complement", MongoUtil.ValidateNull("complement", "") },
+                                {"neighborhood", MongoUtil.ValidateNull("neighborhood", "") },
+                                {"city", MongoUtil.ValidateNull("city", "") },
+                                {"state", MongoUtil.ValidateNull("state", "") },
+                                {"zipCode", MongoUtil.ValidateNull("zipCode", "") },
+                                {"parent", MongoUtil.ValidateNull("parent", "") },
+                                {"parentId", MongoUtil.ValidateNull("parentId", "") },
+                            }
+                        }
+                    }),
                     new("$project", new BsonDocument
                     {
                         {"_id", 0},
@@ -136,7 +188,8 @@ namespace api_infor_cell.src.Repository
                         {"photo", 1},
                         {"phone", 1},
                         {"whatsapp", 1},
-                        {"logoCompany", ""}
+                        {"logoCompany", ""},
+                        {"address", 1}
                     }),
                 ];
 
