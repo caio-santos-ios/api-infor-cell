@@ -50,6 +50,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("photo")]
         public string Photo {get;set;} = string.Empty;
+        
+        [BsonElement("company")]
+        public string Company {get;set;} = string.Empty;
 
         [BsonElement("companies")]
         public List<string> Companies {get;set;} = [];

@@ -96,7 +96,9 @@ namespace api_infor_cell.src.Services
                 if(responseCompany.Data is null) return new(null, 400, "Falha ao criar conta.");
 
                 response.Data.Companies.Add(responseCompany.Data.Id);
+                response.Data.Company = responseCompany.Data.Id;
                 await repository.UpdateAsync(response.Data);
+
                                 
                 await mailHandler.SendMailAsync(request.Email, "Código de Confirmação", MailTemplate.ConfirmAccount(request.Name, access.CodeAccess));
 
