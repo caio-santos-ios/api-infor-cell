@@ -11,6 +11,7 @@ using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Shared.Templates;
 using api_infor_cell.src.Shared.Validators;
 using api_infor_cell.src.Shared.Utils;
+using MongoDB.Bson;
 
 namespace api_infor_cell.src.Services
 {
@@ -85,6 +86,8 @@ namespace api_infor_cell.src.Services
                 };
 
                 ResponseApi<User?> response = await repository.CreateAsync(user);
+                
+                Util.ConsoleLog(response);
                 if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
 
                 ResponseApi<Company?> responseCompany = await companyRepository.CreateAsync(new ()

@@ -57,10 +57,15 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<Attachment>("attachments"); }
         }
-        public IMongoCollection<Supplier> Suppliers
+         public IMongoCollection<Supplier> Suppliers
         {
             get { return Database.GetCollection<Supplier>("suppliers"); }
         }
+         public IMongoCollection<Store> Stores
+        {
+            get { return Database.GetCollection<Store>("stores"); }
+        }
+
         #endregion
     }
 }
