@@ -65,21 +65,21 @@ public class UpdateStoreDTO : ModelBase
     public string Website { get; set; } = string.Empty;
 }
 
-4. Criar collection(Tabela)
+3. Criar collection(Tabela)
 Adicione a regra no seu src/Configuration/AppDbContext.cs
-# AVISO IMPORTANTE, DEVE SER CRIADO DEPOIS DO ULTIMO MAPEAMENTO
-CreateMap<CreateStoreDTO, Store>().ReverseMap();
-CreateMap<UpdateStoreDTO, Store>().ReverseMap();
-
-5. Configurar o Mapeamento
-Adicione a regra no seu src/Configuration/MappingProfile.cs
 # AVISO IMPORTANTE, DEVE SER CRIADO DEPOIS DA ULTIMA COLLECTION
 public IMongoCollection<Store> Stores
 {
     get { return Database.GetCollection<Store>("stores"); }
 }
 
-6. Criar Interfaces
+4. Configurar o Mapeamento
+Adicione a regra no seu src/Configuration/MappingProfile.cs
+# AVISO IMPORTANTE, DEVE SER CRIADO DEPOIS DO ULTIMO MAPEAMENTO
+CreateMap<CreateStoreDTO, Store>().ReverseMap();
+CreateMap<UpdateStoreDTO, Store>().ReverseMap()
+
+5. Criar Interfaces
 Adicione a regra no seu src/Interfaces/Store/.
 
 Criar arquivo IStoreRepository.cs
@@ -105,7 +105,7 @@ public interface IStoreService
     Task<ResponseApi<Store>> DeleteAsync(string id);
 }
 
-7. Criar Repository
+6. Criar Repository
 Adicione a regra no seu src/Repository.
 
 Criar arquivo StoreRepository.cs
@@ -260,7 +260,7 @@ public class StoreRepository(AppDbContext context) : IStoreRepository
     #endregion
 }
 
-8. Criar Service
+7. Criar Service
 Adicione a regra no seu src/Service.
 
 Criar arquivo StoreService.cs
@@ -383,13 +383,13 @@ public class StoreService(IStoreService repository, CloudinaryHandler cloudinary
     #endregion 
 }
 
-9. Configurar os Serviços
+8. Configurar os Serviços
 Adicione a regra no seu src/Configuration/Build.cs
 # AVISO IMPORTANTE, DEVE SER ADICIONADO DEPOIS DA ULTIMA SERVICE DENTRO DO METODO AddBuilderServices
 builder.Services.AddTransient<IStoreService, StoreService>();
 builder.Services.AddTransient<IStoreRepository, StoreRepository>();
 
-10. Criar Controller
+9. Criar Controller
 Adicione a regra no seu src/Controller.
 
 Criar arquivo StoreController.cs
