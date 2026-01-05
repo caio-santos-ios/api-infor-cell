@@ -62,6 +62,9 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("effectiveDate")]
         public DateTime? EffectiveDate { get; set; }
+
+        [BsonElement("plan")]
+        public string Plan { get; set; } = string.Empty; 
     }
 
     public class Module 

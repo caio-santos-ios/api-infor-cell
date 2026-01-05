@@ -33,6 +33,10 @@ namespace api_infor_cell.src.Configuration
         }
 
         #region MASTER DATA
+        public IMongoCollection<Plan> Plans
+        {
+            get { return Database.GetCollection<Plan>("plans"); }
+        }
         public IMongoCollection<Company> Companies
         {
             get { return Database.GetCollection<Company>("companies"); }

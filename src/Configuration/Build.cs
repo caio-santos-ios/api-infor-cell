@@ -63,6 +63,8 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IAuthService, AuthService>();                  
             
             // MASTER DATA
+            builder.Services.AddTransient<IPlanService, PlanService>();
+            builder.Services.AddTransient<IPlanRepository, PlanRepository>();                       
             builder.Services.AddTransient<ICompanyService, CompanyService>();
             builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();                       
             

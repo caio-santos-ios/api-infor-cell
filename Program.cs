@@ -89,6 +89,7 @@ if (!Directory.Exists(uploadPath))
 app.UseStaticFiles();
 
 app.UseAuthentication();
+app.UseMiddleware<CompanyQueryMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -127,21 +127,10 @@ namespace api_infor_cell.src.Repository
 
                     new("$addFields", new BsonDocument
                     {
-                        {"addressId", MongoUtil.First("_address._id")},
-                        {"street",  MongoUtil.First("_address.street")},
-                        {"number", MongoUtil.First("_address.number") },
-                        {"complement", MongoUtil.First("_address.complement") },
-                        {"neighborhood", MongoUtil.First("_address.neighborhood") },
-                        {"city", MongoUtil.First("_address.city") },
-                        {"state", MongoUtil.First("_address.state") },
-                        {"zipCode", MongoUtil.First("_address.zipCode") },
-                        {"parent", MongoUtil.First("_address.parent") },
-                        {"parentId", MongoUtil.First("_address.parentId") },
-                    }),
-                    new("$addFields", new BsonDocument
-                    {
                         {"id", new BsonDocument("$toString", "$_id")},
                     }),
+
+                    MongoUtil.Lookup("company", ["$id"], ["$company"], "_company", [["deleted", false]], 1),
 
                     MongoUtil.Lookup("addresses", ["$id"], ["$parentId"], "_address", [["deleted", false]], 1),
 
@@ -255,6 +244,18 @@ namespace api_infor_cell.src.Repository
             try
             {
                 User? user = await context.Users.Find(x => x.CodeAccess == codeAccess && !x.ValidatedAccess && !x.Deleted).FirstOrDefaultAsync();
+                return new(user);
+            }
+            catch
+            {
+                return new(null, 500, "Falha ao buscar usuário");
+            }
+        }
+        public async Task<ResponseApi<User?>> GetByCompanyIdAsync(string companyId)
+        {
+            try
+            {
+                User? user = await context.Users.Find(x => x.Companies.Contains(companyId) && !x.Deleted).FirstOrDefaultAsync();
                 return new(user);
             }
             catch

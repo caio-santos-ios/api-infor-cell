@@ -16,6 +16,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<User?>> GetByEmailAsync(string email);
         Task<ResponseApi<User?>> GetByPhoneAsync(string phone);
         Task<ResponseApi<User?>> GetByCodeAccessAsync(string codeAccess);
+        Task<ResponseApi<User?>> GetByCompanyIdAsync(string companyId);
         Task<int> GetCountDocumentsAsync(PaginationUtil<User> pagination);
         Task<bool> GetAccessValitedAsync(string codeAccess);
         Task<ResponseApi<User?>> UpdateCodeAccessAsync(string userId, string codeAccess);

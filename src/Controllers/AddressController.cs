@@ -43,7 +43,7 @@ namespace api_infor_cell.src.Controllers
 
             ResponseApi<Address?> response = await addressService.CreateAsync(address);
 
-            return StatusCode(response.StatusCode, new { response.Message });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -54,7 +54,7 @@ namespace api_infor_cell.src.Controllers
 
             ResponseApi<Address?> response = await addressService.UpdateAsync(address);
 
-            return StatusCode(response.StatusCode, new { response.Message });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -63,7 +63,7 @@ namespace api_infor_cell.src.Controllers
         {
             ResponseApi<Address> response = await addressService.DeleteAsync(id);
 
-            return StatusCode(response.StatusCode, new { response.Message });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
     }
 }
