@@ -81,7 +81,9 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IAttachmentRepository, AttachmentRepository>();                  
             builder.Services.AddTransient<ISupplierService, SupplierService>();
             builder.Services.AddTransient<ISupplierRepository, SupplierRepository>();
-
+            builder.Services.AddTransient<IStoreService, StoreService>();
+            builder.Services.AddTransient<IStoreRepository, StoreRepository>();
+            
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();
             builder.Services.AddTransient<IDashboardRepository, DashboardRepository>();

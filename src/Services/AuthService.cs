@@ -91,6 +91,8 @@ namespace api_infor_cell.src.Services
                 };
 
                 ResponseApi<User?> response = await repository.CreateAsync(user);
+                
+                Util.ConsoleLog(response);
                 if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
 
                 DateTime date = DateTime.UtcNow;
