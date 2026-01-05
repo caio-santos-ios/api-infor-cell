@@ -1,3 +1,4 @@
+using System.Text.Json;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
@@ -15,6 +16,18 @@ namespace api_infor_cell.src.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            string? plan = User.FindFirst("plan")?.Value;
+            if (plan is not null)
+            {
+                var queryItems = Request.Query.ToDictionary(x => x.Key, x => x.Value);
+
+                if(plan is not null) 
+                {
+                    queryItems["plan"] = plan;
+                    Request.Query = new QueryCollection(queryItems);
+                }
+            }
+
             PaginationApi<List<dynamic>> response = await service.GetAllAsync(new(Request.Query));
             return StatusCode(response.StatusCode, new { response.Result });
         }
@@ -27,13 +40,28 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
-        // [Authorize]
-        // [HttpGet("select")]
-        // public async Task<IActionResult> GetSelect()
-        // {
-        //     ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
-        //     return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        // }
+        [Authorize]
+        [HttpGet("select")]
+        public async Task<IActionResult> GetSelect()
+        {
+            string? companiesClaim = User.FindFirst("companies")?.Value;
+            
+            if (companiesClaim is not null)
+            {
+                var queryItems = Request.Query.ToDictionary(x => x.Key, x => x.Value);
+                
+                List<string>? companies = JsonSerializer.Deserialize<List<string>>(companiesClaim);
+
+                if(companies is not null) 
+                {
+                    queryItems["in$id"] = new Microsoft.Extensions.Primitives.StringValues(string.Join(", ", companies));
+                    Request.Query = new QueryCollection(queryItems);
+                }
+            };
+
+            ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
         
         [Authorize]
         [HttpPost]
@@ -62,14 +90,16 @@ namespace api_infor_cell.src.Controllers
         public async Task<IActionResult> SavePhotoProfileAsync([FromForm] SaveCompanyPhotoDTO body)
         {
             ResponseApi<Company?> response = await service.SavePhotoProfileAsync(body);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<Company> response = await service.DeleteAsync(id);
+            string? plan = User.FindFirst("plan")?.Value;
+
+            ResponseApi<Company> response = await service.DeleteAsync(id, plan!);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

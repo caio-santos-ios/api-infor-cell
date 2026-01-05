@@ -11,11 +11,11 @@ using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Shared.Templates;
 using api_infor_cell.src.Shared.Validators;
 using api_infor_cell.src.Shared.Utils;
-using MongoDB.Bson;
+using System.Text.Json;
 
 namespace api_infor_cell.src.Services
 {
-    public class AuthService(IUserRepository repository, ICompanyRepository companyRepository, MailHandler mailHandler) : IAuthService
+    public class AuthService(IUserRepository repository, IPlanRepository planRepository, ICompanyRepository companyRepository, MailHandler mailHandler) : IAuthService
     {
         public async Task<ResponseApi<AuthResponse>> LoginAsync(LoginDTO request)
         {
@@ -32,6 +32,8 @@ namespace api_infor_cell.src.Services
                 bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
                 if(!isValid) return new(null, 400, "Dados incorretos");
 
+                ResponseApi<Company?> company = await companyRepository.GetByIdAsync(user.Company);
+
                 AuthResponse response = new ()
                 {
                     Token = GenerateJwtToken(user), 
@@ -42,7 +44,9 @@ namespace api_infor_cell.src.Services
                     Modules = user.Modules, 
                     Photo = user.Photo, 
                     Email = user.Email,
-                    LogoCompany = ""
+                    Plan = user.Plan,
+                    LogoCompany = company.Data is not null ? company.Data.Photo : "",
+                    NameCompany = company.Data is not null ? company.Data.CorporateName : ""
                 };
 
                 return new(response);
@@ -82,7 +86,8 @@ namespace api_infor_cell.src.Services
                     Modules = [],
                     Admin = true,
                     Blocked = false,
-                    Whatsapp = request.Whatsapp
+                    Whatsapp = request.Whatsapp,
+                    Role = Enums.User.RoleEnum.Admin
                 };
 
                 ResponseApi<User?> response = await repository.CreateAsync(user);
@@ -90,16 +95,30 @@ namespace api_infor_cell.src.Services
                 Util.ConsoleLog(response);
                 if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
 
+                DateTime date = DateTime.UtcNow;
+
+                ResponseApi<Plan?> responsePlan = await planRepository.CreateAsync(new ()
+                {
+                    StartDate = date,
+                    ExpirationDate = date.AddDays(7),
+                    Type = "free"
+                });
+
+                if(responsePlan.Data is null) return new(null, 400, "Falha ao criar conta.");
+
                 ResponseApi<Company?> responseCompany = await companyRepository.CreateAsync(new ()
                 {
                     CorporateName = request.CompanyName,
-                    Phone = request.Phone
+                    Phone = request.Phone,
+                    Plan = responsePlan.Data.Id
                 });
 
                 if(responseCompany.Data is null) return new(null, 400, "Falha ao criar conta.");
 
                 response.Data.Companies.Add(responseCompany.Data.Id);
                 response.Data.Company = responseCompany.Data.Id;
+                response.Data.Plan = responsePlan.Data.Id;
+                
                 await repository.UpdateAsync(response.Data);
 
                                 
@@ -305,10 +324,14 @@ namespace api_infor_cell.src.Services
 
             SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(SecretKey));
 
+            var companiesJson = JsonSerializer.Serialize(user.Companies);
+
             Claim[] claims =
             [
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("companies", companiesJson),
+                new Claim("plan", user.Plan),
                 new Claim(JwtRegisteredClaimNames.Nickname, user.UserName),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
