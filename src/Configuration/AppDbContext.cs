@@ -70,6 +70,16 @@ namespace api_infor_cell.src.Configuration
             get { return Database.GetCollection<Store>("stores"); }
         }
 
+         public IMongoCollection<Brand> Brands   
+        {
+            get { return Database.GetCollection<Brand>("brands"); }
+        }
+        
+        public IMongoCollection<Product> Products
+        {
+           get { return Database.GetCollection<Product>("products"); }
+        }
+
         #endregion
     }
 }

@@ -33,6 +33,13 @@ namespace api_infor_cell.src.Configuration
 
             CreateMap<CreateStoreDTO, Store>().ReverseMap();
             CreateMap<UpdateStoreDTO, Store>().ReverseMap();
+
+            CreateMap<CreateBrandDTO, Brand>().ReverseMap();
+            CreateMap<UpdateBrandDTO, Brand>().ReverseMap();
+
+            CreateMap<CreateProductDTO, Product>().ReverseMap();
+            CreateMap<UpdateProductDTO, Product>().ReverseMap();
+
             #endregion
         }
     }

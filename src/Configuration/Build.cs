@@ -83,7 +83,12 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<ISupplierRepository, SupplierRepository>();
             builder.Services.AddTransient<IStoreService, StoreService>();
             builder.Services.AddTransient<IStoreRepository, StoreRepository>();
-            
+            builder.Services.AddTransient<IStoreService, StoreService>();
+            builder.Services.AddTransient<IBrandRepository, BrandRepository>();
+            builder.Services.AddTransient<IBrandService, BrandService>();
+            builder.Services.AddTransient<IProductService, ProductService>();
+            builder.Services.AddTransient<IProductRepository, ProductRepository>();
+
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();
             builder.Services.AddTransient<IDashboardRepository, DashboardRepository>();
