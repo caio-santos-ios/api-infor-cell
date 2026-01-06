@@ -62,6 +62,18 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Message, response.Result });
         }
         
+        [Authorize]
+        [HttpPut("alter-store")]
+        public async Task<IActionResult> UpdateStore([FromBody] UpdateUserDTO user)
+        {
+            if (user == null) return BadRequest("Dados inválidos.");
+            user.Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+
+            ResponseApi<User?> response = await userService.UpdateStoreAsync(user);
+
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }
+        
         [HttpPut("code-access")]
         public async Task<IActionResult> ResendCodeAccess([FromBody] UpdateUserDTO user)
         {

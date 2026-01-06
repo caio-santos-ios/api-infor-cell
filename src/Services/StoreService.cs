@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class StoreService(IStoreRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IStoreService
+    public class StoreService(IStoreRepository repository, IMapper _mapper) : IStoreService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -39,6 +39,19 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
+    public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(GetAllDTO request)
+    {
+        try
+        {
+            PaginationUtil<Store> pagination = new(request.QueryParams);
+            ResponseApi<List<dynamic>> stores = await repository.GetSelectAsync(pagination);
+            return new(stores.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }  
     #endregion
     
     #region CREATE
@@ -83,10 +96,14 @@ namespace api_infor_cell.src.Services
     #endregion
     
     #region DELETE
-    public async Task<ResponseApi<Store>> DeleteAsync(string id)
+    public async Task<ResponseApi<Store>> DeleteAsync(string id, string plan, string company)
     {
         try
         {
+            ResponseApi<List<Store>> stores = await repository.GetTotalCompanies(plan, company);
+            if(stores.Data is null) return new(null, 400, "O sistema deve possuir ao menos uma loja cadastrada.");
+            if(stores.Data.Count == 1) return new(null, 400, "O sistema deve possuir ao menos uma loja cadastrada.");
+
             ResponseApi<Store> Store = await repository.DeleteAsync(id);
             if(!Store.IsSuccess) return new(null, 400, Store.Message);
             return new(null, 204, "Excluída com sucesso");

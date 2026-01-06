@@ -10,8 +10,11 @@ namespace api_infor_cell.src.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
-        [BsonElement("companyId")]
-        public string CompanyId { get; set; } = string.Empty; 
+        [BsonElement("company")]
+        public string Company { get; set; } = string.Empty; 
+        
+        [BsonElement("plan")]
+        public string Plan { get; set; } = string.Empty; 
         
         [BsonElement("document")]
         public string Document { get; set; } = string.Empty; 

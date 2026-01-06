@@ -13,6 +13,7 @@ namespace api_infor_cell.src.Responses
         public string Photo {get;set;} = string.Empty; 
         public string LogoCompany {get;set;} = string.Empty; 
         public string NameCompany {get;set;} = string.Empty; 
+        public string NameStore {get;set;} = string.Empty; 
         public string Plan {get;set;} = string.Empty; 
         public List<Module> Modules {get;set;} = [];
     }

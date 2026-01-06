@@ -8,6 +8,7 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Whatsapp { get; set; } = string.Empty;
+        public string Store { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
         public bool Blocked { get; set; } = false;
         public List<Module> Modules {get;set;} = [];

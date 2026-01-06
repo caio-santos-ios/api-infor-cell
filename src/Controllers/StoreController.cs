@@ -27,13 +27,13 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
-        // [Authorize]
-        // [HttpGet("select")]
-        // public async Task<IActionResult> GetSelect()
-        // {
-        //     ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
-        //     return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        // }
+        [Authorize]
+        [HttpGet("select")]
+        public async Task<IActionResult> GetSelect()
+        {
+            ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }
         
         [Authorize]
         [HttpPost]
@@ -55,15 +55,16 @@ namespace api_infor_cell.src.Controllers
             ResponseApi<Store?> response = await service.UpdateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
-        }
-
-        
+        }        
         
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<Store> response = await service.DeleteAsync(id);
+            string? plan = User.FindFirst("plan")?.Value;
+            string? company = User.FindFirst("company")?.Value;
+
+            ResponseApi<Store> response = await service.DeleteAsync(id, plan!, company!);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

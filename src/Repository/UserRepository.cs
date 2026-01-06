@@ -130,7 +130,9 @@ namespace api_infor_cell.src.Repository
                         {"id", new BsonDocument("$toString", "$_id")},
                     }),
 
-                    MongoUtil.Lookup("company", ["$id"], ["$company"], "_company", [["deleted", false]], 1),
+                    MongoUtil.Lookup("companies", ["$company"], ["$_id"], "_company", [["deleted", false]], 1),
+
+                    MongoUtil.Lookup("stores", ["$store"], ["$_id"], "_store", [["deleted", false]], 1),
 
                     MongoUtil.Lookup("addresses", ["$id"], ["$parentId"], "_address", [["deleted", false]], 1),
 
@@ -146,6 +148,9 @@ namespace api_infor_cell.src.Repository
                         {"zipCode", MongoUtil.First("_address.zipCode") },
                         {"parent", MongoUtil.First("_address.parent") },
                         {"parentId", MongoUtil.First("_address.parentId") },
+                        {"logoCompany", MongoUtil.First("_company.photo") },
+                        {"nameCompany", MongoUtil.First("_company.tradeName") },
+                        {"nameStore", MongoUtil.First("_store.tradeName") },
                     }),
 
                     new("$addFields", new BsonDocument
@@ -177,7 +182,9 @@ namespace api_infor_cell.src.Repository
                         {"photo", 1},
                         {"phone", 1},
                         {"whatsapp", 1},
-                        {"logoCompany", ""},
+                        {"logoCompany", MongoUtil.ValidateNull("logoCompany", "")},
+                        {"nameCompany", MongoUtil.ValidateNull("nameCompany", "")},
+                        {"nameStore", MongoUtil.ValidateNull("nameStore", "")},
                         {"address", 1}
                     }),
                 ];

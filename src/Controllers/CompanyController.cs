@@ -3,6 +3,7 @@ using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
 using api_infor_cell.src.Shared.DTOs;
+using api_infor_cell.src.Shared.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,13 +45,12 @@ namespace api_infor_cell.src.Controllers
         [HttpGet("select")]
         public async Task<IActionResult> GetSelect()
         {
-            string? companiesClaim = User.FindFirst("companies")?.Value;
-            
-            if (companiesClaim is not null)
+            string? companiesId = User.FindFirst("companies")?.Value;
+            if (companiesId is not null)
             {
                 var queryItems = Request.Query.ToDictionary(x => x.Key, x => x.Value);
                 
-                List<string>? companies = JsonSerializer.Deserialize<List<string>>(companiesClaim);
+                List<string>? companies = JsonSerializer.Deserialize<List<string>>(companiesId);
 
                 if(companies is not null) 
                 {

@@ -39,5 +39,7 @@ namespace api_infor_cell.src.Shared.DTOs
 
    
         public string Website { get; set; } = string.Empty;
+        public string Plan { get; set; } = string.Empty;
+        public string Company { get; set; } = string.Empty;
     }
 }

@@ -56,7 +56,10 @@ namespace api_infor_cell.src.Repository
                     new("$match", pagination.PipelineFilter),
                     new("$project", new BsonDocument
                     {
-                        {"_id", 0}, 
+                        {"_id", 0},
+                        {"id", 1}, 
+                        {"tradeName", 1}, 
+                        {"photo", 1} 
                     }),
                     new("$sort", pagination.PipelineSort),
                 };

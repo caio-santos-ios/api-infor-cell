@@ -53,9 +53,15 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("company")]
         public string Company {get;set;} = string.Empty;
+        
+        [BsonElement("store")]
+        public string Store {get;set;} = string.Empty;
 
         [BsonElement("companies")]
         public List<string> Companies {get;set;} = [];
+        
+        [BsonElement("stores")]
+        public List<string> Stores {get;set;} = [];
         
         [BsonElement("modules")]
         public List<Module> Modules {get;set;} = [];

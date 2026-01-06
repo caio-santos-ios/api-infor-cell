@@ -17,9 +17,9 @@ namespace api_infor_cell.src.Services
             try
             {
                 PaginationUtil<Company> pagination = new(request.QueryParams);
-                ResponseApi<List<dynamic>> companys = await repository.GetAllAsync(pagination);
+                ResponseApi<List<dynamic>> companies = await repository.GetAllAsync(pagination);
                 int count = await repository.GetCountDocumentsAsync(pagination);
-                return new(companys.Data, count, pagination.PageNumber, pagination.PageSize);
+                return new(companies.Data, count, pagination.PageNumber, pagination.PageSize);
             }
             catch
             {
@@ -31,8 +31,8 @@ namespace api_infor_cell.src.Services
             try
             {
                 PaginationUtil<Company> pagination = new(request.QueryParams);
-                ResponseApi<List<dynamic>> companys = await repository.GetSelectAsync(pagination);
-                return new(companys.Data);
+                ResponseApi<List<dynamic>> companies = await repository.GetSelectAsync(pagination);
+                return new(companies.Data);
             }
             catch
             {

@@ -230,6 +230,25 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
+        public async Task<ResponseApi<User?>> UpdateStoreAsync(UpdateUserDTO request)
+        {
+            try
+            {
+                ResponseApi<User?> user = await userRepository.GetByIdAsync(request.Id);
+                if(user.Data is null) return new(null, 404, "Falha ao atualizar");
+                
+                user.Data.UpdatedAt = DateTime.UtcNow;
+                user.Data.Store = request.Store;
+
+                ResponseApi<User?> response = await userRepository.UpdateAsync(user.Data);
+                if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
+                return new(response.Data, 201, "Atualizado com sucesso");
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
+        }
         public async Task<ResponseApi<User?>> ResendCodeAccessAsync(UpdateUserDTO request)
         {
             try

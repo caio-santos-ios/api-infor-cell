@@ -15,7 +15,7 @@ using System.Text.Json;
 
 namespace api_infor_cell.src.Services
 {
-    public class AuthService(IUserRepository repository, IPlanRepository planRepository, ICompanyRepository companyRepository, MailHandler mailHandler) : IAuthService
+    public class AuthService(IUserRepository repository, IPlanRepository planRepository, ICompanyRepository companyRepository, IStoreRepository storeRepository, MailHandler mailHandler) : IAuthService
     {
         public async Task<ResponseApi<AuthResponse>> LoginAsync(LoginDTO request)
         {
@@ -34,6 +34,8 @@ namespace api_infor_cell.src.Services
 
                 ResponseApi<Company?> company = await companyRepository.GetByIdAsync(user.Company);
 
+                ResponseApi<Store?> store = await storeRepository.GetByIdAsync(user.Store);
+
                 AuthResponse response = new ()
                 {
                     Token = GenerateJwtToken(user), 
@@ -46,7 +48,8 @@ namespace api_infor_cell.src.Services
                     Email = user.Email,
                     Plan = user.Plan,
                     LogoCompany = company.Data is not null ? company.Data.Photo : "",
-                    NameCompany = company.Data is not null ? company.Data.CorporateName : ""
+                    NameCompany = company.Data is not null ? company.Data.TradeName : "",
+                    NameStore = store.Data is not null ? store.Data.TradeName : "",
                 };
 
                 return new(response);
@@ -92,7 +95,6 @@ namespace api_infor_cell.src.Services
 
                 ResponseApi<User?> response = await repository.CreateAsync(user);
                 
-                Util.ConsoleLog(response);
                 if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
 
                 DateTime date = DateTime.UtcNow;
@@ -109,15 +111,29 @@ namespace api_infor_cell.src.Services
                 ResponseApi<Company?> responseCompany = await companyRepository.CreateAsync(new ()
                 {
                     CorporateName = request.CompanyName,
+                    TradeName = request.CompanyName,
                     Phone = request.Phone,
                     Plan = responsePlan.Data.Id
                 });
 
                 if(responseCompany.Data is null) return new(null, 400, "Falha ao criar conta.");
+                
+                ResponseApi<Store?> responseStore = await storeRepository.CreateAsync(new ()
+                {
+                    CorporateName = request.CompanyName,
+                    TradeName = "Matriz",
+                    Phone = request.Phone,
+                    Plan = responsePlan.Data.Id,
+                    Company = responseCompany.Data.Id
+                });
+
+                if(responseStore.Data is null) return new(null, 400, "Falha ao criar conta.");
 
                 response.Data.Companies.Add(responseCompany.Data.Id);
                 response.Data.Company = responseCompany.Data.Id;
                 response.Data.Plan = responsePlan.Data.Id;
+                response.Data.Stores.Add(responseStore.Data.Id);
+                response.Data.Store = responseStore.Data.Id;
                 
                 await repository.UpdateAsync(response.Data);
 
@@ -332,6 +348,8 @@ namespace api_infor_cell.src.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("companies", companiesJson),
                 new Claim("plan", user.Plan),
+                new Claim("store", user.Store),
+                new Claim("company", user.Company),
                 new Claim(JwtRegisteredClaimNames.Nickname, user.UserName),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
