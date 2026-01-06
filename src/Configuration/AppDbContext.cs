@@ -1,5 +1,6 @@
 using api_infor_cell.src.Models;
 using MongoDB.Driver;
+using Twilio.TwiML.Voice;
 
 namespace api_infor_cell.src.Configuration
 {
@@ -79,6 +80,31 @@ namespace api_infor_cell.src.Configuration
         {
            get { return Database.GetCollection<Product>("products"); }
         }
+
+        public IMongoCollection<Category> Categories
+        {
+            get { return Database.GetCollection<Category>("categories"); }
+        }
+
+        public IMongoCollection<Employee> Employees
+        {
+             get { return Database.GetCollection<Employee>("employees"); }
+        }
+        public IMongoCollection<Flag> Flags
+        {
+             get { return Database.GetCollection<Flag>("flags"); }
+
+        }
+        public IMongoCollection<Model> Models
+        {
+            get { return Database.GetCollection<Model>("models"); }
+        }
+
+        public IMongoCollection<PaymentMethod> PaymentMethods
+        {
+            get { return Database.GetCollection<PaymentMethod>("paymentmethods"); }
+        }
+        
 
         #endregion
     }

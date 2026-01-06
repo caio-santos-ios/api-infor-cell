@@ -12,5 +12,6 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;
+        public string Plan { get; internal set; }
     }
 }

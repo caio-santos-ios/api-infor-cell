@@ -1,6 +1,7 @@
 using System.Text;
 using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Interfaces;
+using api_infor_cell.src.Models;
 using api_infor_cell.src.Repository;
 using api_infor_cell.src.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -88,6 +89,16 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IBrandService, BrandService>();
             builder.Services.AddTransient<IProductService, ProductService>();
             builder.Services.AddTransient<IProductRepository, ProductRepository>();
+            builder.Services.AddTransient<ICategoryService, CategoryService>();
+            builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddTransient<IEmployeeService, EmployeeService>();
+            builder.Services.AddTransient<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddTransient<IFlagService, FlagService>();
+            builder.Services.AddTransient<IFlagRepository, FlagRepository>();
+            builder.Services.AddTransient<IModelService, ModelService>();
+            builder.Services.AddTransient<IModelRepository, ModelRepository>();
+            builder.Services.AddTransient<IPaymentMethodService, PaymentMethodService>();
+            builder.Services.AddTransient<IPaymentMethodRepository, PaymentMethodRepository>();
 
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();

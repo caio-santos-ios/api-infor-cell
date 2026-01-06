@@ -40,6 +40,21 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreateProductDTO, Product>().ReverseMap();
             CreateMap<UpdateProductDTO, Product>().ReverseMap();
 
+            CreateMap<CreateCategoryDTO, Category>().ReverseMap();
+            CreateMap<UpdateCategoryDTO, Category>().ReverseMap();
+
+            CreateMap<CreateEmployeeDTO, Employee>().ReverseMap();
+            CreateMap<UpdateEmployeeDTO, Employee>().ReverseMap();
+
+            CreateMap<CreateFlagDTO, Flag>().ReverseMap();
+            CreateMap<UpdateFlagDTO, Flag>().ReverseMap();
+
+            CreateMap<CreateModelDTO, Model>().ReverseMap();
+            CreateMap<UpdateModelDTO, Model>().ReverseMap();
+
+            CreateMap<CreatePaymentMethodDTO, PaymentMethod>().ReverseMap();
+            CreateMap<UpdatePaymentMethodDTO, PaymentMethod>().ReverseMap();
+
             #endregion
         }
     }
