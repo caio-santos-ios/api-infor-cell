@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace api_infor_cell.src.Models
 {
-    public class Category : ModelBase
+    public class Stock : ModelBase
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -12,6 +12,8 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;
-        public string Plan { get; internal set; }
+
+        [BsonElement("brandId")]
+        public string BrandId { get; set; } = string.Empty;
     }
 }

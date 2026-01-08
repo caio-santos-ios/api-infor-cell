@@ -1,5 +1,6 @@
 using api_infor_cell.src.Models;
 using MongoDB.Driver;
+using Twilio.TwiML.Voice;
 
 namespace api_infor_cell.src.Configuration
 {
@@ -69,17 +70,54 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<Store>("stores"); }
         }
-
          public IMongoCollection<Brand> Brands   
         {
             get { return Database.GetCollection<Brand>("brands"); }
         }
-        
         public IMongoCollection<Product> Products
         {
            get { return Database.GetCollection<Product>("products"); }
         }
+        public IMongoCollection<Category> Categories
+        {
+            get { return Database.GetCollection<Category>("categories"); }
+        }
+        public IMongoCollection<Employee> Employees
+        {
+             get { return Database.GetCollection<Employee>("employees"); }
+        }
+        public IMongoCollection<Flag> Flags
+        {
+             get { return Database.GetCollection<Flag>("flags"); }
+        }
+        public IMongoCollection<Model> Models
+        {
+            get { return Database.GetCollection<Model>("models"); }
+        }
+        public IMongoCollection<PaymentMethod> PaymentMethods
+        {
+            get { return Database.GetCollection<PaymentMethod>("paymentmethods"); }
+        }
+        public IMongoCollection<ServiceOrder> ServiceOrders
+        {
+            get { return Database.GetCollection<ServiceOrder>("serviceorders"); }
+        }
+        public IMongoCollection<SalesOrder> SalesOrders
+        {
+            get { return Database.GetCollection<SalesOrder>("salesorders"); }
+        }
+        public IMongoCollection<Stock> Stocks
+        {
+            get { return Database.GetCollection<Stock>("stock"); }
+        }
+         public IMongoCollection<Box> Boxes
+        {
+            get { return Database.GetCollection<Box>("boxes"); }
+        }
+        
+        
 
         #endregion
     }
 }
+
