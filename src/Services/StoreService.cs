@@ -77,13 +77,15 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Store?> StoreResponse = await repository.GetByIdAsync(request.Id);
-            if(StoreResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Store?> storeResponse = await repository.GetByIdAsync(request.Id);
+            if(storeResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            Store Store = _mapper.Map<Store>(request);
-            Store.UpdatedAt = DateTime.UtcNow;
+            Store store = _mapper.Map<Store>(request);
+            store.UpdatedAt = DateTime.UtcNow;
+            store.Plan = storeResponse.Data.Plan;
+            store.Company = storeResponse.Data.Company;
 
-            ResponseApi<Store?> response = await repository.UpdateAsync(Store);
+            ResponseApi<Store?> response = await repository.UpdateAsync(store);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }
