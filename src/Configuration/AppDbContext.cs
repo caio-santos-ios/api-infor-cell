@@ -122,6 +122,14 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<SalesOrderItem>("salesorderitems"); }
         }
+        public IMongoCollection<Customer> Customers
+        {
+            get { return Database.GetCollection<Customer>("customers"); }
+        }
+        public IMongoCollection<Exchange> Exchanges
+        {
+            get { return Database.GetCollection<Exchange>("exchanges"); }
+        }
         
         
 

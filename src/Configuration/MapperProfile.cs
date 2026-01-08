@@ -3,6 +3,7 @@ using api_infor_cell.src.Models;
 using api_infor_cell.src.Shared.DTOs;
 
 
+
 namespace api_infor_cell.src.Configuration
 {
     public class MapperProfile : Profile
@@ -73,7 +74,15 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
             CreateMap<UpdateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
 
+            CreateMap<CreateCustomerDTO, Customer>().ReverseMap();
+            CreateMap<UpdateCustomerDTO, Customer>().ReverseMap();
+
+            CreateMap<CreateExchangeDTO, Exchange>().ReverseMap();
+            CreateMap<UpdateExchangeDTO, Exchange>().ReverseMap();
+
             #endregion
         }
     }
+
+    
 }

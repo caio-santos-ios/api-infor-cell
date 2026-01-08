@@ -109,6 +109,10 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IServiceOrderItemRepository, ServiceOrderItemRepository>();
             builder.Services.AddTransient<ISalesOrderItemService, SalesOrderItemService>();
             builder.Services.AddTransient<ISalesOrderItemRepository, SalesOrderItemRepository>();
+            builder.Services.AddTransient<ICustomerService, CustomerService>();
+            builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddTransient<IExchangeService, ExchangeService>();
+            builder.Services.AddTransient<IExchangeRepository, ExchangeRepository>();
 
             
             // DASHBOARD
