@@ -69,7 +69,7 @@ namespace api_infor_cell.src.Shared.Templates
                             </div>
                             
                             <p class=""instruction"">Olá <strong>{name}</strong>,</p>
-                            <p class=""instruction"">Recebemos uma solicitação para redefinir a senha da sua conta na <strong>ERP Mais</strong>. Se foi você, utilize o link abaixo:</p>
+                            <p class=""instruction"">Recebemos uma solicitação para redefinir a senha da sua conta na <strong>Telemovvi</strong>. Se foi você, utilize o link abaixo:</p>
                             
                             <div class=""flex justify-center items-center"">
                                 <a class='text-center' href='{UiURI}/reset-password/{code}'>Link para alterar senha</a>
@@ -81,7 +81,7 @@ namespace api_infor_cell.src.Shared.Templates
                             
                             <div class=""footer"">
                                 <hr style=""border: 0; border-top: 1px solid #eee;"" />
-                                <p>Atenciosamente,<br><strong>Equipe ERP Mais</strong></p>
+                                <p>Atenciosamente,<br><strong>Equipe Telemovvi</strong></p>
                                 <p>Este é um e-mail automático, por favor não responda.</p>
                             </div>
                         </div>
@@ -224,7 +224,7 @@ namespace api_infor_cell.src.Shared.Templates
                     <body>
                         <div class=""container"">
                             <div class=""header"">
-                                <h1>Bem-vindo à ERP Mais!</h1>
+                                <h1>Bem-vindo à Telemovvi!</h1>
                             </div>
                             
                             <p class=""welcome-text"">Olá, <strong>{name}</strong>,</p>
@@ -238,7 +238,7 @@ namespace api_infor_cell.src.Shared.Templates
                             
                             <div class=""footer"">
                                 <hr style=""border: 0; border-top: 1px solid #eee;"" />
-                                <p>Atenciosamente,<br><strong>Equipe ERP Mais</strong></p>
+                                <p>Atenciosamente,<br><strong>Equipe Telemovvi</strong></p>
                                 <p>Este é um e-mail automático, por favor não responda.</p>
                             </div>
                         </div>
@@ -309,7 +309,7 @@ namespace api_infor_cell.src.Shared.Templates
                             </div>
                             
                             <p class=""info-text"">Olá <strong>{name}</strong>,</p>
-                            <p class=""info-text"">Você solicitou um novo código de acesso para a sua conta na <strong>ERP Mais</strong>. Utilize o código abaixo para prosseguir:</p>
+                            <p class=""info-text"">Você solicitou um novo código de acesso para a sua conta na <strong>Telemovvi</strong>. Utilize o código abaixo para prosseguir:</p>
                             
                             <div class=""code-box"">
                                 {code}
@@ -323,7 +323,7 @@ namespace api_infor_cell.src.Shared.Templates
                             
                             <div class=""footer"">
                                 <hr style=""border: 0; border-top: 1px solid #eee;"" />
-                                <p>Atenciosamente,<br><strong>Equipe ERP Mais</strong></p>
+                                <p>Atenciosamente,<br><strong>Equipe Telemovvi</strong></p>
                                 <p>Este é um e-mail automático, por favor não responda.</p>
                             </div>
                         </div>

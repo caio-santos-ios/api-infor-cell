@@ -100,9 +100,9 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IPaymentMethodService, PaymentMethodService>();
             builder.Services.AddTransient<IPaymentMethodRepository, PaymentMethodRepository>();
             builder.Services.AddTransient<IServiceOrderService, ServiceOrderService>();
-            builder.Services.AddTransient<ServiceOrderRepository, ServiceOrderRepository>();
+            builder.Services.AddTransient<IServiceOrderRepository, ServiceOrderRepository>();
             builder.Services.AddTransient<ISalesOrderService, SalesOrderService>();
-            builder.Services.AddTransient<SalesOrderRepository, SalesOrderRepository>();
+            builder.Services.AddTransient<ISalesOrderRepository, SalesOrderRepository>();
             builder.Services.AddTransient<IStockService, StockService>();
             builder.Services.AddTransient<IStockRepository, StockRepository>();
             builder.Services.AddTransient<IBoxService, BoxService>();
