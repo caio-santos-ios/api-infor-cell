@@ -110,9 +110,17 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<Stock>("stock"); }
         }
-         public IMongoCollection<Box> Boxes
+        public IMongoCollection<Box> Boxes
         {
             get { return Database.GetCollection<Box>("boxes"); }
+        }
+        public IMongoCollection<ServiceOrderItem> ServiceOrderItems
+        {
+            get { return Database.GetCollection<ServiceOrderItem>("serviceorderitems"); }
+        }
+        public IMongoCollection<SalesOrderItem> SalesOrderItems
+        {
+            get { return Database.GetCollection<SalesOrderItem>("salesorderitems"); }
         }
         
         

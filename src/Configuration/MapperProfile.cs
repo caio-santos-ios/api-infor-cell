@@ -67,6 +67,12 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreateBoxDTO, Box>().ReverseMap();
             CreateMap<UpdateBoxDTO, Box>().ReverseMap();
 
+            CreateMap<CreateServiceOrderItemDTO, ServiceOrderItem>().ReverseMap();
+            CreateMap<UpdateServiceOrderItemDTO, ServiceOrderItem>().ReverseMap();
+
+            CreateMap<CreateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
+            CreateMap<UpdateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
+
             #endregion
         }
     }

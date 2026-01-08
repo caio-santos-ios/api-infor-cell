@@ -68,10 +68,8 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IPlanRepository, PlanRepository>();                       
             builder.Services.AddTransient<ICompanyService, CompanyService>();
             builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();                       
-            
             builder.Services.AddTransient<IUserService, UserService>();
             builder.Services.AddTransient<IUserRepository, UserRepository>();    
-            
             builder.Services.AddTransient<IGenericTableService, GenericTableService>();
             builder.Services.AddTransient<IGenericTableRepository, GenericTableRepository>();                       
             builder.Services.AddTransient<IAddressService, AddressService>();
@@ -107,7 +105,11 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IStockRepository, StockRepository>();
             builder.Services.AddTransient<IBoxService, BoxService>();
             builder.Services.AddTransient<IBoxRepository, BoxRepository>();
-            
+            builder.Services.AddTransient<IServiceOrderItemService, ServiceOrderItemService>();
+            builder.Services.AddTransient<IServiceOrderItemRepository, ServiceOrderItemRepository>();
+            builder.Services.AddTransient<ISalesOrderItemService, SalesOrderItemService>();
+            builder.Services.AddTransient<ISalesOrderItemRepository, SalesOrderItemRepository>();
+
             
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();
