@@ -1,6 +1,6 @@
 namespace api_infor_cell.src.Shared.DTOs
 {
-public class CreateAddressDTO
+public class CreateAddressDTO : RequestDTO
 {
     public string ZipCode { get; set; } = string.Empty;
 

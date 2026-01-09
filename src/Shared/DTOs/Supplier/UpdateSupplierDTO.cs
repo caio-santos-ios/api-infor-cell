@@ -2,7 +2,7 @@ using api_infor_cell.src.Models;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class UpdateSupplierDTO
+    public class UpdateSupplierDTO : RequestDTO
     {
         public string Id { get; set; } = string.Empty;
         public string Type { get; set; } = "F";

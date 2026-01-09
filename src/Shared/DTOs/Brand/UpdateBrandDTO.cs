@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class UpdateBrandDTO
+    public class UpdateBrandDTO : RequestDTO
     {
         public string Id { get; set; } = string.Empty;
        

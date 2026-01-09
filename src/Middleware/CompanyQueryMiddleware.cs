@@ -19,6 +19,7 @@ public class CompanyQueryMiddleware
             string method = context.Request.Method;
             string? plan = context.User.FindFirst("plan")?.Value;
             string? company = context.User.FindFirst("company")?.Value;
+            string? store = context.User.FindFirst("store")?.Value;
             
             if(path.Split("/")[2] != "companies") 
             {
@@ -37,6 +38,7 @@ public class CompanyQueryMiddleware
                             {
                                 jsonDoc["plan"] = plan!;
                                 jsonDoc["company"] = company!;
+                                jsonDoc["store"] = store!;
 
                                 var modifiedBody = JsonSerializer.Serialize(jsonDoc);
                                 var bytes = Encoding.UTF8.GetBytes(modifiedBody);

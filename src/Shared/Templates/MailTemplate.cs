@@ -132,46 +132,77 @@ namespace api_infor_cell.src.Shared.Templates
                     </body>
                 </html>";
         }
-        public static string FirstAccess(string email, string passowrd)
+        public static string FirstAccess(string name, string email, string passowrd)
         {
-            return $@"
+            return $@"               
                 <html>
                     <head>
                         <style>
-                        .container {{
-                            font-family: Arial, sans-serif;
-                            background-color: #f4f4f4;
-                            padding: 20px;
-                            border-radius: 8px;
-                            max-width: 600px;
-                            margin: auto;
-                            color: #333;
-                        }}
-                        .button {{
-                            display: inline-block;
-                            padding: 10px 20px;
-                            margin-top: 20px;
-                            background-color: #007bff;
-                            color: #fff;
-                            text-decoration: none;
-                            border-radius: 5px;
-                        }}
-                        .footer {{
-                            margin-top: 30px;
-                            font-size: 12px;
-                            color: #888;
-                        }}
+                            .container {{
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                background-color: #ffffff;
+                                padding: 40px;
+                                border-radius: 10px;
+                                max-width: 600px;
+                                margin: 20px auto;
+                                color: #333;
+                                border: 1px solid #e0e0e0;
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                            }}
+                            .header {{
+                                text-align: center;
+                                border-bottom: 2px solid #007bff;
+                                padding-bottom: 20px;
+                                margin-bottom: 20px;
+                            }}
+                            .code-box {{
+                                background-color: #f8f9fa;
+                                border: 2px dashed #007bff;
+                                padding: 20px;
+                                text-align: center;
+                                font-size: 32px;
+                                font-weight: bold;
+                                letter-spacing: 5px;
+                                color: #007bff;
+                                margin: 30px 0;
+                                border-radius: 8px;
+                            }}
+                            .footer {{
+                                margin-top: 30px;
+                                font-size: 13px;
+                                color: #777;
+                                text-align: center;
+                                line-height: 1.6;
+                            }}
+                            .welcome-text {{
+                                font-size: 18px;
+                                margin-bottom: 10px;
+                            }}
                         </style>
                     </head>
                     <body>
                         <div class=""container"">
+                            <div class=""header"">
+                                <h1>Bem-vindo à Telemovvi!</h1>
+                            </div>
+                            
+                            <p class=""welcome-text"">Olá, <strong>{name}</strong>,</p>
                             <p>Dados do primeiro acesso ao sistema:</p>
+
                             <p>E-mail: {email}</p>                        
-                            <p>Senha: {passowrd}</p>                        
-                            <p>Se você não solicitou esta alteração, ignore este e-mail.</p>                        
+                            <p>Senha: {passowrd}</p>      
+                            <a href=""{UiURI}"">Fazer Login</a>                            
+                            <p>Este código expira em 5 minutos. Se você não solicitou a criação desta conta, por favor, ignore este e-mail.</p>
+                            
+                            <div class=""footer"">
+                                <hr style=""border: 0; border-top: 1px solid #eee;"" />
+                                <p>Atenciosamente,<br><strong>Equipe Telemovvi</strong></p>
+                                <p>Este é um e-mail automático, por favor não responda.</p>
+                            </div>
                         </div>
                     </body>
-                </html>";
+                </html>
+            ";
         }
         public static string ConfirmAccount(string name, string code)
         {

@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using api_infor_cell.src.Configuration;
 using DotNetEnv;
+using Microsoft.AspNetCore.Mvc;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +12,31 @@ builder.AddBuilderConfiguration();
 builder.AddBuilderAuthentication();
 builder.AddContext();
 builder.AddBuilderServices();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+.ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value!.Errors.Count > 0)
+            .Select(e => new {
+                Field = e.Key,
+                Message = e.Value!.Errors.First().ErrorMessage,
+                Order = context.ActionDescriptor.Parameters
+                    .SelectMany(p => p.ParameterType.GetProperties())
+                    .FirstOrDefault(p => p.Name == e.Key)?
+                    .GetCustomAttributes(typeof(DisplayAttribute), false)
+                    .Cast<DisplayAttribute>()
+                    .FirstOrDefault()?.Order ?? 999
+            })
+            .OrderBy(e => e.Order) 
+            .Select(e => new { e.Field, e.Message })
+            .ToList();
+
+        return new BadRequestObjectResult(new { errors });
+    };
+});
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.CustomSchemaIds(type => type.FullName);

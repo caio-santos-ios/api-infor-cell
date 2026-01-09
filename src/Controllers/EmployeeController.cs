@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
@@ -57,8 +58,38 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
+        [Authorize]
+        [HttpPut("modules")]
+        public async Task<IActionResult> UpdateModules([FromBody] UpdateModuleEmployeeDTO request)
+        {
+            if (request == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Employee?> response = await service.UpdateModuleAsync(request);
+
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }        
         
+        [Authorize]
+        [HttpPut("calendar")]
+        public async Task<IActionResult> UpdateCalendar([FromBody] UpdateCalendarEmployeeDTO request)
+        {
+            if (request == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Employee?> response = await service.UpdateCalendarAsync(request);
+
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }        
         
+        [Authorize]
+        [HttpGet("logged")]
+        public async Task<IActionResult> GetLoggedAsync()
+        {
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            ResponseApi<dynamic?> response = await service.GetLoggedAsync(userId!);
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }
+
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

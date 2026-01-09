@@ -1,6 +1,6 @@
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class CreateUserDTO
+    public class CreateUserDTO : RequestDTO
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

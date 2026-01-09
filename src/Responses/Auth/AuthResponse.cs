@@ -15,6 +15,7 @@ namespace api_infor_cell.src.Responses
         public string NameCompany {get;set;} = string.Empty; 
         public string NameStore {get;set;} = string.Empty; 
         public string Plan {get;set;} = string.Empty; 
+        public string TypeUser {get;set;} = string.Empty; 
         public List<Module> Modules {get;set;} = [];
     }
 }

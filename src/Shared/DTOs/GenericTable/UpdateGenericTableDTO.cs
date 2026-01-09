@@ -1,6 +1,6 @@
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class UpdateGenericTableDTO
+    public class UpdateGenericTableDTO : RequestDTO
     {
         public string Id { get; set; } = string.Empty;
         

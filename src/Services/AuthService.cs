@@ -15,7 +15,7 @@ using System.Text.Json;
 
 namespace api_infor_cell.src.Services
 {
-    public class AuthService(IUserRepository repository, IPlanRepository planRepository, ICompanyRepository companyRepository, IStoreRepository storeRepository, MailHandler mailHandler) : IAuthService
+    public class AuthService(IUserRepository repository, IEmployeeRepository employeeRepository, IPlanRepository planRepository, ICompanyRepository companyRepository, IStoreRepository storeRepository, MailHandler mailHandler) : IAuthService
     {
         public async Task<ResponseApi<AuthResponse>> LoginAsync(LoginDTO request)
         {
@@ -24,10 +24,33 @@ namespace api_infor_cell.src.Services
                 if (string.IsNullOrEmpty(request.Email)) return new(null, 400, "E-mail é obrigatório");
                 if (string.IsNullOrEmpty(request.Password)) return new(null, 400, "Senha é obrigatória");
                 
-                ResponseApi<User?> res = await repository.GetByEmailAsync(request.Email);
-                if(res.Data is null) return new(null, 400, "Dados incorretos");
-                User user = res.Data!;
+                ResponseApi<User?> responseUser = await repository.GetByEmailAsync(request.Email);
+                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(request.Email, "");
+                
+                User user = new();
 
+                if(responseUser.Data is not null) {
+                    user = responseUser.Data;
+                } else {
+                    if(responseEmployee.Data is null) 
+                    {
+                        return new(null, 400, "Dados incorretos");
+                    };
+
+                    user = new()
+                    {
+                        Password = responseEmployee.Data.Password,
+                        Company = responseEmployee.Data.Company,
+                        Store = responseEmployee.Data.Store,
+                        Photo = responseEmployee.Data.Photo,
+                        Id = responseEmployee.Data.Id,
+                        Name = responseEmployee.Data.Name,
+                        Modules = responseEmployee.Data.Modules,
+                        Plan = responseEmployee.Data.Plan,
+                        Email = responseEmployee.Data.Email
+                    };
+                };
+                
                 if(user is null) return new(null, 400, "Dados incorretos");
                 bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
                 if(!isValid) return new(null, 400, "Dados incorretos");
@@ -50,6 +73,7 @@ namespace api_infor_cell.src.Services
                     LogoCompany = company.Data is not null ? company.Data.Photo : "",
                     NameCompany = company.Data is not null ? company.Data.TradeName : "",
                     NameStore = store.Data is not null ? store.Data.TradeName : "",
+                    TypeUser = responseEmployee.Data is not null ? responseEmployee.Data.Type : ""
                 };
 
                 return new(response);
@@ -279,21 +303,89 @@ namespace api_infor_cell.src.Services
         {
             try
             {
-                ResponseApi<User?> user = await repository.GetByEmailAsync(request.Email);
-                if(user.Data is null || !Validator.IsEmail(request.Email)) return new(null, 400, "E-mail inválido.");
+                ResponseApi<User?> responseUser = await repository.GetByEmailAsync(request.Email);
+                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(request.Email, "");
+                
+                User user = new();
 
+                if(responseUser.Data is not null) {
+                    user = new()
+                    {
+                        Password = responseUser.Data.Password,
+                        Company = responseUser.Data.Company,
+                        Store = responseUser.Data.Store,
+                        Photo = responseUser.Data.Photo,
+                        Id = responseUser.Data.Id,
+                        Name = responseUser.Data.Name,
+                        Modules = responseUser.Data.Modules,
+                        Plan = responseUser.Data.Plan,
+                        Email = responseUser.Data.Email
+                    };
+                } else {
+
+                    if(responseEmployee.Data is null) 
+                    {
+                        return new(null, 400, "Dados incorretos");
+                    };
+
+                    user = new()
+                    {
+                        Password = responseEmployee.Data.Password,
+                        Company = responseEmployee.Data.Company,
+                        Store = responseEmployee.Data.Store,
+                        Photo = responseEmployee.Data.Photo,
+                        Id = responseEmployee.Data.Id,
+                        Name = responseEmployee.Data.Name,
+                        Modules = responseEmployee.Data.Modules,
+                        Plan = responseEmployee.Data.Plan,
+                        Active = responseEmployee.Data.Active,
+                        Admin = responseEmployee.Data.Admin,
+                        Blocked = responseEmployee.Data.Blocked,
+                        CodeAccess = responseEmployee.Data.CodeAccess,
+                        CodeAccessExpiration = responseEmployee.Data.CodeAccessExpiration,
+                        Companies = responseEmployee.Data.Companies,
+                        CreatedAt = responseEmployee.Data.CreatedAt,
+                        CreatedBy = responseEmployee.Data.CreatedBy,
+                        Deleted = responseEmployee.Data.Deleted,
+                        DeletedAt = responseEmployee.Data.DeletedAt,
+                        Phone = responseEmployee.Data.Phone,
+                        Email = responseEmployee.Data.Email,
+                        // Role = responseEmployee.Data.Role,
+                        Stores = responseEmployee.Data.Stores,
+                        UpdatedAt = responseEmployee.Data.UpdatedAt,
+                        UpdatedBy = responseEmployee.Data.UpdatedBy,
+                        UserName = responseEmployee.Data.UserName,
+                        ValidatedAccess = responseEmployee.Data.ValidatedAccess,
+                        Whatsapp = responseEmployee.Data.Whatsapp
+                    };
+                };
+               
                 dynamic access = Util.GenerateCodeAccess();
 
-                user.Data.CodeAccess = access.CodeAccess;
-                user.Data.CodeAccessExpiration = access.CodeAccessExpiration;
-                user.Data.ValidatedAccess = false;
+                user.CodeAccess = access.CodeAccess;
+                user.CodeAccessExpiration = access.CodeAccessExpiration;
+                user.ValidatedAccess = false;
 
-                string template = MailTemplate.ForgotPasswordWeb(user.Data.Name, user.Data.CodeAccess);
+                string template = MailTemplate.ForgotPasswordWeb(user.Name, user.CodeAccess);
 
                 await mailHandler.SendMailAsync(request.Email, "Redefinição de Senha", template);
 
-                ResponseApi<User?> response = await repository.UpdateAsync(user.Data);
-                if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                if(responseUser.Data is not null) 
+                {
+                    ResponseApi<User?> response = await repository.UpdateAsync(user);
+                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                }
+                else 
+                {
+                    if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
+                    
+                    responseEmployee.Data.CodeAccess = access.CodeAccess;
+                    responseEmployee.Data.CodeAccessExpiration = access.CodeAccessExpiration;
+                    responseEmployee.Data.ValidatedAccess = false;
+                
+                    ResponseApi<Employee?> response = await employeeRepository.UpdateAsync(responseEmployee.Data);
+                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                }
 
                 return new(null, 200, "Foi enviado um e-mail para redefinir sua senha");
             }
@@ -310,20 +402,48 @@ namespace api_infor_cell.src.Services
                 if (string.IsNullOrEmpty(request.NewPassword)) return new(null, 400, "Confirmação da senha é obrigatória");
                 if (request.Password != request.NewPassword) return new(null, 400, "As senhas não podem ser diferentes");
 
-                ResponseApi<User?> user = await repository.GetByCodeAccessAsync(request.CodeAccess);
-                if(!user.IsSuccess || user.Data is null) return new(null, 400, "Falha ao alterar senha");
+                ResponseApi<User?> responseUser = await repository.GetByCodeAccessAsync(request.CodeAccess);
+                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByCodeAccessAsync(request.CodeAccess);
 
-                if(user.Data.CodeAccessExpiration < DateTime.UtcNow) return new(null, 400, "Código expirou, solicite um novo e-mail.");
+                User user = new();
+                if(responseUser.Data is not null) 
+                {
+                    user.CodeAccessExpiration = responseUser.Data.CodeAccessExpiration;
+                }
+                else 
+                {
+                    if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
+                    user.CodeAccessExpiration = responseEmployee.Data.CodeAccessExpiration;                   
+                }
+
+                if(user is null) return new(null, 400, "Falha ao alterar senha");
+
+                if(user.CodeAccessExpiration < DateTime.UtcNow) return new(null, 400, "Código expirou, solicite um novo e-mail.");
                 
                 if(Validator.IsReliable(request.Password).Equals("Ruim")) return new(null, 400, $"Senha é muito fraca");
 
-                user.Data.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-                user.Data.ValidatedAccess = true;
-                user.Data.CodeAccess = "";
-                user.Data.CodeAccessExpiration = null;
+                if(responseUser.Data is not null) 
+                {
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                    user.ValidatedAccess = true;
+                    user.CodeAccess = "";
+                    user.CodeAccessExpiration = null;
 
-                ResponseApi<User?> response = await repository.UpdateAsync(user.Data);
-                if(!response.IsSuccess) return new(null, 400, "Falha ao alterar senha");
+                    ResponseApi<User?> response = await repository.UpdateAsync(user);
+                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                }
+                else 
+                {
+                    if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
+
+                    responseEmployee.Data.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);                    
+                    responseEmployee.Data.CodeAccess = "";
+                    responseEmployee.Data.CodeAccessExpiration = null;
+                    responseEmployee.Data.ValidatedAccess = true;
+                
+                    ResponseApi<Employee?> response = await employeeRepository.UpdateAsync(responseEmployee.Data);
+                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                };
 
                 return new(null, 200, "Senha alterada com sucesso");
             }

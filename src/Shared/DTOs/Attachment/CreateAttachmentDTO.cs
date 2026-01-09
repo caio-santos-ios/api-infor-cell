@@ -2,7 +2,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
-public class CreateAttachmentDTO
+public class CreateAttachmentDTO : RequestDTO
 {
     public string Type { get; set; } = string.Empty;
 

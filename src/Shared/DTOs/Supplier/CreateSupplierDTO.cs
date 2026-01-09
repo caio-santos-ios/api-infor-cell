@@ -3,7 +3,7 @@ using api_infor_cell.src.Models;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
-        public class CreateSupplierDTO
+        public class CreateSupplierDTO : RequestDTO
         {        
                 public string Type { get; set; } = "F";
 

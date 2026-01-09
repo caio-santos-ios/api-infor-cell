@@ -16,6 +16,12 @@ namespace api_infor_cell.src.Models.Base
         [BsonElement("updatedAt")]
         public DateTime UpdatedAt {get;set;} = DateTime.UtcNow;
         
+        [BsonElement("createdBy")]
+        public string CreatedBy {get;set;} = string.Empty;
+        
+        [BsonElement("updatedBy")]
+        public string UpdatedBy {get;set;} = string.Empty;
+        
         [BsonElement("deletedAt")]
         public DateTime? DeletedAt {get;set;}
     }

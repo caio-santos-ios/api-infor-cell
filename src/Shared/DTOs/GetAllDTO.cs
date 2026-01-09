@@ -1,5 +1,3 @@
-using api_infor_cell.src.Shared.Utils;
-
 namespace api_infor_cell.src.Shared.DTOs
 {
     public class GetAllDTO
