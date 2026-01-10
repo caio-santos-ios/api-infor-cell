@@ -4,14 +4,19 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace api_infor_cell.src.Models
 {
-    public class Category : ModelBase
+    public class Category : ModelMasterBase
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
+        [BsonElement("code")]
+        public string Code { get; set; } = string.Empty;
+
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;
-        public string Plan { get; internal set; }
+        
+        [BsonElement("description")]
+        public string Description { get; set; } = string.Empty;
     }
 }

@@ -27,13 +27,13 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
-        // [Authorize]
-        // [HttpGet("select")]
-        // public async Task<IActionResult> GetSelect()
-        // {
-        //     ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
-        //     return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        // }
+        [Authorize]
+        [HttpGet("select")]
+        public async Task<IActionResult> GetSelect()
+        {
+            ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }
         
         [Authorize]
         [HttpPost]

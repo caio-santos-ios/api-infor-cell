@@ -9,7 +9,7 @@ namespace api_infor_cell.src.Controllers
 {
     [Route("api/categories")]
     [ApiController]
-    public class CategoryController(IProductService service) : ControllerBase
+    public class CategoryController(ICategoryService service) : ControllerBase
     {
         [Authorize]
         [HttpGet]
@@ -37,22 +37,22 @@ namespace api_infor_cell.src.Controllers
         
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO body)
+        public async Task<IActionResult> Create([FromBody] CreateCategoryDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Product?> response = await service.CreateAsync(body);
+            ResponseApi<Category?> response = await service.CreateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateProductDTO body)
+        public async Task<IActionResult> Update([FromBody] UpdateCategoryDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Product?> response = await service.UpdateAsync(body);
+            ResponseApi<Category?> response = await service.UpdateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
@@ -63,7 +63,7 @@ namespace api_infor_cell.src.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<Product> response = await service.DeleteAsync(id);
+            ResponseApi<Category> response = await service.DeleteAsync(id);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

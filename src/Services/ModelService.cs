@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> Model = await repository.GetByIdAggregateAsync(id);
-            if(Model.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Model.Data is null) return new(null, 404, "Modelo não encontrada");
             return new(Model.Data);
         }
         catch
@@ -46,11 +46,13 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            Model Model = _mapper.Map<Model>(request);
-            ResponseApi<Model?> response = await repository.CreateAsync(Model);
+            Model model = _mapper.Map<Model>(request);
+            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Company, request.Store);
+            model.Code = code.Data.ToString().PadLeft(6, '0');
+            ResponseApi<Model?> response = await repository.CreateAsync(model);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Modelo.");
+            return new(response.Data, 201, "Modelo criada com sucesso.");
         }
         catch
         { 
@@ -64,13 +66,14 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Model?> ModelResponse = await repository.GetByIdAsync(request.Id);
-            if(ModelResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Model?> modelResponse = await repository.GetByIdAsync(request.Id);
+            if(modelResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            Model Model = _mapper.Map<Model>(request);
-            Model.UpdatedAt = DateTime.UtcNow;
+            Model model = _mapper.Map<Model>(request);
+            model.UpdatedAt = DateTime.UtcNow;
+            model.CreatedAt = modelResponse.Data.CreatedAt;
 
-            ResponseApi<Model?> response = await repository.UpdateAsync(Model);
+            ResponseApi<Model?> response = await repository.UpdateAsync(model);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }

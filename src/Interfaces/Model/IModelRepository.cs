@@ -9,6 +9,7 @@ public interface IModelRepository
     Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Model> pagination);
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<Model?>> GetByIdAsync(string id);
+    Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId);
     Task<int> GetCountDocumentsAsync(PaginationUtil<Model> pagination);
     Task<ResponseApi<Model?>> CreateAsync(Model address);
     Task<ResponseApi<Model?>> UpdateAsync(Model address);

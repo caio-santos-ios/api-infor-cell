@@ -76,12 +76,24 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Category? address = await context.Categories.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            Category? category = await context.Categories.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(category);
         }
         catch
         {
             return new(null, 500, "Falha ao buscar Lojas");
+        }
+    }
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.Categories.Find(x => x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Lojas");
         }
     }
     
@@ -108,13 +120,13 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Category?>> CreateAsync(Category address)
+    public async Task<ResponseApi<Category?>> CreateAsync(Category category)
     {
         try
         {
-            await context.Categories.InsertOneAsync(address);
+            await context.Categories.InsertOneAsync(category);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(category, 201, "Lojas criada com sucesso");
         }
         catch
         {
@@ -124,13 +136,13 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Category?>> UpdateAsync(Category address)
+    public async Task<ResponseApi<Category?>> UpdateAsync(Category category)
     {
         try
         {
-            await context.Categories.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.Categories.ReplaceOneAsync(x => x.Id == category.Id, category);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(category, 201, "Lojas atualizada com sucesso");
         }
         catch
         {
@@ -144,14 +156,14 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Category? address = await context.Categories.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            Category? category = await context.Categories.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(category is null) return new(null, 404, "Lojas não encontrado");
+            category.Deleted = true;
+            category.DeletedAt = DateTime.UtcNow;
 
-            await context.Categories.ReplaceOneAsync(x => x.Id == id, address);
+            await context.Categories.ReplaceOneAsync(x => x.Id == id, category);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(category, 204, "Lojas excluída com sucesso");
         }
         catch
         {

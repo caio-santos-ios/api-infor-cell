@@ -23,13 +23,17 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                new("$addFields", new BsonDocument
-                {
-                    {"id", new BsonDocument("$toString", "$_id")},
-                }),
+                
+                MongoUtil.Lookup("brands", ["$brandId"], ["$_id"], "_brand", [["deleted", false]], 1),
+
                 new("$project", new BsonDocument
                 {
                     {"_id", 0}, 
+                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"code", 1},
+                    {"name", 1},
+                    {"createdAt", 1},
+                    {"brandName", MongoUtil.First("_brand.name")}
                 }),
                 new("$sort", pagination.PipelineSort),
             };
@@ -85,6 +89,18 @@ namespace api_infor_cell.src.Repository
         }
     }
     
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.Models.Find(x => x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Lojas");
+        }
+    }
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<Model> pagination)
     {
         List<BsonDocument> pipeline = new()

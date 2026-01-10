@@ -26,12 +26,26 @@ namespace api_infor_cell.src.Services
         }
     }
     
+    public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(GetAllDTO request)
+    {
+        try
+        {
+            PaginationUtil<Brand> pagination = new(request.QueryParams);
+            ResponseApi<List<dynamic>> brands = await repository.GetAllAsync(pagination);
+            return new(brands.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
+    
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try
         {
             ResponseApi<dynamic?> Brand = await repository.GetByIdAggregateAsync(id);
-            if(Brand.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Brand.Data is null) return new(null, 404, "Marca não encontrada");
             return new(Brand.Data);
         }
         catch
@@ -46,11 +60,13 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            Brand Brand = _mapper.Map<Brand>(request);
-            ResponseApi<Brand?> response = await repository.CreateAsync(Brand);
+            Brand brand = _mapper.Map<Brand>(request);
+            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Company, request.Store);
+            brand.Code = code.Data.ToString().PadLeft(6, '0');
+            ResponseApi<Brand?> response = await repository.CreateAsync(brand);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Marca.");
+            return new(response.Data, 201, "Marca criada com sucesso.");
         }
         catch
         { 
@@ -64,13 +80,14 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Brand?> BrandResponse = await repository.GetByIdAsync(request.Id);
-            if(BrandResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Brand?> brandResponse = await repository.GetByIdAsync(request.Id);
+            if(brandResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            Brand Brand = _mapper.Map<Brand>(request);
-            Brand.UpdatedAt = DateTime.UtcNow;
+            Brand brand = _mapper.Map<Brand>(request);
+            brand.UpdatedAt = DateTime.UtcNow;
+            brand.CreatedAt = brandResponse.Data.CreatedAt;
 
-            ResponseApi<Brand?> response = await repository.UpdateAsync(Brand);
+            ResponseApi<Brand?> response = await repository.UpdateAsync(brand);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }

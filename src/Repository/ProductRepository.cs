@@ -85,6 +85,18 @@ namespace api_infor_cell.src.Repository
         }
     }
     
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.Products.Find(x => x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Lojas");
+        }
+    }
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<Product> pagination)
     {
         List<BsonDocument> pipeline = new()

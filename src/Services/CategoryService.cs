@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> Categoryt = await repository.GetByIdAggregateAsync(id);
-            if(Categoryt.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Categoryt.Data is null) return new(null, 404, "Categoria não encontrada");
             return new(Categoryt.Data);
         }
         catch
@@ -46,11 +46,13 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            Category Category = _mapper.Map<Category>(request);
-            ResponseApi<Category?> response = await repository.CreateAsync(Category);
+            Category category = _mapper.Map<Category>(request);
+            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Company, request.Store);
+            category.Code = code.Data.ToString().PadLeft(6, '0');
+            ResponseApi<Category?> response = await repository.CreateAsync(category);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Categoria.");
+            return new(response.Data, 201, "Categoria criada com sucesso.");
         }
         catch
         { 
@@ -64,13 +66,14 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Category?> CategoryResponse = await repository.GetByIdAsync(request.Id);
-            if(CategoryResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Category?> categoryResponse = await repository.GetByIdAsync(request.Id);
+            if(categoryResponse.Data is null) return new(null, 404, "Falha ao atualizar");
 
-            Category Category = _mapper.Map<Category>(request);
-            Category.UpdatedAt = DateTime.UtcNow;
+            Category category = _mapper.Map<Category>(request);
+            category.UpdatedAt = DateTime.UtcNow;
+            category.CreatedAt = categoryResponse.Data.CreatedAt;
 
-            ResponseApi<Category?> response = await repository.UpdateAsync(Category);
+            ResponseApi<Category?> response = await repository.UpdateAsync(category);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }

@@ -85,6 +85,50 @@ namespace api_infor_cell.src.Repository
         }
     }
     
+    public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Brand> pagination)
+    {
+        try
+        {
+            List<BsonDocument> pipeline = new()
+            {
+                new("$sort", pagination.PipelineSort),
+                new("$addFields", new BsonDocument
+                {
+                    {"id", new BsonDocument("$toString", "$_id")},
+                }),
+                new("$match", pagination.PipelineFilter),
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0},
+                    {"id", 1}, 
+                    {"code", 1}, 
+                    {"name", 1}, 
+                }),
+                new("$sort", pagination.PipelineSort),
+            };
+
+            List<BsonDocument> results = await context.Brands.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return new(list);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Marcas");
+        }
+    }
+
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.Brands.Find(x => x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Lojas");
+        }
+    }
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<Brand> pagination)
     {
         List<BsonDocument> pipeline = new()
