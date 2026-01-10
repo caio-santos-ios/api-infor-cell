@@ -10,6 +10,8 @@ public interface ISupplierRepository
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<Supplier?>> GetByIdAsync(string id);
     Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Supplier> pagination);
+    Task<ResponseApi<Supplier?>> GetByEmailAsync(string email, string id);
+    Task<ResponseApi<Supplier?>> GetByDocumentAsync(string document, string id);
     Task<int> GetCountDocumentsAsync(PaginationUtil<Supplier> pagination);
     Task<ResponseApi<Supplier?>> CreateAsync(Supplier address);
     Task<ResponseApi<Supplier?>> UpdateAsync(Supplier address);

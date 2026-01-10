@@ -161,6 +161,48 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, "Falha ao buscar Fornecedores");
             }
         }
+        public async Task<ResponseApi<Supplier?>> GetByEmailAsync(string email, string id)
+    {
+        try
+        {
+            Supplier? supplier = new();
+              if(!string.IsNullOrEmpty(id))
+            {
+                supplier = await context.Suppliers.Find(x => x.Email == email && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
+            }
+            else
+            {
+                supplier = await context.Suppliers.Find(x => x.Email == email && !x.Deleted).FirstOrDefaultAsync();
+            };
+            return new(supplier);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Fornecedor");
+        }
+    }
+    
+    public async Task<ResponseApi<Supplier?>> GetByDocumentAsync(string document, string id)
+    {
+        try
+        {
+            Supplier? supplier = new();
+              if(!string.IsNullOrEmpty(id))
+            {
+                supplier = await context.Suppliers.Find(x => x.Document == document && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
+            }
+            else
+            {
+                supplier = await context.Suppliers.Find(x => x.Document == document && !x.Deleted).FirstOrDefaultAsync();
+            };
+            return new(supplier);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Fornecedor");
+        }
+    }
+    
         public async Task<int> GetCountDocumentsAsync(PaginationUtil<Supplier> pagination)
         {
             List<BsonDocument> pipeline = new()

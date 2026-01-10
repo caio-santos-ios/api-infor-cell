@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ModelService(IModelRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IModelService
+    public class ModelService(IModelRepository repository, IMapper _mapper) : IModelService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

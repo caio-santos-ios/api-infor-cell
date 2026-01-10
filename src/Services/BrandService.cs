@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class BrandService(IBrandRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IBrandService
+    public class BrandService(IBrandRepository repository, IMapper _mapper) : IBrandService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

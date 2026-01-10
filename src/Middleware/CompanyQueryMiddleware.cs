@@ -1,17 +1,8 @@
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using api_infor_cell.src.Shared.Utils;
 
-public class CompanyQueryMiddleware
+public class CompanyQueryMiddleware(RequestDelegate _next)
 {
-    private readonly RequestDelegate _next;
-
-    public CompanyQueryMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         if (context.User.Identity?.IsAuthenticated == true)
@@ -21,9 +12,35 @@ public class CompanyQueryMiddleware
             string? plan = context.User.FindFirst("plan")?.Value;
             string? company = context.User.FindFirst("company")?.Value;
             string? store = context.User.FindFirst("store")?.Value;
+            string? userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             
             if(path.Split("/")[2] != "companies") 
             {
+                if(method == HttpMethods.Put && context.Request.ContentType?.Contains("application/json") == true)
+                {
+                    context.Request.EnableBuffering();
+
+                    using (var reader = new StreamReader(context.Request.Body, encoding: Encoding.UTF8, detectEncodingFromByteOrderMarks: false, leaveOpen: true))
+                    {
+                        var body = await reader.ReadToEndAsync();
+                        
+                        if (!string.IsNullOrEmpty(body))
+                        {
+                            var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(body);
+                            if (jsonDoc != null)
+                            {
+                                jsonDoc["updatedBy"] = userId!;
+
+                                var modifiedBody = JsonSerializer.Serialize(jsonDoc);
+                                var bytes = Encoding.UTF8.GetBytes(modifiedBody);
+
+                                context.Request.Body = new MemoryStream(bytes);
+                                context.Request.ContentLength = bytes.Length;
+                            }
+                        }
+                    }
+                } 
+
                 if(method == HttpMethods.Post && context.Request.ContentType?.Contains("application/json") == true)
                 {
                     context.Request.EnableBuffering();
@@ -40,6 +57,7 @@ public class CompanyQueryMiddleware
                                 jsonDoc["plan"] = plan!;
                                 jsonDoc["company"] = company!;
                                 jsonDoc["store"] = store!;
+                                jsonDoc["createdBy"] = userId!;
 
                                 var modifiedBody = JsonSerializer.Serialize(jsonDoc);
                                 var bytes = Encoding.UTF8.GetBytes(modifiedBody);

@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class SupplierService(ISupplierRepository supplier, IAddressRepository addressRepository, IMapper _mapper) : ISupplierService
+    public class SupplierService(ISupplierRepository supplier, IMapper _mapper) : ISupplierService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -59,28 +59,24 @@ namespace api_infor_cell.src.Services
     {
         try
         {
+            string messageName = request.Type == "F" ? "O Nome é obrigatório" : "A Razão Social é obrigatória";
+            string messageDocument = request.Type == "F" ? "O CPF é obrigatório" : "O CNPJ é obrigatório";
+
+            if(string.IsNullOrEmpty(request.CorporateName)) return new(null, 400, messageName);
+            if(string.IsNullOrEmpty(request.Document)) return new(null, 400, messageDocument);
+            if(string.IsNullOrEmpty(request.Email)) return new(null, 400, "O E-mail é obrigatório");
+
+            ResponseApi<Supplier?> existedDocument = await supplier.GetByDocumentAsync(request.Document, "");
+            string messageExited = request.Type == "F" ? "Este CPF já está sendo utilizado por outro Fornecedor" : "Este CNPJ já está sendo utilizado por outro Fornecedor";
+            if(existedDocument.Data is not null) return new(null, 400, messageExited);
+
+            ResponseApi<Supplier?> existedEmail = await supplier.GetByEmailAsync(request.Email, "");
+            if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Fornecedor");
+
             Supplier accredited = _mapper.Map<Supplier>(request);
             ResponseApi<Supplier?> response = await supplier.CreateAsync(accredited);
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Fornecedor.");
-
-            if(!string.IsNullOrEmpty(request.Address.Id))
-            {
-                ResponseApi<Address?> findAddress = await addressRepository.GetByParentIdAsync(request.Address.ParentId, request.Address.Parent);
-                if(!findAddress.IsSuccess || findAddress.Data is null) return new(null, 400, "Falha ao atualizar.");
-                
-                request.Address.Id = findAddress.Data.Id;
-            
-                ResponseApi<Address?> addressResponse = await addressRepository.UpdateAsync(request.Address);
-                if(!addressResponse.IsSuccess) return new(null, 400, "Falha ao atualizar.");
-            }
-            else
-            {
-                Address address = _mapper.Map<Address>(request.Address);
-                address.ParentId = response.Data.Id;
-                ResponseApi<Address?> addressResponse = await addressRepository.CreateAsync(address);
-                if(!addressResponse.IsSuccess) return new(null, 400, "Falha ao criar Fornecedor.");
-            };
 
             return new(response.Data, 201, "Fornecedor criado com sucesso.");
         }
@@ -96,6 +92,23 @@ namespace api_infor_cell.src.Services
     {
         try
         {
+            ResponseApi<Supplier?> SupplierResponse = await supplier.GetByIdAsync(request.Id);
+            if(SupplierResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+
+            string messageName = request.Type == "F" ? "O Nome é obrigatório" : "A Razão Social é obrigatória";
+            string messageDocument = request.Type == "F" ? "O CPF é obrigatório" : "O CNPJ é obrigatório";
+
+            if(string.IsNullOrEmpty(request.CorporateName)) return new(null, 400, messageName);
+            if(string.IsNullOrEmpty(request.Document)) return new(null, 400, messageDocument);
+            if(string.IsNullOrEmpty(request.Email)) return new(null, 400, "O E-mail é obrigatório");
+
+            ResponseApi<Supplier?> existedDocument = await supplier.GetByDocumentAsync(request.Document, request.Id);
+            string messageExited = request.Type == "F" ? "Este CPF já está sendo utilizado por outro Fornecedor" : "Este CNPJ já está sendo utilizado por outro Fornecedor";
+            if(existedDocument.Data is not null) return new(null, 400, messageExited);
+
+            ResponseApi<Supplier?> existedEmail = await supplier.GetByEmailAsync(request.Email, request.Id);
+            if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Fornecedor");
+
             ResponseApi<Supplier?> accreditedResponse = await supplier.GetByIdAsync(request.Id);
             if(accreditedResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
@@ -104,24 +117,7 @@ namespace api_infor_cell.src.Services
             accredited.CreatedAt = accreditedResponse.Data.CreatedAt;
 
             ResponseApi<Supplier?> response = await supplier.UpdateAsync(accredited);
-            if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
-
-            if(!string.IsNullOrEmpty(request.Address.Id))
-            {
-                ResponseApi<Address?> findAddress = await addressRepository.GetByParentIdAsync(request.Address.ParentId, request.Address.Parent);
-                if(!findAddress.IsSuccess || findAddress.Data is null) return new(null, 400, "Falha ao atualizar.");
-                
-                request.Address.Id = findAddress.Data.Id;
-            
-                ResponseApi<Address?> addressResponse = await addressRepository.UpdateAsync(request.Address);
-                if(!addressResponse.IsSuccess) return new(null, 400, "Falha ao atualizar.");
-            }
-            else
-            {
-                Address address = _mapper.Map<Address>(request.Address);
-                ResponseApi<Address?> addressResponse = await addressRepository.CreateAsync(address);
-                if(!addressResponse.IsSuccess) return new(null, 400, "Falha ao criar Item.");
-            };
+            if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");            
 
             return new(response.Data, 200, "Atualizado com sucesso");
         }

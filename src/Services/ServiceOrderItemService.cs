@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ServiceOrderItemService(IServiceOrderItemRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IServiceOrderItemService
+    public class ServiceOrderItemService(IServiceOrderItemRepository repository, IMapper _mapper) : IServiceOrderItemService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

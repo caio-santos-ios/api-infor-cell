@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class CategoryService(ICategoryRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : ICategoryService
+    public class CategoryService(ICategoryRepository repository, IMapper _mapper) : ICategoryService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

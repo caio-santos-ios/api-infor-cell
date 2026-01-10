@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class PaymentMethodService(IPaymentMethodRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IPaymentMethodService
+    public class PaymentMethodService(IPaymentMethodRepository repository, IMapper _mapper) : IPaymentMethodService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

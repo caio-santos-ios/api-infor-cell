@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class FlagService(IFlagRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IFlagService
+    public class FlagService(IFlagRepository repository, IMapper _mapper) : IFlagService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

@@ -42,8 +42,7 @@ namespace api_infor_cell.src.Repository
         {
             return new(null, 500, "Falha ao buscar Profissionais");
         }
-    }
-    
+    } 
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try
@@ -107,8 +106,7 @@ namespace api_infor_cell.src.Repository
         {
             return new(null, 500, "Falha ao buscar Profissionais");
         }
-    }
-    
+    }   
     public async Task<ResponseApi<Employee?>> GetByIdAsync(string id)
     {
         try
@@ -120,8 +118,7 @@ namespace api_infor_cell.src.Repository
         {
             return new(null, 500, "Falha ao buscar Profissionais");
         }
-    }
-    
+    } 
     public async Task<ResponseApi<Employee?>> GetByEmailAsync(string email, string id)
     {
         try
@@ -164,7 +161,6 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Profissionais");
         }
     }
-    
     public async Task<ResponseApi<Employee?>> GetByCodeAccessAsync(string codeAccess)
     {
         try
@@ -177,7 +173,6 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar usuário");
         }
     }
-
     public async Task<ResponseApi<dynamic?>> GetLoggedAsync(string id)
     {
         try

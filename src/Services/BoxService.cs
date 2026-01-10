@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class BoxService(IBoxRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : IBoxService
+    public class BoxService(IBoxRepository repository, IMapper _mapper) : IBoxService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
