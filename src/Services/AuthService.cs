@@ -12,6 +12,7 @@ using api_infor_cell.src.Shared.Templates;
 using api_infor_cell.src.Shared.Validators;
 using api_infor_cell.src.Shared.Utils;
 using System.Text.Json;
+using MongoDB.Driver.Linq;
 
 namespace api_infor_cell.src.Services
 {
@@ -37,6 +38,28 @@ namespace api_infor_cell.src.Services
                         return new(null, 400, "Dados incorretos");
                     };
 
+                    DayOfWeek today = DateTime.Now.DayOfWeek;
+                    TimeSpan now = DateTime.Now.TimeOfDay;
+                    Calendar calendar = responseEmployee.Data.Calendar;
+                    List<string> hoursString = new();
+                    switch (today)
+                    {
+                        case DayOfWeek.Monday:    hoursString = calendar.Monday; break;
+                        case DayOfWeek.Tuesday:   hoursString = calendar.Tuesday; break;
+                        case DayOfWeek.Wednesday: hoursString = calendar.Wednesday; break;
+                        case DayOfWeek.Thursday:  hoursString = calendar.Thursday; break;
+                        case DayOfWeek.Friday:    hoursString = calendar.Friday; break;
+                        case DayOfWeek.Saturday:  hoursString = calendar.Saturday; break;
+                        case DayOfWeek.Sunday:    hoursString = calendar.Sunday; break;
+                    }
+
+                    var times = hoursString?.Select(h => TimeSpan.Parse(h)).ToList() ?? new List<TimeSpan>();
+
+                    if(times.Count == 0) return new(null, 400, "Fora do horário permitido");
+                    bool isBetween = now >= times.Min() && now <= times.Max();
+                    if(!isBetween) return new(null, 400, "Fora do horário permitido");
+                    if(responseEmployee.Data.Stores.Count == 0) return new(null, 400, "O colaborador não possui nenhuma loja vinculada ao seu perfil.");
+
                     user = new()
                     {
                         Password = responseEmployee.Data.Password,
@@ -47,7 +70,9 @@ namespace api_infor_cell.src.Services
                         Name = responseEmployee.Data.Name,
                         Modules = responseEmployee.Data.Modules,
                         Plan = responseEmployee.Data.Plan,
-                        Email = responseEmployee.Data.Email
+                        Email = responseEmployee.Data.Email,
+                        Companies = responseEmployee.Data.Companies,
+                        Stores = responseEmployee.Data.Stores
                     };
                 };
                 
@@ -78,8 +103,9 @@ namespace api_infor_cell.src.Services
 
                 return new(response);
             }
-            catch
+            catch(Exception ex)
             {
+                System.Console.WriteLine(ex.Message);
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");            
             }
         }
@@ -461,12 +487,14 @@ namespace api_infor_cell.src.Services
             SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(SecretKey));
 
             var companiesJson = JsonSerializer.Serialize(user.Companies);
+            var storesJson = JsonSerializer.Serialize(user.Stores);
 
             Claim[] claims =
             [
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("companies", companiesJson),
+                new Claim("stores", storesJson),
                 new Claim("plan", user.Plan),
                 new Claim("store", user.Store),
                 new Claim("company", user.Company),

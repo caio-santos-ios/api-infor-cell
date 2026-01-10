@@ -28,12 +28,9 @@ namespace api_infor_cell.src.Shared.DTOs
         public bool ValidatedAccess {get;set;} = false;
         public DateTime? CodeAccessExpiration { get; set; }
         public string Photo {get;set;} = string.Empty;
-        public string Company {get;set;} = string.Empty;
-        public string Store {get;set;} = string.Empty;
         public List<string> Companies {get;set;} = [];
         public List<string> Stores {get;set;} = [];
         public List<Module> Modules {get;set;} = [];
-        public string Plan { get; set; } = string.Empty; 
         
         [Required(ErrorMessage = "O Tipo é obrigatório.")]
         [Display(Order = 5)]

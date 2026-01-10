@@ -40,7 +40,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Clientes");
         }
     }
     
@@ -64,11 +64,11 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.Customers.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Clientes não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Clientes");
         }
     }
     
@@ -76,12 +76,54 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Customer? address = await context.Customers.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            Customer? customer = await context.Customers.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(customer);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Clientes");
+        }
+    }
+
+    public async Task<ResponseApi<Customer?>> GetByEmailAsync(string email, string id)
+    {
+        try
+        {
+            Customer? customer = new();
+              if(!string.IsNullOrEmpty(id))
+            {
+                customer = await context.Customers.Find(x => x.Email == email && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
+            }
+            else
+            {
+                customer = await context.Customers.Find(x => x.Email == email && !x.Deleted).FirstOrDefaultAsync();
+            };
+            return new(customer);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Clientes");
+        }
+    }
+    
+    public async Task<ResponseApi<Customer?>> GetByDocumentAsync(string document, string id)
+    {
+        try
+        {
+            Customer? customer = new();
+              if(!string.IsNullOrEmpty(id))
+            {
+                customer = await context.Customers.Find(x => x.Document == document && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
+            }
+            else
+            {
+                customer = await context.Customers.Find(x => x.Document == document && !x.Deleted).FirstOrDefaultAsync();
+            };
+            return new(customer);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Clientes");
         }
     }
     
@@ -108,33 +150,33 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Customer?>> CreateAsync(Customer address)
+    public async Task<ResponseApi<Customer?>> CreateAsync(Customer customer)
     {
         try
         {
-            await context.Customers.InsertOneAsync(address);
+            await context.Customers.InsertOneAsync(customer);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(customer, 201, "Clientes criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Clientes");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Customer?>> UpdateAsync(Customer address)
+    public async Task<ResponseApi<Customer?>> UpdateAsync(Customer customer)
     {
         try
         {
-            await context.Customers.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.Customers.ReplaceOneAsync(x => x.Id == customer.Id, customer);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(customer, 201, "Clientes atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Clientes");
         }
     }
     #endregion
@@ -144,18 +186,18 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Customer? address = await context.Customers.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            Customer? customer = await context.Customers.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(customer is null) return new(null, 404, "Clientes não encontrado");
+            customer.Deleted = true;
+            customer.DeletedAt = DateTime.UtcNow;
 
-            await context.Customers.ReplaceOneAsync(x => x.Id == id, address);
+            await context.Customers.ReplaceOneAsync(x => x.Id == id, customer);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(customer, 204, "Clientes excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Clientes");
         }
     }
     #endregion

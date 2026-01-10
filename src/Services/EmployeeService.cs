@@ -44,7 +44,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> Employee = await repository.GetByIdAggregateAsync(id);
-            if(Employee.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Employee.Data is null) return new(null, 404, "Profissional não encontrada");
             return new(Employee.Data);
         }
         catch
@@ -146,13 +146,15 @@ namespace api_infor_cell.src.Services
             employee.CodeAccessExpiration = null;
             employee.Password = BCrypt.Net.BCrypt.HashPassword(access.CodeAccess);
             employee.Modules = modules;
+            employee.Companies.Add(request.Company);
+            employee.Stores.Add(request.Store);
 
             ResponseApi<Employee?> response = await repository.CreateAsync(employee);
             await mailHandler.SendMailAsync(request.Email, "Primeiro acesso", MailTemplate.FirstAccess(request.Name, request.Email, access.CodeAccess));
 
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Profissional.");
+            return new(response.Data, 201, "Profissional criada com sucesso.");
         }
         catch
         { 
@@ -178,6 +180,7 @@ namespace api_infor_cell.src.Services
             Employee employee = _mapper.Map<Employee>(request);
             employee.UpdatedAt = DateTime.UtcNow;
             employee.CreatedAt = employeeResponse.Data.CreatedAt;
+            employee.Calendar = employeeResponse.Data.Calendar;
 
             List<api_infor_cell.src.Models.Module> modules = [];
             if(employee.Type == "technical")

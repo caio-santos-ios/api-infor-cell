@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class CustomerService(ICustomerRepository repository, CloudinaryHandler cloudinaryHandler, IMapper _mapper) : ICustomerService
+    public class CustomerService(ICustomerRepository repository, IMapper _mapper) : ICustomerService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> Customer = await repository.GetByIdAggregateAsync(id);
-            if(Customer.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Customer.Data is null) return new(null, 404, "Cliente não encontrada");
             return new(Customer.Data);
         }
         catch
@@ -46,11 +46,25 @@ namespace api_infor_cell.src.Services
     {
         try
         {
+            string messageName = request.Type == "F" ? "O Nome é obrigatório" : "A Razão Social é obrigatória";
+            string messageDocument = request.Type == "F" ? "O CPF é obrigatório" : "O CNPJ é obrigatório";
+
+            if(string.IsNullOrEmpty(request.CorporateName)) return new(null, 400, messageName);
+            if(string.IsNullOrEmpty(request.Document)) return new(null, 400, messageDocument);
+            if(string.IsNullOrEmpty(request.Email)) return new(null, 400, "O E-mail é obrigatório");
+
+            ResponseApi<Customer?> existedDocument = await repository.GetByDocumentAsync(request.Document, "");
+            string messageExited = request.Type == "F" ? "Este CPF já está sendo utilizado por outro Cliente" : "Este CNPJ já está sendo utilizado por outro Cliente";
+            if(existedDocument.Data is not null) return new(null, 400, messageExited);
+
+            ResponseApi<Customer?> existedEmail = await repository.GetByEmailAsync(request.Email, "");
+            if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Cliente");
+
             Customer Customer = _mapper.Map<Customer>(request);
             ResponseApi<Customer?> response = await repository.CreateAsync(Customer);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
+            return new(response.Data, 201, "Cliente criada com sucesso.");
         }
         catch
         { 
@@ -66,6 +80,20 @@ namespace api_infor_cell.src.Services
         {
             ResponseApi<Customer?> CustomerResponse = await repository.GetByIdAsync(request.Id);
             if(CustomerResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+
+            string messageName = request.Type == "F" ? "O Nome é obrigatório" : "A Razão Social é obrigatória";
+            string messageDocument = request.Type == "F" ? "O CPF é obrigatório" : "O CNPJ é obrigatório";
+
+            if(string.IsNullOrEmpty(request.CorporateName)) return new(null, 400, messageName);
+            if(string.IsNullOrEmpty(request.Document)) return new(null, 400, messageDocument);
+            if(string.IsNullOrEmpty(request.Email)) return new(null, 400, "O E-mail é obrigatório");
+
+            ResponseApi<Customer?> existedDocument = await repository.GetByDocumentAsync(request.Document, request.Id);
+            string messageExited = request.Type == "F" ? "Este CPF já está sendo utilizado por outro Cliente" : "Este CNPJ já está sendo utilizado por outro Cliente";
+            if(existedDocument.Data is not null) return new(null, 400, messageExited);
+
+            ResponseApi<Customer?> existedEmail = await repository.GetByEmailAsync(request.Email, request.Id);
+            if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Cliente");
             
             Customer Customer = _mapper.Map<Customer>(request);
             Customer.UpdatedAt = DateTime.UtcNow;

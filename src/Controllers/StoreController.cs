@@ -1,7 +1,10 @@
+using System.Security.Claims;
+using System.Text.Json;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
 using api_infor_cell.src.Shared.DTOs;
+using api_infor_cell.src.Shared.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,6 +34,22 @@ namespace api_infor_cell.src.Controllers
         [HttpGet("select")]
         public async Task<IActionResult> GetSelect()
         {
+            string? userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if(!new List<string>{"Admin", "Master"}.Contains(userRole!))
+            {
+                string? storesId = User.FindFirst("stores")?.Value;
+                if(storesId is not null)
+                {
+                    var queryItems = Request.Query.ToDictionary(x => x.Key, x => x.Value);
+                    List<string> storesList = JsonSerializer.Deserialize<List<string>>(storesId)!;
+                    string stores = string.Join(",", storesList);
+
+                    queryItems["in$id"] = stores;
+                    Request.Query = new QueryCollection(queryItems);
+                }
+            }
+
             ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
             return StatusCode(response.StatusCode, new { response.Message, response.Result });
         }
