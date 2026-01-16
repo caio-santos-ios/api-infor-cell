@@ -10,10 +10,10 @@ using MongoDB.Driver;
 
 namespace api_infor_cell.src.Repository
 {
-    public class ModelRepository(AppDbContext context) : IModelRepository
+    public class PurchaseOrderRepository(AppDbContext context) : IPurchaseOrderRepository
 {
     #region READ
-    public async Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Model> pagination)
+    public async Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<PurchaseOrder> pagination)
     {
         try
         {
@@ -23,30 +23,34 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                
-                MongoUtil.Lookup("brands", ["$brandId"], ["$_id"], "_brand", [["deleted", false]], 1),
-                MongoUtil.Lookup("categories", ["$categoryId"], ["$_id"], "_category", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument {
+                    {"id", new BsonDocument("$toString", "$_id")},
+                }),
+                MongoUtil.Lookup("purchase_order_items", ["$id"], ["$purchaseOrderId"], "_purchaseOrderItem", [["deleted", false]], 1),
 
                 new("$project", new BsonDocument
                 {
-                    {"_id", 0}, 
-                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"_id", 0},
+                    {"id", 1},
                     {"code", 1},
-                    {"name", 1},
+                    {"status", 1},
+                    {"date", 1},
+                    {"total", 1},
+                    {"discount", 1},
                     {"createdAt", 1},
-                    {"brandName", MongoUtil.First("_brand.name")},
-                    {"categoryName", MongoUtil.First("_category.name")}
+                    {"items", "$_purchaseOrderItem"}
                 }),
                 new("$sort", pagination.PipelineSort),
             };
 
-            List<BsonDocument> results = await context.Models.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<BsonDocument> results = await context.PurchaseOrders.Aggregate<BsonDocument>(pipeline).ToListAsync();
             List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
             return new(list);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Pedido de Compras");
         }
     }
     
@@ -68,26 +72,26 @@ namespace api_infor_cell.src.Repository
                 }),
             ];
 
-            BsonDocument? response = await context.Models.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+            BsonDocument? response = await context.PurchaseOrders.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Pedido de Compras não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Pedido de Compras");
         }
     }
     
-    public async Task<ResponseApi<Model?>> GetByIdAsync(string id)
+    public async Task<ResponseApi<PurchaseOrder?>> GetByIdAsync(string id)
     {
         try
         {
-            Model? address = await context.Models.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            PurchaseOrder? address = await context.PurchaseOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
             return new(address);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Pedido de Compras");
         }
     }
     
@@ -95,15 +99,15 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            long code = await context.Models.Find(x => x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            long code = await context.PurchaseOrders.Find(x => x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
             return new(code);
         }
         catch
         {
-            return new(0, 500, "Falha ao buscar Lojas");
+            return new(0, 500, "Falha ao buscar Pedido de Compras");
         }
     }
-    public async Task<int> GetCountDocumentsAsync(PaginationUtil<Model> pagination)
+    public async Task<int> GetCountDocumentsAsync(PaginationUtil<PurchaseOrder> pagination)
     {
         List<BsonDocument> pipeline = new()
         {
@@ -120,60 +124,60 @@ namespace api_infor_cell.src.Repository
             new("$sort", pagination.PipelineSort),
         };
 
-        List<BsonDocument> results = await context.Models.Aggregate<BsonDocument>(pipeline).ToListAsync();
+        List<BsonDocument> results = await context.PurchaseOrders.Aggregate<BsonDocument>(pipeline).ToListAsync();
         return results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).Count();
     }
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Model?>> CreateAsync(Model address)
+    public async Task<ResponseApi<PurchaseOrder?>> CreateAsync(PurchaseOrder address)
     {
         try
         {
-            await context.Models.InsertOneAsync(address);
+            await context.PurchaseOrders.InsertOneAsync(address);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(address, 201, "Pedido de Compras criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Pedido de Compras");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Model?>> UpdateAsync(Model address)
+    public async Task<ResponseApi<PurchaseOrder?>> UpdateAsync(PurchaseOrder address)
     {
         try
         {
-            await context.Models.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.PurchaseOrders.ReplaceOneAsync(x => x.Id == address.Id, address);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(address, 201, "Pedido de Compras atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Pedido de Compras");
         }
     }
     #endregion
     
     #region DELETE
-    public async Task<ResponseApi<Model>> DeleteAsync(string id)
+    public async Task<ResponseApi<PurchaseOrder>> DeleteAsync(string id)
     {
         try
         {
-            Model? address = await context.Models.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
+            PurchaseOrder? address = await context.PurchaseOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(address is null) return new(null, 404, "Pedido de Compras não encontrado");
             address.Deleted = true;
             address.DeletedAt = DateTime.UtcNow;
 
-            await context.Models.ReplaceOneAsync(x => x.Id == id, address);
+            await context.PurchaseOrders.ReplaceOneAsync(x => x.Id == id, address);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(address, 204, "Pedido de Compras excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Pedido de Compras");
         }
     }
     #endregion

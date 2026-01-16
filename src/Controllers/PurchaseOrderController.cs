@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api_infor_cell.src.Controllers
 {
-    [Route("api/products")]
+    [Route("api/purchase-orders")]
     [ApiController]
-    public class ProductController(IProductService service) : ControllerBase
+    public class PurchaseOrderController(IPurchaseOrderService service) : ControllerBase
     {
         [Authorize]
         [HttpGet]
@@ -26,53 +26,45 @@ namespace api_infor_cell.src.Controllers
             ResponseApi<dynamic?> response = await service.GetByIdAggregateAsync(id);
             return StatusCode(response.StatusCode, new { response.Result });
         }
-
-        [Authorize]
-        [HttpGet("select")]
-        public async Task<IActionResult> GetSelect()
-        {
-            ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
-            return StatusCode(response.StatusCode, new { response.Result });
-        }
         
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO body)
+        public async Task<IActionResult> Create([FromBody] CreatePurchaseOrderDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Product?> response = await service.CreateAsync(body);
+            ResponseApi<PurchaseOrder?> response = await service.CreateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateProductDTO body)
+        public async Task<IActionResult> Update([FromBody] UpdatePurchaseOrderDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Product?> response = await service.UpdateAsync(body);
+            ResponseApi<PurchaseOrder?> response = await service.UpdateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
-        [HttpPut("variations")]
-        public async Task<IActionResult> UpdateVariation([FromBody] UpdateProductDTO body)
+        [HttpPut("approval")]
+        public async Task<IActionResult> UpdateApproval([FromBody] UpdatePurchaseOrderDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Product?> response = await service.UpdateVariationAsync(body);
+            ResponseApi<PurchaseOrder?> response = await service.UpdateApprovalAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
-
+        
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<Product> response = await service.DeleteAsync(id);
+            ResponseApi<PurchaseOrder> response = await service.DeleteAsync(id);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

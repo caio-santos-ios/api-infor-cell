@@ -4,21 +4,21 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace api_infor_cell.src.Models
 {
-    public class Stock : ModelBase
+    public class PurchaseOrderItem : ModelMasterBase
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
-        [BsonElement("code")]
-        public string Code { get; set; } = string.Empty;
-        
         [BsonElement("productId")]
         public string ProductId { get; set; } = string.Empty;
-
+        
         [BsonElement("supplierId")]
         public string SupplierId { get; set; } = string.Empty;
-
+        
+        [BsonElement("purchaseOrderId")]
+        public string PurchaseOrderId { get; set; } = string.Empty;
+        
         [BsonElement("cost")]
         public decimal Cost { get; set; }
 
@@ -33,7 +33,10 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("priceDiscount")]
         public decimal PriceDiscount { get; set; }
-        
+
+        [BsonElement("moveStock")]
+        public string MoveStock {get;set;} = string.Empty;
+
         [BsonElement("variations")]
         public List<Variation> Variations {get;set;} = [];
     }

@@ -130,6 +130,14 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<Exchange>("exchanges"); }
         }
+        public IMongoCollection<PurchaseOrder> PurchaseOrders
+        {
+            get { return Database.GetCollection<PurchaseOrder>("purchase_orders"); }
+        }
+        public IMongoCollection<PurchaseOrderItem> PurchaseOrderItems
+        {
+            get { return Database.GetCollection<PurchaseOrderItem>("purchase_order_items"); }
+        }
         
         
 

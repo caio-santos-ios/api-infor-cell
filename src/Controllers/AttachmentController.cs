@@ -16,7 +16,7 @@ namespace api_infor_cell.src.Controllers
         public async Task<IActionResult> GetAll()
         {
             PaginationApi<List<dynamic>> response = await attachmentService.GetAllAsync(new(Request.Query));
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -24,7 +24,7 @@ namespace api_infor_cell.src.Controllers
         public async Task<IActionResult> GetByIdAsync(string id)
         {
             ResponseApi<dynamic?> response = await attachmentService.GetByIdAggregateAsync(id);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -36,7 +36,7 @@ namespace api_infor_cell.src.Controllers
 
             ResponseApi<Attachment?> response = await attachmentService.CreateAsync(request);
 
-            return StatusCode(response.StatusCode, new { response.Message });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -48,7 +48,7 @@ namespace api_infor_cell.src.Controllers
 
             ResponseApi<Attachment?> response = await attachmentService.UpdateAsync(request);
 
-            return StatusCode(response.StatusCode, new { response.Message });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -57,7 +57,7 @@ namespace api_infor_cell.src.Controllers
         {
             ResponseApi<Attachment> response = await attachmentService.DeleteAsync(id);
 
-            return StatusCode(response.StatusCode, new { response.Message });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
     }
 }

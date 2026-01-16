@@ -25,13 +25,26 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
+    public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(GetAllDTO request)
+    {
+        try
+        {
+            PaginationUtil<Product> pagination = new(request.QueryParams);
+            ResponseApi<List<dynamic>> products = await repository.GetSelectAsync(pagination);
+            return new(products.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
     
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try
         {
             ResponseApi<dynamic?> Product = await repository.GetByIdAggregateAsync(id);
-            if(Product.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Product.Data is null) return new(null, 404, "Produto não encontrado");
             return new(Product.Data);
         }
         catch
@@ -46,11 +59,13 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            Product Product = _mapper.Map<Product>(request);
-            ResponseApi<Product?> response = await repository.CreateAsync(Product);
+            Product product = _mapper.Map<Product>(request);
+            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Company, request.Store);
+            product.Code = code.Data.ToString().PadLeft(6, '0');
+            ResponseApi<Product?> response = await repository.CreateAsync(product);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Produto.");
+            return new(response.Data, 201, "Produto criado com sucesso.");
         }
         catch
         { 
@@ -69,17 +84,36 @@ namespace api_infor_cell.src.Services
             
             Product Product = _mapper.Map<Product>(request);
             Product.UpdatedAt = DateTime.UtcNow;
+            Product.Code = ProductResponse.Data.Code;
 
             ResponseApi<Product?> response = await repository.UpdateAsync(Product);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
-            return new(response.Data, 201, "Atualizada com sucesso");
+            return new(response.Data, 201, "Atualizado com sucesso");
         }
         catch
         {
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
-   
+    public async Task<ResponseApi<Product?>> UpdateVariationAsync(UpdateProductDTO request)
+    {
+        try
+        {
+            ResponseApi<Product?> productResponse = await repository.GetByIdAsync(request.Id);
+            if(productResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            
+            productResponse.Data.Variations = request.Variations;
+
+            ResponseApi<Product?> response = await repository.UpdateAsync(productResponse.Data);
+            if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
+            return new(response.Data, 201, "Atualizado com sucesso");
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
+
     #endregion
     
     #region DELETE
@@ -89,7 +123,7 @@ namespace api_infor_cell.src.Services
         {
             ResponseApi<Product> Product = await repository.DeleteAsync(id);
             if(!Product.IsSuccess) return new(null, 400, Product.Message);
-            return new(null, 204, "Excluída com sucesso");
+            return new(null, 204, "Excluído com sucesso");
         }
         catch
         {

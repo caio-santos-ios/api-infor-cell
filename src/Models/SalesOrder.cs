@@ -8,6 +8,6 @@ namespace api_infor_cell.src.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-          public string Id { get; set; } = string.Empty;
+        public string Id { get; set; } = string.Empty;
     }
 }

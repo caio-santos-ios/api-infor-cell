@@ -23,13 +23,20 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                new("$addFields", new BsonDocument
-                {
-                    {"id", new BsonDocument("$toString", "$_id")},
-                }),
+                
+                MongoUtil.Lookup("models", ["$modelId"], ["$_id"], "_model", [["deleted", false]], 1),
+                MongoUtil.Lookup("categories", ["$categoryId"], ["$_id"], "_category", [["deleted", false]], 1),
+
                 new("$project", new BsonDocument
                 {
-                    {"_id", 0}, 
+                    {"_id", 0},
+                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"code", 1},
+                    {"name", 1},
+                    {"description", 1},
+                    {"createdAt", 1},
+                    {"modelName", MongoUtil.First("_model.name")},
+                    {"categoryName", MongoUtil.First("_category.name")},
                 }),
                 new("$sort", pagination.PipelineSort),
             };
@@ -42,8 +49,38 @@ namespace api_infor_cell.src.Repository
         {
             return new(null, 500, "Falha ao buscar Lojas");
         }
-    }
-    
+    }    
+    public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Product> pagination)
+    {
+        try
+        {
+            List<BsonDocument> pipeline = new()
+            {
+                new("$match", pagination.PipelineFilter),
+                new("$sort", pagination.PipelineSort),
+                new("$skip", pagination.Skip),
+                new("$limit", pagination.Limit),
+                
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0},
+                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"code", 1},
+                    {"name", 1},
+                    {"variations", 1}
+                }),
+                new("$sort", pagination.PipelineSort),
+            };
+
+            List<BsonDocument> results = await context.Products.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return new(list);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Lojas");
+        }
+    }    
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try
@@ -71,7 +108,6 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Lojas");
         }
     }
-    
     public async Task<ResponseApi<Product?>> GetByIdAsync(string id)
     {
         try
@@ -84,7 +120,6 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Lojas");
         }
     }
-    
     public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
     {
         try
