@@ -27,6 +27,7 @@ namespace api_infor_cell.src.Repository
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
                 }),
+                
                 MongoUtil.Lookup("purchase_order_items", ["$id"], ["$purchaseOrderId"], "_purchaseOrderItem", [["deleted", false]], 1),
 
                 new("$project", new BsonDocument
@@ -37,9 +38,11 @@ namespace api_infor_cell.src.Repository
                     {"status", 1},
                     {"date", 1},
                     {"total", 1},
+                    {"quantity", 1},
                     {"discount", 1},
                     {"createdAt", 1},
-                    {"items", "$_purchaseOrderItem"}
+                    {"items", "$_purchaseOrderItem"},
+                    {"user", "$_user"}
                 }),
                 new("$sort", pagination.PipelineSort),
             };
@@ -63,8 +66,12 @@ namespace api_infor_cell.src.Repository
                     {"_id", new ObjectId(id)},
                     {"deleted", false}
                 }),
+                
+                MongoUtil.Lookup("users", ["$updatedBy"], ["$_id"], "_user", [["deleted", false]], 1),
+
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"userApproval", MongoUtil.First("_user.name")}
                 }),
                 new("$project", new BsonDocument
                 {

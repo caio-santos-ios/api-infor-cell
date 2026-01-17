@@ -71,6 +71,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("plan")]
         public string Plan { get; set; } = string.Empty; 
+        
+        [BsonElement("type")]
+        public string Type { get; set; } = string.Empty; 
     }
 
     public class Module 

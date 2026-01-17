@@ -113,12 +113,15 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
             builder.Services.AddTransient<IExchangeService, ExchangeService>();
             builder.Services.AddTransient<IExchangeRepository, ExchangeRepository>();
+
             builder.Services.AddTransient<IPurchaseOrderService, PurchaseOrderService>();
-            builder.Services.AddTransient<IPurchaseOrderItemService, PurchaseOrderItemService>();
             builder.Services.AddTransient<IPurchaseOrderRepository, PurchaseOrderRepository>();
-            builder.Services.AddTransient<IPurchaseOrderItemRepository, PurchaseOrderItemRepository>();
+
+            builder.Services.AddTransient<IPurchaseOrderItemService, PurchaseOrderItemService>();
             builder.Services.AddTransient<IPurchaseOrderItemRepository, PurchaseOrderItemRepository>();
 
+            builder.Services.AddTransient<ITransferService, TransferService>();
+            builder.Services.AddTransient<ITransferRepository, TransferRepository>();
             
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();

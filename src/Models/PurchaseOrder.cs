@@ -12,6 +12,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("code")]
         public string Code { get; set; } = string.Empty;
+
+        [BsonElement("approvalBy")]
+        public string ApprovalBy { get; set; } = string.Empty;
         
         [BsonElement("notes")]
         public string Notes { get; set; } = string.Empty;

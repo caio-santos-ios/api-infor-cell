@@ -113,6 +113,12 @@ public class CompanyQueryMiddleware(RequestDelegate _next)
                                 
                                 queryItems["company"] = new Microsoft.Extensions.Primitives.StringValues(companyIds.ToArray());
 
+                                if(path != "/api/stores/select")
+                                {
+                                    queryItems["store"] = store;
+                                    queryItems["plan"] = plan;
+                                }
+
                                 context.Request.Query = new QueryCollection(queryItems);
                             }
                         }

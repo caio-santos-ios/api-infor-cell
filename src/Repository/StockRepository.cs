@@ -20,30 +20,86 @@ namespace api_infor_cell.src.Repository
             List<BsonDocument> pipeline = new()
             {
                 new("$match", pagination.PipelineFilter),
+
+                new("$group", new BsonDocument
+                {
+                    { "_id", new BsonDocument 
+                        { 
+                            { "productId", "$productId" }, 
+                            { "supplierId", "$supplierId" }, 
+                            { "purchaseOrderItemId", "$purchaseOrderItemId" } 
+                        } 
+                    },
+
+                    { "quantity", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantity")) },
+                    { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
+                    { "createdAt", MongoUtil.First("createdAt") },
+                    { "store", MongoUtil.First("store") },
+                }),
+
+
+                new("$addFields", new BsonDocument
+                {
+                    { "productId", "$_id.productId" },
+                    { "supplierId", "$_id.supplierId" },
+                    { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
+
+                    { "id", new BsonDocument("$concat", new BsonArray 
+                        { 
+                            "$_id.productId", 
+                            "_", 
+                            "$_id.supplierId", 
+                            "_", 
+                            "$_id.purchaseOrderItemId" 
+                        }) 
+                    },
+                    {"productName", MongoUtil.First("_product.name")},
+                    {"variations", MongoUtil.First("_product.variations")},
+                }),
+
+                MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+                MongoUtil.Lookup("suppliers", ["$supplierId"], ["$_id"], "_supplier", [["deleted", false]], 1),
+                MongoUtil.Lookup("purchase_order_items", ["$purchaseOrderItemId"], ["$_id"], "_purchaseOrderItem", [["deleted", false]], 1),
+                
+                new("$addFields", new BsonDocument
+                {
+                    {"purchaseOrderId", MongoUtil.First("_purchaseOrderItem.purchaseOrderId")},
+                }),
+
+                MongoUtil.Lookup("purchase_orders", ["$purchaseOrderId"], ["$_id"], "_purchaseOrder", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument
+                {
+                    {"productName", MongoUtil.First("_product.name")},
+                    {"supplierName", MongoUtil.First("_supplier.tradeName")},
+                    {"variations", MongoUtil.First("_product.variations")},
+                    {"purchaseOrderDate", MongoUtil.First("_purchaseOrder.date")},
+                }),
+
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                new("$addFields", new BsonDocument
-                {
-                    {"id", new BsonDocument("$toString", "$_id")},
-                }),
+
                 new("$project", new BsonDocument
                 {
-                    {"_id", 0}, 
-                }),
-                new("$sort", pagination.PipelineSort),
+                    { "_id", 0 },
+                    { "_product", 0 },
+                    { "_supplier", 0 },
+                    { "_purchaseOrderItem", 0 },
+                    { "_purchaseOrder", 0 },
+                })
             };
 
             List<BsonDocument> results = await context.Stocks.Aggregate<BsonDocument>(pipeline).ToListAsync();
             List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
             return new(list);
         }
-        catch
+        catch(Exception ex)
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            System.Console.WriteLine(ex.Message);
+            return new(null, 500, "Falha ao buscar Estoque");
         }
     }
-    
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try
@@ -64,27 +120,49 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.Stocks.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Estoque não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Estoque");
         }
     }
-    
     public async Task<ResponseApi<Stock?>> GetByIdAsync(string id)
     {
         try
         {
-            Stock? address = await context.Stocks.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            Stock? stock = await context.Stocks.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(stock);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Estoque");
         }
     }
-    
+    public async Task<ResponseApi<List<Stock>>> GetByPurchaseItemIdAsync(string purchaseOrderItemId, string planId, string companyId, string storeId)
+    {
+        try
+        {
+            List<Stock> stocks = await context.Stocks.Find(x => x.PurchaseOrderItemId == purchaseOrderItemId && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            return new(stocks);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.Stocks.Find(x => x.Plan == x.Plan && x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Pedido de Compras");
+        }
+    }    
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<Stock> pagination)
     {
         List<BsonDocument> pipeline = new()
@@ -108,33 +186,33 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Stock?>> CreateAsync(Stock address)
+    public async Task<ResponseApi<Stock?>> CreateAsync(Stock stock)
     {
         try
         {
-            await context.Stocks.InsertOneAsync(address);
+            await context.Stocks.InsertOneAsync(stock);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(stock, 201, "Estoque criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Estoque");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Stock?>> UpdateAsync(Stock address)
+    public async Task<ResponseApi<Stock?>> UpdateAsync(Stock stock)
     {
         try
         {
-            await context.Stocks.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.Stocks.ReplaceOneAsync(x => x.Id == stock.Id, stock);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(stock, 201, "Estoque atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Estoque");
         }
     }
     #endregion
@@ -144,18 +222,18 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Stock? address = await context.Stocks.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            Stock? stock = await context.Stocks.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(stock is null) return new(null, 404, "Estoque não encontrado");
+            stock.Deleted = true;
+            stock.DeletedAt = DateTime.UtcNow;
 
-            await context.Stocks.ReplaceOneAsync(x => x.Id == id, address);
+            await context.Stocks.ReplaceOneAsync(x => x.Id == id, stock);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(stock, 204, "Estoque excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Estoque");
         }
     }
     #endregion

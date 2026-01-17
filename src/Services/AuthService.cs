@@ -25,58 +25,12 @@ namespace api_infor_cell.src.Services
                 if (string.IsNullOrEmpty(request.Email)) return new(null, 400, "E-mail é obrigatório");
                 if (string.IsNullOrEmpty(request.Password)) return new(null, 400, "Senha é obrigatória");
                 
-                ResponseApi<User?> responseUser = await repository.GetByEmailAsync(request.Email);
-                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(request.Email, "");
+                ResponseApi<User?> res = await GetUserToken(request.Email);
+
+                if(res.Data is null) return new(null, 400, res.Message);
                 
-                User user = new();
+                User user = res.Data;
 
-                if(responseUser.Data is not null) {
-                    user = responseUser.Data;
-                } else {
-                    if(responseEmployee.Data is null) 
-                    {
-                        return new(null, 400, "Dados incorretos");
-                    };
-
-                    DayOfWeek today = DateTime.Now.DayOfWeek;
-                    TimeSpan now = DateTime.Now.TimeOfDay;
-                    Calendar calendar = responseEmployee.Data.Calendar;
-                    List<string> hoursString = new();
-                    switch (today)
-                    {
-                        case DayOfWeek.Monday:    hoursString = calendar.Monday; break;
-                        case DayOfWeek.Tuesday:   hoursString = calendar.Tuesday; break;
-                        case DayOfWeek.Wednesday: hoursString = calendar.Wednesday; break;
-                        case DayOfWeek.Thursday:  hoursString = calendar.Thursday; break;
-                        case DayOfWeek.Friday:    hoursString = calendar.Friday; break;
-                        case DayOfWeek.Saturday:  hoursString = calendar.Saturday; break;
-                        case DayOfWeek.Sunday:    hoursString = calendar.Sunday; break;
-                    }
-
-                    var times = hoursString?.Select(h => TimeSpan.Parse(h)).ToList() ?? new List<TimeSpan>();
-
-                    if(times.Count == 0) return new(null, 400, "Fora do horário permitido");
-                    bool isBetween = now >= times.Min() && now <= times.Max();
-                    if(!isBetween) return new(null, 400, "Fora do horário permitido");
-                    if(responseEmployee.Data.Stores.Count == 0) return new(null, 400, "O colaborador não possui nenhuma loja vinculada ao seu perfil.");
-
-                    user = new()
-                    {
-                        Password = responseEmployee.Data.Password,
-                        Company = responseEmployee.Data.Company,
-                        Store = responseEmployee.Data.Store,
-                        Photo = responseEmployee.Data.Photo,
-                        Id = responseEmployee.Data.Id,
-                        Name = responseEmployee.Data.Name,
-                        Modules = responseEmployee.Data.Modules,
-                        Plan = responseEmployee.Data.Plan,
-                        Email = responseEmployee.Data.Email,
-                        Companies = responseEmployee.Data.Companies,
-                        Stores = responseEmployee.Data.Stores
-                    };
-                };
-                
-                if(user is null) return new(null, 400, "Dados incorretos");
                 bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
                 if(!isValid) return new(null, 400, "Dados incorretos");
 
@@ -98,14 +52,13 @@ namespace api_infor_cell.src.Services
                     LogoCompany = company.Data is not null ? company.Data.Photo : "",
                     NameCompany = company.Data is not null ? company.Data.TradeName : "",
                     NameStore = store.Data is not null ? store.Data.TradeName : "",
-                    TypeUser = responseEmployee.Data is not null ? responseEmployee.Data.Type : ""
+                    TypeUser = user is not null ? user.Type : ""
                 };
 
                 return new(response);
             }
-            catch(Exception ex)
+            catch
             {
-                System.Console.WriteLine(ex.Message);
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");            
             }
         }
@@ -263,9 +216,7 @@ namespace api_infor_cell.src.Services
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = Environment.GetEnvironmentVariable("ISSUER"),
                     ValidAudience = Environment.GetEnvironmentVariable("AUDIENCE"),
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SECRET_KEY") ?? "")
-                    ),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SECRET_KEY") ?? "")),
                     ValidateLifetime = false 
                 };
 
@@ -280,8 +231,12 @@ namespace api_infor_cell.src.Services
                 var userId = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub || c.Type == ClaimTypes.NameIdentifier)?.Value;
 
                 if (string.IsNullOrEmpty(userId)) return new(null, 401, "Usuário não encontrado no token.");
+                
+                var email = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email || c.Type == ClaimTypes.Email)?.Value;
 
-                ResponseApi<User?> user = await repository.GetByIdAsync(userId);
+                if (string.IsNullOrEmpty(email)) return new(null, 401, "Usuário não encontrado no token.");
+                ResponseApi<User?> user = await GetUserToken(email);
+
                 if (user.Data is null) return new(null, 401, "Usuário não encontrado.");
 
                 string accessToken = GenerateJwtToken(user.Data);
@@ -290,8 +245,7 @@ namespace api_infor_cell.src.Services
                 return new(new AuthResponse
                 {
                     Token = accessToken,
-                    RefreshToken = refreshToken,
-                    Id = user.Data.Id
+                    RefreshToken = refreshToken
                 });
             }
             catch
@@ -515,6 +469,61 @@ namespace api_infor_cell.src.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        private async Task<ResponseApi<User?>> GetUserToken (string email)
+        {
+            ResponseApi<User?> responseUser = await repository.GetByEmailAsync(email);
+            ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(email, "");
+            
+            User user = new();
+
+            if(responseUser.Data is not null) {
+                user = responseUser.Data;
+            } else {
+                if(responseEmployee.Data is null) 
+                {
+                    return new(null, 400, "Dados incorretos");
+                };
+
+                DayOfWeek today = DateTime.Now.DayOfWeek;
+                TimeSpan now = DateTime.Now.TimeOfDay;
+                Calendar calendar = responseEmployee.Data.Calendar;
+                List<string> hoursString = new();
+                switch (today)
+                {
+                    case DayOfWeek.Monday:    hoursString = calendar.Monday; break;
+                    case DayOfWeek.Tuesday:   hoursString = calendar.Tuesday; break;
+                    case DayOfWeek.Wednesday: hoursString = calendar.Wednesday; break;
+                    case DayOfWeek.Thursday:  hoursString = calendar.Thursday; break;
+                    case DayOfWeek.Friday:    hoursString = calendar.Friday; break;
+                    case DayOfWeek.Saturday:  hoursString = calendar.Saturday; break;
+                    case DayOfWeek.Sunday:    hoursString = calendar.Sunday; break;
+                }
+
+                var times = hoursString?.Select(h => TimeSpan.Parse(h)).ToList() ?? new List<TimeSpan>();
+
+                if(times.Count == 0) return new(null, 400, "Fora do horário permitido");
+                bool isBetween = now >= times.Min() && now <= times.Max();
+                if(!isBetween) return new(null, 400, "Fora do horário permitido");
+                if(responseEmployee.Data.Stores.Count == 0) return new(null, 400, "O colaborador não possui nenhuma loja vinculada ao seu perfil.");
+
+                user = new()
+                {
+                    Password = responseEmployee.Data.Password,
+                    Company = responseEmployee.Data.Company,
+                    Store = responseEmployee.Data.Store,
+                    Photo = responseEmployee.Data.Photo,
+                    Id = responseEmployee.Data.Id,
+                    Name = responseEmployee.Data.Name,
+                    Modules = responseEmployee.Data.Modules,
+                    Plan = responseEmployee.Data.Plan,
+                    Email = responseEmployee.Data.Email,
+                    Companies = responseEmployee.Data.Companies,
+                    Stores = responseEmployee.Data.Stores
+                };
+            };
+
+            return new(user);
         }
     }
 }

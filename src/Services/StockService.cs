@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> Stock = await repository.GetByIdAggregateAsync(id);
-            if(Stock.Data is null) return new(null, 404, "Loja não encontrada");
+            if(Stock.Data is null) return new(null, 404, "Estoque não encontrada");
             return new(Stock.Data);
         }
         catch
@@ -46,11 +46,14 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            Stock Stock = _mapper.Map<Stock>(request);
-            ResponseApi<Stock?> response = await repository.CreateAsync(Stock);
+            Stock stock = _mapper.Map<Stock>(request);
+            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
+            stock.Code = code.Data.ToString().PadLeft(6, '0');
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            ResponseApi<Stock?> response = await repository.CreateAsync(stock);
+
+            if(response.Data is null) return new(null, 400, "Falha ao criar Estoque.");
+            return new(response.Data, 201, "Estoque criada com sucesso.");
         }
         catch
         { 

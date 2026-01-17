@@ -85,6 +85,9 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreatePurchaseOrderItemDTO, PurchaseOrderItem>().ReverseMap();
             CreateMap<UpdatePurchaseOrderItemDTO, PurchaseOrderItem>().ReverseMap();
 
+            CreateMap<CreateTransferDTO, Transfer>().ReverseMap();
+            CreateMap<UpdateTransferDTO, Transfer>().ReverseMap();
+
             #endregion
         }
     }

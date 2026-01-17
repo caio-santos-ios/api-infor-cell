@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class PurchaseOrderService(IPurchaseOrderRepository repository, IPurchaseOrderItemRepository purchaseOrderItemRepository, IStockRepository stockRepository, IMapper _mapper) : IPurchaseOrderService
+    public class PurchaseOrderService(IPurchaseOrderRepository repository, IPurchaseOrderItemRepository purchaseOrderItemRepository, IStockService stockService, IMapper _mapper) : IPurchaseOrderService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -92,6 +92,7 @@ namespace api_infor_cell.src.Services
             
             PurchaseOrderResponse.Data.UpdatedAt = DateTime.UtcNow;
             PurchaseOrderResponse.Data.UpdatedBy = request.UpdatedBy;
+            PurchaseOrderResponse.Data.ApprovalBy = request.UpdatedBy;
             PurchaseOrderResponse.Data.Status = "Finalizado";
 
             ResponseApi<List<PurchaseOrderItem>> items = await purchaseOrderItemRepository.GetByPurchaseOrderIdAsync(request.Id);
@@ -101,50 +102,52 @@ namespace api_infor_cell.src.Services
                 {
                     if(item.MoveStock == "yes")
                     {
-                        for(int i = 0; i < item.Quantity; i++)
+                        var grupos = item.Variations
+                            .GroupBy(v => v.Key)
+                            .Select(g => g.Select(v => v.Value).Distinct().ToList())
+                            .ToList();
+
+                        var combinacoes = grupos.Aggregate(
+                            (IEnumerable<IEnumerable<string>>)new[] { Enumerable.Empty<string>() },
+                            (acc, grupo) => from a in acc from g in grupo select a.Append(g)
+                        ).ToList();
+
+                        int globalSerial = 1;
+
+                        for (int i = 0; i < item.Quantity; i++)
                         {
-                            var grupos = item.Variations
-                                .GroupBy(v => v.Key)
-                                .Select(g => g.Select(v => v.Value).ToList())
-                                .ToList();
-
-                            var combinacoes = grupos.Aggregate(
-                                (IEnumerable<IEnumerable<string>>)new[] { Enumerable.Empty<string>() },
-                                (acc, grupo) => from a in acc from g in grupo select a.Append(g)
-                            );
-
                             foreach (var variations in combinacoes)
                             {
-                                List<Variation> myVariations = [];
-                                foreach (string variation in variations)
+                                List<Variation> myVariations = new();
+                                foreach (string val in variations)
                                 {
-                                    var itemKey = item.Variations.Where(v => v.Value == variation).FirstOrDefault();
-                                    if(itemKey is not null)
-                                    {
-                                        myVariations.Add(new () {Key = itemKey.Key, Value = variation});
-                                    }
-                                };
+                                    var originalVar = item.Variations.FirstOrDefault(v => v.Value == val);
+                                    if (originalVar != null) myVariations.Add(new Variation { Key = originalVar.Key, Value = val });
+                                }
 
-                                string cost = item.Cost.ToString().PadLeft(7, '0');
-                                string quantity = item.Quantity.ToString().PadLeft(4, '0');
+                                string costPart = item.Cost.ToString().PadLeft(7, '0');
+                                string serialPart = globalSerial.ToString().PadLeft(4, '0'); 
+                                string serialNumber = $"{costPart}{serialPart}";
 
-                                await stockRepository.CreateAsync(new ()
+                                await stockService.CreateAsync(new ()
                                 {
-                                    Code = $"{cost}{quantity}",
-                                    Active = true,
+                                    PurchaseOrderItemId = item.Id,
+                                    SerialNumber = serialNumber,
                                     Cost = item.Cost,
                                     CostDiscount = item.CostDiscount,
-                                    CreatedAt = DateTime.UtcNow,
                                     CreatedBy = request.CreatedBy,
-                                    Deleted = false,
-                                    DeletedAt = null,
                                     Price = item.Price,
                                     PriceDiscount = item.PriceDiscount,
                                     ProductId = item.ProductId,
                                     Quantity = item.Quantity,
                                     SupplierId = item.SupplierId,
-                                    Variations = myVariations
+                                    Variations = myVariations,
+                                    Company = PurchaseOrderResponse.Data.Company,
+                                    Store = PurchaseOrderResponse.Data.Store,
+                                    Plan = PurchaseOrderResponse.Data.Plan
                                 });
+                                
+                                globalSerial++; 
                             }
                         }
                     }
@@ -154,7 +157,7 @@ namespace api_infor_cell.src.Services
             ResponseApi<PurchaseOrder?> response = await repository.UpdateAsync(PurchaseOrderResponse.Data);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
 
-            return new(response.Data, 201, "Finalizado com sucesso");
+            return new(null, 201, "Finalizado com sucesso");
         }
         catch
         {

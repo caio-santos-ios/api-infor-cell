@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace api_infor_cell.src.Models
 {
-    public class Exchange : ModelMasterBase
+    public class Transfer : ModelMasterBase
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

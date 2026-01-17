@@ -33,6 +33,12 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("priceDiscount")]
         public decimal PriceDiscount { get; set; }
+        
+        [BsonElement("margin")]
+        public decimal Margin { get; set; }
+        
+        [BsonElement("netProfit")]
+        public decimal NetProfit { get; set; }
 
         [BsonElement("moveStock")]
         public string MoveStock {get;set;} = string.Empty;

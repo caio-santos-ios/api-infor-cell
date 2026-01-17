@@ -138,9 +138,10 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<PurchaseOrderItem>("purchase_order_items"); }
         }
-        
-        
-
+        public IMongoCollection<Transfer> Transfers
+        {
+            get { return Database.GetCollection<Transfer>("transfers"); }
+        }       
         #endregion
     }
 }

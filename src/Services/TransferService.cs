@@ -7,17 +7,17 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ExchangeService(IExchangeRepository repository, IStockRepository stockRepository, IMapper _mapper) : IExchangeService
+    public class TransferService(ITransferRepository repository, IStockRepository stockRepository, IMapper _mapper) : ITransferService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
     {
         try
         {
-            PaginationUtil<Exchange> pagination = new(request.QueryParams);
-            ResponseApi<List<dynamic>> Exchanges = await repository.GetAllAsync(pagination);
+            PaginationUtil<Transfer> pagination = new(request.QueryParams);
+            ResponseApi<List<dynamic>> Transfers = await repository.GetAllAsync(pagination);
             int count = await repository.GetCountDocumentsAsync(pagination);
-            return new(Exchanges.Data, count, pagination.PageNumber, pagination.PageSize);
+            return new(Transfers.Data, count, pagination.PageNumber, pagination.PageSize);
         }
         catch
         {
@@ -29,9 +29,9 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<dynamic?> Exchange = await repository.GetByIdAggregateAsync(id);
-            if(Exchange.Data is null) return new(null, 404, "Tranferência não encontrada");
-            return new(Exchange.Data);
+            ResponseApi<dynamic?> Transfer = await repository.GetByIdAggregateAsync(id);
+            if(Transfer.Data is null) return new(null, 404, "Tranferência não encontrada");
+            return new(Transfer.Data);
         }
         catch
         {
@@ -41,11 +41,10 @@ namespace api_infor_cell.src.Services
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Exchange?>> CreateAsync(CreateExchangeDTO request)
+    public async Task<ResponseApi<Transfer?>> CreateAsync(CreateTransferDTO request)
     {
         try
         {
-            // 1. Buscar os lotes de estoque disponíveis na origem
             var response = await stockRepository.GetByPurchaseItemIdAsync(
                 request.PurchaseOrderItemId, 
                 request.Plan, 
@@ -70,13 +69,13 @@ namespace api_infor_cell.src.Services
 
                 decimal amountToMove = Math.Min(currentStockQty, quantityRemaining);
 
-                // Criar o registro de Exchange (Histórico)
-                var history = new Exchange
+                var history = new Transfer
                 {
+                    Store = request.Store,
                     StoreOriginId = request.StoreOriginId,
                     StoreDestinationId = request.StoreDestinationId,
                     PurchaseOrderItemId = request.PurchaseOrderItemId,
-                    StockId = stock.Id, // ID do estoque original sendo movido
+                    StockId = stock.Id, 
                     Quantity = amountToMove,
                     Company = request.Company,
                     Plan = request.Plan,
@@ -90,23 +89,19 @@ namespace api_infor_cell.src.Services
                 }
                 else
                 {
-                    // Parte o registro: cria novo no destino e subtrai na origem
                     var newStock = stock;
                     newStock.Store = request.StoreDestinationId;
                     newStock.Quantity = amountToMove;
                     
-                    // Gera um novo Code para o novo registro físico na loja de destino
                     var nextCode = await stockRepository.GetNextCodeAsync(newStock.Plan, newStock.Company, newStock.Store);
                     newStock.Code = nextCode.Data.ToString().PadLeft(6, '0');
 
                     await stockRepository.CreateAsync(newStock);
 
-                    // Atualiza o original
                     stock.Quantity = currentStockQty - amountToMove;
                     await stockRepository.UpdateAsync(stock);
                 }
 
-                // Salva o log da transferência no banco
                 await repository.CreateAsync(history);
 
                 quantityRemaining -= amountToMove;
@@ -122,17 +117,17 @@ namespace api_infor_cell.src.Services
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Exchange?>> UpdateAsync(UpdateExchangeDTO request)
+    public async Task<ResponseApi<Transfer?>> UpdateAsync(UpdateTransferDTO request)
     {
         try
         {
-            ResponseApi<Exchange?> ExchangeResponse = await repository.GetByIdAsync(request.Id);
-            if(ExchangeResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Transfer?> TransferResponse = await repository.GetByIdAsync(request.Id);
+            if(TransferResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            Exchange Exchange = _mapper.Map<Exchange>(request);
-            Exchange.UpdatedAt = DateTime.UtcNow;
+            Transfer Transfer = _mapper.Map<Transfer>(request);
+            Transfer.UpdatedAt = DateTime.UtcNow;
 
-            ResponseApi<Exchange?> response = await repository.UpdateAsync(Exchange);
+            ResponseApi<Transfer?> response = await repository.UpdateAsync(Transfer);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }
@@ -145,12 +140,12 @@ namespace api_infor_cell.src.Services
     #endregion
     
     #region DELETE
-    public async Task<ResponseApi<Exchange>> DeleteAsync(string id)
+    public async Task<ResponseApi<Transfer>> DeleteAsync(string id)
     {
         try
         {
-            ResponseApi<Exchange> Exchange = await repository.DeleteAsync(id);
-            if(!Exchange.IsSuccess) return new(null, 400, Exchange.Message);
+            ResponseApi<Transfer> Transfer = await repository.DeleteAsync(id);
+            if(!Transfer.IsSuccess) return new(null, 400, Transfer.Message);
             return new(null, 204, "Excluída com sucesso");
         }
         catch

@@ -29,6 +29,8 @@ namespace api_infor_cell.src.Shared.DTOs
         public decimal Price { get; set; }
         public decimal PriceDiscount { get; set; }
         public string MoveStock {get;set;} = string.Empty;
+        public decimal Margin { get; set; }
+        public decimal NetProfit { get; set; }
         public List<Variation> Variations {get;set;} = [];
     }
 }

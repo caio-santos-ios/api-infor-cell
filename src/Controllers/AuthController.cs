@@ -56,7 +56,14 @@ namespace api_infor_cell.src.Controllers
         [Route("refresh-token")]
         public async Task<IActionResult> RefreshTokenAsync()
         {
-            ResponseApi<AuthResponse> response = await authService.RefreshTokenAsync(Request.Headers.Authorization[0]!.Split(" ")[1]);
+            var authHeader = Request.Headers.Authorization.ToString();
+            string token = string.Empty;
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                token = authHeader.Substring("Bearer ".Length).Trim();
+            }
+            ResponseApi<AuthResponse> response = await authService.RefreshTokenAsync(token);
             return StatusCode(response.StatusCode, new { response.Result });
         }
         

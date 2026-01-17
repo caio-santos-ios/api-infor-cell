@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class CreateExchangeDTO : RequestDTO
+    public class CreateTransferDTO : RequestDTO
     {
         [Required(ErrorMessage = "A Loja de Origem é obrigatório.")]
         [Display(Order = 1)]
