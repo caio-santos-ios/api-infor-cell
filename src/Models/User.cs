@@ -39,6 +39,12 @@ namespace api_infor_cell.src.Models
         [BsonElement("admin")]
         public bool Admin {get;set;} = false;
         
+        [BsonElement("master")]
+        public bool Master {get;set;} = false;
+
+        [BsonElement("subscriberPlan")]
+        public bool SubscriberPlan {get;set;} = false;
+        
         [BsonElement("codeAccess")]
         public string CodeAccess {get;set;} = string.Empty;
 

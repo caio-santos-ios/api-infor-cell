@@ -38,6 +38,8 @@ namespace api_infor_cell.src.Services
 
                 ResponseApi<Store?> store = await storeRepository.GetByIdAsync(user.Store);
 
+                ResponseApi<Plan?> plan = await planRepository.GetByIdAsync(user.Plan);
+
                 AuthResponse response = new ()
                 {
                     Token = GenerateJwtToken(user), 
@@ -52,7 +54,10 @@ namespace api_infor_cell.src.Services
                     LogoCompany = company.Data is not null ? company.Data.Photo : "",
                     NameCompany = company.Data is not null ? company.Data.TradeName : "",
                     NameStore = store.Data is not null ? store.Data.TradeName : "",
-                    TypeUser = user is not null ? user.Type : ""
+                    TypeUser = user is not null ? user.Type : "",
+                    TypePlan = plan.Data is not null ? plan.Data.Type : "",
+                    SubscriberPlan =  user!.SubscriberPlan,
+                    ExpirationDate = plan.Data!.ExpirationDate
                 };
 
                 return new(response);
@@ -91,9 +96,11 @@ namespace api_infor_cell.src.Services
                     ValidatedAccess = false,
                     Modules = [],
                     Admin = true,
+                    Master = false,
                     Blocked = false,
                     Whatsapp = request.Whatsapp,
-                    Role = Enums.User.RoleEnum.Admin
+                    Role = Enums.User.RoleEnum.Admin,
+                    SubscriberPlan = true
                 };
 
                 ResponseApi<User?> response = await repository.CreateAsync(user);
@@ -105,8 +112,9 @@ namespace api_infor_cell.src.Services
                 ResponseApi<Plan?> responsePlan = await planRepository.CreateAsync(new ()
                 {
                     StartDate = date,
-                    ExpirationDate = date.AddDays(7),
-                    Type = "free"
+                    ExpirationDate = date.AddDays(10),
+                    Type = "free",
+                    CreatedBy = user.Id
                 });
 
                 if(responsePlan.Data is null) return new(null, 400, "Falha ao criar conta.");

@@ -9,7 +9,7 @@ namespace api_infor_cell.src.Models.Base
         
         [BsonElement("store")]
         public string Store {get;set;} = string.Empty;
-       
+
         [BsonElement("plan")]
         public string Plan {get;set;} = string.Empty;
     }

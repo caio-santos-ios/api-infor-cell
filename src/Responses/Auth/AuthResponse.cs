@@ -16,6 +16,9 @@ namespace api_infor_cell.src.Responses
         public string NameStore {get;set;} = string.Empty; 
         public string Plan {get;set;} = string.Empty; 
         public string TypeUser {get;set;} = string.Empty; 
+        public string TypePlan {get;set;} = string.Empty; 
+        public bool SubscriberPlan {get;set;} = false;
+        public DateTime ExpirationDate {get;set;} = DateTime.UtcNow;
         public List<Module> Modules {get;set;} = [];
     }
 }
