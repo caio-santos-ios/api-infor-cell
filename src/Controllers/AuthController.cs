@@ -63,7 +63,8 @@ namespace api_infor_cell.src.Controllers
             {
                 token = authHeader.Substring("Bearer ".Length).Trim();
             }
-            ResponseApi<AuthResponse> response = await authService.RefreshTokenAsync(token);
+            string? plan = User.FindFirst("plan")?.Value;
+            ResponseApi<AuthResponse> response = await authService.RefreshTokenAsync(token, plan!);
             return StatusCode(response.StatusCode, new { response.Result });
         }
         

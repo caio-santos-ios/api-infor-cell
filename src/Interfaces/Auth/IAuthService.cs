@@ -11,7 +11,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<dynamic>> RegisterAsync(RegisterDTO request);
         Task<ResponseApi<dynamic>> ConfirmAccountAsync(ConfirmAccountDTO request);
         Task<ResponseApi<dynamic>> NewCodeConfirmAsync(RegisterDTO request);
-        Task<ResponseApi<AuthResponse>> RefreshTokenAsync(string token);
+        Task<ResponseApi<AuthResponse>> RefreshTokenAsync(string token, string planId);
         Task<ResponseApi<User>> ResetPasswordAsync(ResetPasswordDTO request);
         Task<ResponseApi<User>> RequestForgotPasswordAsync(ForgotPasswordDTO request);
         Task<ResponseApi<User>> ResetPassordForgotAsync(ResetPasswordDTO request);

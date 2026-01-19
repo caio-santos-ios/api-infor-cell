@@ -8,12 +8,40 @@ public class CompanyQueryMiddleware(RequestDelegate _next)
     {
         if (context.User.Identity?.IsAuthenticated == true)
         {
+            string? planExpirationDate = context.User.FindFirst("planExpirationDate")?.Value;
+            if (planExpirationDate != null)
+            {
+                DateTime expirationDate = DateTime.Parse(planExpirationDate, null, System.Globalization.DateTimeStyles.RoundtripKind);
+
+                if (expirationDate < DateTime.UtcNow)
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "application/json";
+
+                    var errorResponse = new 
+                    {
+                        result = new {
+                            data = new {
+                                expiredAt = expirationDate.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                                status = "expired"
+                            },
+                            message = "Acesso negado: O plano da sua empresa expirou.",
+                        },
+                    };
+
+                    var json = System.Text.Json.JsonSerializer.Serialize(errorResponse);
+                    await context.Response.WriteAsync(json);
+                    return;
+                }
+            }
+
             string path = context.Request.Path;
             string method = context.Request.Method;
             string? plan = context.User.FindFirst("plan")?.Value;
             string? company = context.User.FindFirst("company")?.Value;
             string? store = context.User.FindFirst("store")?.Value;
             string? userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
             
             if(path.Split("/")[2] != "companies") 
             {
@@ -94,8 +122,7 @@ public class CompanyQueryMiddleware(RequestDelegate _next)
                             context.Request.Form.Files 
                         );
                     }
-                } 
-                
+                }            
                 
                 if(method == HttpMethods.Get) 
                 {

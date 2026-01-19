@@ -42,8 +42,8 @@ namespace api_infor_cell.src.Services
 
                 AuthResponse response = new ()
                 {
-                    Token = GenerateJwtToken(user), 
-                    RefreshToken = GenerateJwtToken(user, true), 
+                    Token = GenerateJwtToken(user, plan.Data!.ExpirationDate), 
+                    RefreshToken = GenerateJwtToken(user, plan.Data.ExpirationDate, true), 
                     Name = user.Name, 
                     Id = user.Id, 
                     Admin = user.Admin, 
@@ -210,7 +210,7 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");            
             }
         }
-        public async Task<ResponseApi<AuthResponse>> RefreshTokenAsync(string token)
+        public async Task<ResponseApi<AuthResponse>> RefreshTokenAsync(string token, string planId)
         {
             try
             {
@@ -247,8 +247,12 @@ namespace api_infor_cell.src.Services
 
                 if (user.Data is null) return new(null, 401, "Usuário não encontrado.");
 
-                string accessToken = GenerateJwtToken(user.Data);
-                string refreshToken = GenerateJwtToken(user.Data, true);
+                ResponseApi<Plan?> plan = await planRepository.GetByIdAsync(planId);
+                if (plan.Data is null) return new(null, 401, "Usuário não encontrado.");
+
+
+                string accessToken = GenerateJwtToken(user.Data, plan.Data.ExpirationDate);
+                string refreshToken = GenerateJwtToken(user.Data, plan.Data.ExpirationDate, true);
 
                 return new(new AuthResponse
                 {
@@ -347,7 +351,7 @@ namespace api_infor_cell.src.Services
                         Whatsapp = responseEmployee.Data.Whatsapp
                     };
                 };
-               
+
                 dynamic access = Util.GenerateCodeAccess();
 
                 user.CodeAccess = access.CodeAccess;
@@ -440,7 +444,7 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");            
             }
         }
-        private static string GenerateJwtToken(User user, bool refresh = false)
+        private static string GenerateJwtToken(User user, DateTime expirationDate, bool refresh = false)
         {
             string? SecretKey = Environment.GetEnvironmentVariable("SECRET_KEY") ?? "";
             string? Issuer = Environment.GetEnvironmentVariable("ISSUER") ?? "";
@@ -460,6 +464,7 @@ namespace api_infor_cell.src.Services
                 new Claim("plan", user.Plan),
                 new Claim("store", user.Store),
                 new Claim("company", user.Company),
+                new Claim("planExpirationDate", expirationDate.ToString("yyyy-MM-ddTHH:mm:ssZ")),
                 new Claim(JwtRegisteredClaimNames.Nickname, user.UserName),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
