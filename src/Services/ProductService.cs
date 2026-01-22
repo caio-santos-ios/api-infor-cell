@@ -79,14 +79,15 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Product?> ProductResponse = await repository.GetByIdAsync(request.Id);
-            if(ProductResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Product?> productResponse = await repository.GetByIdAsync(request.Id);
+            if(productResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            Product Product = _mapper.Map<Product>(request);
-            Product.UpdatedAt = DateTime.UtcNow;
-            Product.Code = ProductResponse.Data.Code;
+            Product product = _mapper.Map<Product>(request);
+            product.UpdatedAt = DateTime.UtcNow;
+            product.Code = productResponse.Data.Code;
+            product.Serials = request.Serials;
 
-            ResponseApi<Product?> response = await repository.UpdateAsync(Product);
+            ResponseApi<Product?> response = await repository.UpdateAsync(product);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizado com sucesso");
         }

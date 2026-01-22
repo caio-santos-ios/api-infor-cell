@@ -142,6 +142,11 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<Transfer>("transfers"); }
         }       
+        
+        public IMongoCollection<Variation> Variations
+        {
+            get { return Database.GetCollection<Variation>("variations"); }
+        }       
         #endregion
     }
 }

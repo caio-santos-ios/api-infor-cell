@@ -47,7 +47,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Produto");
         }
     }    
     public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Product> pagination)
@@ -78,7 +78,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Produto");
         }
     }    
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
@@ -101,23 +101,23 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.Products.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Produto não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Produto");
         }
     }
     public async Task<ResponseApi<Product?>> GetByIdAsync(string id)
     {
         try
         {
-            Product? address = await context.Products.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            Product? product = await context.Products.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(product);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Produto");
         }
     }
     public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
@@ -129,7 +129,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(0, 500, "Falha ao buscar Lojas");
+            return new(0, 500, "Falha ao buscar Produto");
         }
     }
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<Product> pagination)
@@ -155,33 +155,33 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Product?>> CreateAsync(Product address)
+    public async Task<ResponseApi<Product?>> CreateAsync(Product product)
     {
         try
         {
-            await context.Products.InsertOneAsync(address);
+            await context.Products.InsertOneAsync(product);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(product, 201, "Produto criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Produto");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Product?>> UpdateAsync(Product address)
+    public async Task<ResponseApi<Product?>> UpdateAsync(Product product)
     {
         try
         {
-            await context.Products.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.Products.ReplaceOneAsync(x => x.Id == product.Id, product);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(product, 200, "Produto atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Produto");
         }
     }
     #endregion
@@ -191,18 +191,18 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Product? address = await context.Products.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            Product? product = await context.Products.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(product is null) return new(null, 404, "Produto não encontrado");
+            product.Deleted = true;
+            product.DeletedAt = DateTime.UtcNow;
 
-            await context.Products.ReplaceOneAsync(x => x.Id == id, address);
+            await context.Products.ReplaceOneAsync(x => x.Id == id, product);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(product, 204, "Produto excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Produto");
         }
     }
     #endregion

@@ -87,6 +87,9 @@ namespace api_infor_cell.src.Configuration
 
             CreateMap<CreateTransferDTO, Transfer>().ReverseMap();
             CreateMap<UpdateTransferDTO, Transfer>().ReverseMap();
+            
+            CreateMap<CreateVariationDTO, Variation>().ReverseMap();
+            CreateMap<UpdateVariationDTO, Variation>().ReverseMap();
 
             #endregion
         }

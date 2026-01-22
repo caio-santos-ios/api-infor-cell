@@ -102,54 +102,71 @@ namespace api_infor_cell.src.Services
                 {
                     if(item.MoveStock == "yes")
                     {
-                        var grupos = item.Variations
-                            .GroupBy(v => v.Key)
-                            .Select(g => g.Select(v => v.Value).Distinct().ToList())
-                            .ToList();
-
-                        var combinacoes = grupos.Aggregate(
-                            (IEnumerable<IEnumerable<string>>)new[] { Enumerable.Empty<string>() },
-                            (acc, grupo) => from a in acc from g in grupo select a.Append(g)
-                        ).ToList();
-
-                        int globalSerial = 1;
-
-                        for (int i = 0; i < item.Quantity; i++)
+                        await stockService.CreateAsync(new ()
                         {
-                            foreach (var variations in combinacoes)
-                            {
-                                List<Variation> myVariations = new();
-                                foreach (string val in variations)
-                                {
-                                    var originalVar = item.Variations.FirstOrDefault(v => v.Value == val);
-                                    if (originalVar != null) myVariations.Add(new Variation { Key = originalVar.Key, Value = val });
-                                }
+                            PurchaseOrderItemId = item.Id,
+                            // SerialNumber = serialNumber,
+                            Cost = item.Cost,
+                            CostDiscount = item.CostDiscount,
+                            CreatedBy = request.CreatedBy,
+                            Price = item.Price,
+                            PriceDiscount = item.PriceDiscount,
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity,
+                            SupplierId = item.SupplierId,
+                            Variations = item.Variations,
+                            Company = PurchaseOrderResponse.Data.Company,
+                            Store = PurchaseOrderResponse.Data.Store,
+                            Plan = PurchaseOrderResponse.Data.Plan
+                        });
+                        // var grupos = item.Variations
+                        //     .GroupBy(v => v.Key)
+                        //     .Select(g => g.Select(v => v.Value).Distinct().ToList())
+                        //     .ToList();
 
-                                string costPart = item.Cost.ToString().PadLeft(7, '0');
-                                string serialPart = globalSerial.ToString().PadLeft(4, '0'); 
-                                string serialNumber = $"{costPart}{serialPart}";
+                        // var combinacoes = grupos.Aggregate(
+                        //     (IEnumerable<IEnumerable<string>>)new[] { Enumerable.Empty<string>() },
+                        //     (acc, grupo) => from a in acc from g in grupo select a.Append(g)
+                        // ).ToList();
 
-                                await stockService.CreateAsync(new ()
-                                {
-                                    PurchaseOrderItemId = item.Id,
-                                    SerialNumber = serialNumber,
-                                    Cost = item.Cost,
-                                    CostDiscount = item.CostDiscount,
-                                    CreatedBy = request.CreatedBy,
-                                    Price = item.Price,
-                                    PriceDiscount = item.PriceDiscount,
-                                    ProductId = item.ProductId,
-                                    Quantity = item.Quantity,
-                                    SupplierId = item.SupplierId,
-                                    Variations = myVariations,
-                                    Company = PurchaseOrderResponse.Data.Company,
-                                    Store = PurchaseOrderResponse.Data.Store,
-                                    Plan = PurchaseOrderResponse.Data.Plan
-                                });
+                        // int globalSerial = 1;
+
+                        // for (int i = 0; i < item.Quantity; i++)
+                        // {
+                        //     foreach (var variations in combinacoes)
+                        //     {
+                        //         List<Variation> myVariations = new();
+                        //         foreach (string val in variations)
+                        //         {
+                        //             var originalVar = item.Variations.FirstOrDefault(v => v.Value == val);
+                        //             if (originalVar != null) myVariations.Add(new Variation { Key = originalVar.Key, Value = val });
+                        //         }
+
+                        //         string costPart = item.Cost.ToString().PadLeft(7, '0');
+                        //         string serialPart = globalSerial.ToString().PadLeft(4, '0'); 
+                        //         string serialNumber = $"{costPart}{serialPart}";
+
+                        //         await stockService.CreateAsync(new ()
+                        //         {
+                        //             PurchaseOrderItemId = item.Id,
+                        //             SerialNumber = serialNumber,
+                        //             Cost = item.Cost,
+                        //             CostDiscount = item.CostDiscount,
+                        //             CreatedBy = request.CreatedBy,
+                        //             Price = item.Price,
+                        //             PriceDiscount = item.PriceDiscount,
+                        //             ProductId = item.ProductId,
+                        //             Quantity = item.Quantity,
+                        //             SupplierId = item.SupplierId,
+                        //             Variations = myVariations,
+                        //             Company = PurchaseOrderResponse.Data.Company,
+                        //             Store = PurchaseOrderResponse.Data.Store,
+                        //             Plan = PurchaseOrderResponse.Data.Plan
+                        //         });
                                 
-                                globalSerial++; 
-                            }
-                        }
+                        //         globalSerial++; 
+                        //     }
+                        // }
                     }
                 };
             };
@@ -183,22 +200,22 @@ namespace api_infor_cell.src.Services
     #endregion 
 
     #region FUCTIONS
-    public (string Key, int Quantidade) ObterKeyMaisRepetida(List<Variation> variacoes)
-    {
-        if (variacoes == null || !variacoes.Any()) return (string.Empty, 0);
+    // public (string Key, int Quantidade) ObterKeyMaisRepetida(List<Variation> variacoes)
+    // {
+    //     if (variacoes == null || !variacoes.Any()) return (string.Empty, 0);
 
-        var resultado = variacoes
-            .GroupBy(v => v.Key) 
-            .Select(g => new 
-            { 
-                g.Key, 
-                Contagem = g.Count() 
-            }) 
-            .OrderByDescending(x => x.Contagem) 
-            .FirstOrDefault(); 
+    //     var resultado = variacoes
+    //         .GroupBy(v => v.Key) 
+    //         .Select(g => new 
+    //         { 
+    //             g.Key, 
+    //             Contagem = g.Count() 
+    //         }) 
+    //         .OrderByDescending(x => x.Contagem) 
+    //         .FirstOrDefault(); 
 
-        return (resultado!.Key, resultado.Contagem);
-    }
+    //     return (resultado!.Key, resultado.Contagem);
+    // }
     #endregion
 }
 }

@@ -122,6 +122,9 @@ namespace api_infor_cell.src.Configuration
 
             builder.Services.AddTransient<ITransferService, TransferService>();
             builder.Services.AddTransient<ITransferRepository, TransferRepository>();
+
+            builder.Services.AddTransient<IVariationService, VariationService>();
+            builder.Services.AddTransient<IVariationRepository, VariationRepository>();
             
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();
