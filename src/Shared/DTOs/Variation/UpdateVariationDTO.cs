@@ -9,6 +9,8 @@ namespace api_infor_cell.src.Shared.DTOs
         [Display(Order = 6)]
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string Serial { get; set; } = string.Empty;
+        public string SerialAction { get; set; } = string.Empty;
         public List<VariationItem> Items { get; set; } = [];
     }
 }

@@ -9,6 +9,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Variation> pagination);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
         Task<ResponseApi<Variation?>> GetByIdAsync(string id);
+        Task<ResponseApi<List<Variation>>> GetSerialExistedAsync(string serial);
         Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Variation> pagination);
         Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId);
         Task<int> GetCountDocumentsAsync(PaginationUtil<Variation> pagination);

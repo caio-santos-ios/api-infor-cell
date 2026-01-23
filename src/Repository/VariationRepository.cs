@@ -114,6 +114,18 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, "Falha ao buscar Variação");
             }
         }
+        public async Task<ResponseApi<List<Variation>>> GetSerialExistedAsync(string serial)
+        {
+            try
+            {
+                List<Variation> variations = await context.Variations.Find(x => x.Items.Where(i => i.Serial.Where(s => s.Value == serial).Any()).Any() && !x.Deleted).ToListAsync();
+                return new(variations);
+            }
+            catch
+            {
+                return new(null, 500, "Falha ao buscar Variação");
+            }
+        }
         public async Task<ResponseApi<long>> GetNextCodeAsync(string companyId, string storeId)
         {
             try

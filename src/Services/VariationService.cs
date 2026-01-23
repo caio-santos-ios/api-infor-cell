@@ -82,6 +82,19 @@ namespace api_infor_cell.src.Services
             ResponseApi<Variation?> variationResponse = await repository.GetByIdAsync(request.Id);
             if(variationResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
+            if(request.SerialAction == "create" || request.SerialAction == "update")
+            {
+                ResponseApi<List<Variation>> existed = await repository.GetSerialExistedAsync(request.Serial);
+                if(existed.Data is null || existed.Data.Count > 1) return new(null, 400, "Serial já cadastrado");
+
+                var variati = existed.Data.Where(x => x.Id != request.Id && x.Items.Where(i => i.Serial.Where(s => s.Value == request.Serial).Any()).Any()).FirstOrDefault();
+                if(variati is not null) return new(null, 400, "Serial já cadastrado");
+
+                var existedSerial = request.Items.Where(i => i.Serial.Where(s => s.Value == request.Serial).Count() > 1).Count();
+
+                if(existedSerial >= 1) return new(null, 400, "Serial já cadastrado");    
+            };
+            
             Variation variation = _mapper.Map<Variation>(request);
             variation.UpdatedAt = DateTime.UtcNow;
             variation.CreatedAt = variationResponse.Data.CreatedAt;
