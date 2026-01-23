@@ -47,10 +47,10 @@ namespace api_infor_cell.src.Models
         public decimal ExpenseCostPrice { get; set; }
         
         [BsonElement("variations")]
-        public List<Variation> Variations {get;set;} = [];
+        public List<VariationProduct> Variations {get;set;} = [];
         
-        [BsonElement("serials")]
-        public List<SerialControl> Serials {get;set;} = [];
+        // [BsonElement("serials")]
+        // public List<SerialControl> Serials {get;set;} = [];
 
         [BsonElement("sku")]
         public string Sku { get; set; } = string.Empty;
@@ -113,7 +113,7 @@ namespace api_infor_cell.src.Models
         public string Ncm { get; set; } = string.Empty;
 
         [BsonElement("cest")]
-        public string Cest { get; set; } = string.Empty;
+        public decimal Cest { get; set; }
 
         [BsonElement("cfopIn")]
         public decimal CfopIn { get; set; }
@@ -127,8 +127,8 @@ namespace api_infor_cell.src.Models
         [BsonElement("cst")]
         public decimal Cst { get; set; }
 
-        [BsonElement("cstIcms")]
-        public string CstIcms { get; set; } = string.Empty;
+        // [BsonElement("cstIcms")]
+        // public string CstIcms { get; set; } = string.Empty;
 
         [BsonElement("icms")]
         public decimal Icms { get; set; }
@@ -136,17 +136,17 @@ namespace api_infor_cell.src.Models
         [BsonElement("pis")]
         public decimal Pis { get; set; }
 
-        [BsonElement("cstPis")]
-        public string CstPis { get; set; } = string.Empty;
+        // [BsonElement("cstPis")]
+        // public string CstPis { get; set; } = string.Empty;
 
-        [BsonElement("cstCofins")]
-        public decimal CstCofins { get; set; }
+        // [BsonElement("cstCofins")]
+        // public decimal CstCofins { get; set; }
 
         [BsonElement("cofins")]
         public decimal Cofins { get; set; }
 
-        [BsonElement("cstIpi")]
-        public string CstIpi { get; set; } = string.Empty;
+        // [BsonElement("cstIpi")]
+        // public string CstIpi { get; set; } = string.Empty;
 
         [BsonElement("ipi")]
         public decimal Ipi { get; set; }
@@ -158,29 +158,20 @@ namespace api_infor_cell.src.Models
         public string TaxGroup { get; set; } = string.Empty;
     }
 
-    // public class Variation
-    // {
-    //     [BsonElement("sequence")]
-    //     public int Sequence {get;set;}
-        
-    //     [BsonElement("key")]
-    //     public string Key {get;set;} = string.Empty;
-        
-    //     [BsonElement("value")]
-    //     public string Value {get;set;} = string.Empty;
+    public class VariationProduct
+    {
+        [BsonElement("barcode")]
+        public string Barcode {get;set;} = string.Empty; 
 
-    //     [BsonElement("sku")]
-    //     public string Sku {get;set;} = string.Empty;        
+        [BsonElement("variationId")]
+        public string VariationId {get;set;} = string.Empty; 
 
-    //     [BsonElement("cost")]
-    //     public decimal Cost {get;set;}
+        [BsonElement("variationItemId")]
+        public string VariationItemId {get;set;} = string.Empty;
 
-    //     [BsonElement("price")]
-    //     public decimal Price {get;set;}
-        
-    //     [BsonElement("status")]
-    //     public bool Status {get;set;} = true;
-    // }
+        [BsonElement("stock")]
+        public decimal Stock {get;set;} 
+    }
 
     public class SerialControl 
     {

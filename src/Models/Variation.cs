@@ -22,6 +22,9 @@ namespace api_infor_cell.src.Models
 
     public class VariationItem
     {
+        [BsonElement("code")]
+        public string Code {get;set;} = string.Empty;
+
         [BsonElement("key")]
         public string Key {get;set;} = string.Empty;
         
@@ -30,6 +33,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("active")]
         public bool Active {get;set;} = true;
+
+        [BsonElement("deleted")]
+        public bool Deleted {get;set;} = false;
 
         [BsonElement("serial")]
         public List<VariationItemSerial> Serial {get;set;} = [];

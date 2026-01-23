@@ -36,7 +36,7 @@ namespace api_infor_cell.src.Shared.DTOs
         [Display(Order = 4)]
         public decimal CostPrice { get; set; }
         public decimal ExpenseCostPrice { get; set; }
-        public List<Variation> Variations {get;set;} = [];
+        public List<VariationProduct> Variations {get;set;} = [];
         public string Sku { get; set; } = string.Empty;
         public string Barcode { get; set; } = string.Empty;
         public string UnitOfMeasure { get; set; } = string.Empty;

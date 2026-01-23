@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Shared.DTOs
         [Display(Order = 4)]
         public decimal CostPrice { get; set; }
         public decimal ExpenseCostPrice { get; set; }
-        public List<Variation> Variations {get;set;} = [];
+        public List<VariationProduct> Variations {get;set;} = [];
         public string Sku { get; set; } = string.Empty;
         public string Barcode { get; set; } = string.Empty;
         public string UnitOfMeasure { get; set; } = string.Empty;
@@ -51,19 +51,15 @@ namespace api_infor_cell.src.Shared.DTOs
         public decimal Margin { get; set; }
         public string HasDiscount { get; set; } = string.Empty;
         public string Ncm { get; set; } = string.Empty;
-        public string Cest { get; set; } = string.Empty;
+        public decimal Cest { get; set; }
         public decimal CfopIn { get; set; }
         public decimal CfopOut { get; set; }
-        public decimal CstIcms { get; set; }
         public string Origin { get; set; } = string.Empty;
         public decimal Cst { get; set; }
         public decimal Icms { get; set; }
         public decimal Pis { get; set; }
-        public decimal CstPis { get; set; }
         public decimal Cofins { get; set; }
-        public decimal CstCofins { get; set; }
         public decimal Ipi { get; set; }
-        public decimal CstIpi { get; set; }
         public decimal Ibpt { get; set; }
         public string TaxGroup { get; set; } = string.Empty;
         public List<SerialControl> Serials {get;set;} = [];

@@ -62,6 +62,7 @@ namespace api_infor_cell.src.Repository
                         {"id", new BsonDocument("$toString", "$_id")},
                         {"code", 1},
                         {"name", 1},
+                        {"items", 1},
                     }),
                     new("$sort", pagination.PipelineSort),
                 };

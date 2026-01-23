@@ -85,7 +85,6 @@ namespace api_infor_cell.src.Services
             Product product = _mapper.Map<Product>(request);
             product.UpdatedAt = DateTime.UtcNow;
             product.Code = productResponse.Data.Code;
-            product.Serials = request.Serials;
 
             ResponseApi<Product?> response = await repository.UpdateAsync(product);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
@@ -103,8 +102,6 @@ namespace api_infor_cell.src.Services
             ResponseApi<Product?> productResponse = await repository.GetByIdAsync(request.Id);
             if(productResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            productResponse.Data.Variations = request.Variations;
-
             ResponseApi<Product?> response = await repository.UpdateAsync(productResponse.Data);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizado com sucesso");
