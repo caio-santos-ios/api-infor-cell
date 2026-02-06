@@ -87,13 +87,13 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<PurchaseOrder?> PurchaseOrderResponse = await repository.GetByIdAsync(request.Id);
-            if(PurchaseOrderResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<PurchaseOrder?> purchaseOrderResponse = await repository.GetByIdAsync(request.Id);
+            if(purchaseOrderResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            PurchaseOrderResponse.Data.UpdatedAt = DateTime.UtcNow;
-            PurchaseOrderResponse.Data.UpdatedBy = request.UpdatedBy;
-            PurchaseOrderResponse.Data.ApprovalBy = request.UpdatedBy;
-            PurchaseOrderResponse.Data.Status = "Finalizado";
+            purchaseOrderResponse.Data.UpdatedAt = DateTime.UtcNow;
+            purchaseOrderResponse.Data.UpdatedBy = request.UpdatedBy;
+            purchaseOrderResponse.Data.ApprovalBy = request.UpdatedBy;
+            purchaseOrderResponse.Data.Status = "Finalizado";
 
             ResponseApi<List<PurchaseOrderItem>> items = await purchaseOrderItemRepository.GetByPurchaseOrderIdAsync(request.Id);
             if(items.Data is not null)
@@ -102,10 +102,9 @@ namespace api_infor_cell.src.Services
                 {
                     if(item.MoveStock == "yes")
                     {
-                        await stockService.CreateAsync(new ()
+                        CreateStockDTO stock = new ()
                         {
                             PurchaseOrderItemId = item.Id,
-                            // SerialNumber = serialNumber,
                             Cost = item.Cost,
                             CostDiscount = item.CostDiscount,
                             CreatedBy = request.CreatedBy,
@@ -115,10 +114,34 @@ namespace api_infor_cell.src.Services
                             Quantity = item.Quantity,
                             SupplierId = item.SupplierId,
                             Variations = item.Variations,
-                            Company = PurchaseOrderResponse.Data.Company,
-                            Store = PurchaseOrderResponse.Data.Store,
-                            Plan = PurchaseOrderResponse.Data.Plan
-                        });
+                            VariationsCode = item.VariationsCode,
+                            Company = purchaseOrderResponse.Data.Company,
+                            Store = purchaseOrderResponse.Data.Store,
+                            Plan = purchaseOrderResponse.Data.Plan,
+                            OriginDescription = $"Pedido de Compra - Nº {purchaseOrderResponse.Data.Code}",
+                            Origin = "sales-order-item",
+                            ForSale = "yes",
+                            OriginId = item.Id
+                        };
+
+                        await stockService.CreateAsync(stock);
+                        // await stockService.CreateAsync(new ()
+                        // {
+                        //     PurchaseOrderItemId = item.Id,
+                        //     // SerialNumber = serialNumber,
+                        //     Cost = item.Cost,
+                        //     CostDiscount = item.CostDiscount,
+                        //     CreatedBy = request.CreatedBy,
+                        //     Price = item.Price,
+                        //     PriceDiscount = item.PriceDiscount,
+                        //     ProductId = item.ProductId,
+                        //     Quantity = item.Quantity,
+                        //     SupplierId = item.SupplierId,
+                        //     Variations = item.Variations,
+                        //     Company = PurchaseOrderResponse.Data.Company,
+                        //     Store = PurchaseOrderResponse.Data.Store,
+                        //     Plan = PurchaseOrderResponse.Data.Plan
+                        // });
                         // var grupos = item.Variations
                         //     .GroupBy(v => v.Key)
                         //     .Select(g => g.Select(v => v.Value).Distinct().ToList())
@@ -171,7 +194,7 @@ namespace api_infor_cell.src.Services
                 };
             };
 
-            ResponseApi<PurchaseOrder?> response = await repository.UpdateAsync(PurchaseOrderResponse.Data);
+            ResponseApi<PurchaseOrder?> response = await repository.UpdateAsync(purchaseOrderResponse.Data);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
 
             return new(null, 201, "Finalizado com sucesso");

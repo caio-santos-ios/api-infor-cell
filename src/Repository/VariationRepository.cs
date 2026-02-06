@@ -119,7 +119,7 @@ namespace api_infor_cell.src.Repository
         {
             try
             {
-                List<Variation> variations = await context.Variations.Find(x => x.Items.Where(i => i.Serial.Where(s => s.Value == serial).Any()).Any() && !x.Deleted).ToListAsync();
+                List<Variation> variations = await context.Variations.Find(x => x.Items.Where(i => i.Serial.Where(s => s.Code == serial).Any()).Any() && !x.Deleted).ToListAsync();
                 return new(variations);
             }
             catch

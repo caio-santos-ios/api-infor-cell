@@ -59,8 +59,13 @@ namespace api_infor_cell.src.Services
 
             ResponseApi<Customer?> existedEmail = await repository.GetByEmailAsync(request.Email, "");
             if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Cliente");
-
+            
             Customer Customer = _mapper.Map<Customer>(request);
+            if(request.Type == "F")
+            {
+                Customer.TradeName = request.CorporateName;
+            };
+            
             ResponseApi<Customer?> response = await repository.CreateAsync(Customer);
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");

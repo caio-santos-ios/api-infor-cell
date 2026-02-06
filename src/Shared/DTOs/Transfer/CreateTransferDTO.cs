@@ -11,7 +11,11 @@ namespace api_infor_cell.src.Shared.DTOs
         [Required(ErrorMessage = "A Loja de Destino é obrigatório.")]
         [Display(Order = 2)]
         public string StoreDestinationId { get; set; } = string.Empty;
-        public string PurchaseOrderItemId { get; set; } = string.Empty;
+        public string ProductId { get; set; } = string.Empty;
+        public string Barcode { get; set; } = string.Empty;
+        public string ProductHasSerial { get; set; } = string.Empty;
+        public string Serial { get; set; } = string.Empty;
+        public string VariationId { get; set; } = string.Empty;
         public decimal Quantity { get; set; }
     }
 }

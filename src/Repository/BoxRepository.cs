@@ -40,7 +40,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Caixa");
         }
     }
     
@@ -64,11 +64,40 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.Boxes.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Caixa não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Caixa");
+        }
+    }
+
+    public async Task<ResponseApi<dynamic?>> GetByCreatedIdAggregateAsync(string createdBy)
+    {
+        try
+        {
+            BsonDocument[] pipeline = [
+                new("$match", new BsonDocument{
+                    {"createdBy", createdBy},
+                    {"deleted", false},
+                    {"status", "opened"}
+                }),
+                new("$addFields", new BsonDocument {
+                    {"id", new BsonDocument("$toString", "$_id")},
+                }),
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0},
+                }),
+            ];
+
+            BsonDocument? response = await context.Boxes.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+            dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
+            return result is null ? new(null, 404, "Caixa não encontrado") : new(result);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Caixa");
         }
     }
     
@@ -81,7 +110,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Caixa");
         }
     }
     
@@ -114,11 +143,11 @@ namespace api_infor_cell.src.Repository
         {
             await context.Boxes.InsertOneAsync(address);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(address, 201, "Caixa criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Caixa");  
         }
     }
     #endregion
@@ -130,11 +159,11 @@ namespace api_infor_cell.src.Repository
         {
             await context.Boxes.ReplaceOneAsync(x => x.Id == address.Id, address);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(address, 201, "Caixa atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Caixa");
         }
     }
     #endregion
@@ -145,17 +174,17 @@ namespace api_infor_cell.src.Repository
         try
         {
             Box? address = await context.Boxes.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
+            if(address is null) return new(null, 404, "Caixa não encontrado");
             address.Deleted = true;
             address.DeletedAt = DateTime.UtcNow;
 
             await context.Boxes.ReplaceOneAsync(x => x.Id == id, address);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(address, 204, "Caixa excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Caixa");
         }
     }
     #endregion

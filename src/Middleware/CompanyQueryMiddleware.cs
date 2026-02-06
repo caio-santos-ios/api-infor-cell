@@ -41,7 +41,6 @@ public class CompanyQueryMiddleware(RequestDelegate _next)
             string? company = context.User.FindFirst("company")?.Value;
             string? store = context.User.FindFirst("store")?.Value;
             string? userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
             
             if(path.Split("/")[2] != "companies") 
             {
@@ -139,11 +138,11 @@ public class CompanyQueryMiddleware(RequestDelegate _next)
                                 var queryItems = context.Request.Query.ToDictionary(x => x.Key, x => x.Value);
                                 
                                 queryItems["company"] = new Microsoft.Extensions.Primitives.StringValues(companyIds.ToArray());
+                                queryItems["plan"] = plan;
 
-                                if(path != "/api/stores/select")
+                                if(!new List<string>() {"/api/stores", "/api/stores/select"}.Contains(path))
                                 {
                                     queryItems["store"] = store;
-                                    queryItems["plan"] = plan;
                                 }
 
                                 context.Request.Query = new QueryCollection(queryItems);

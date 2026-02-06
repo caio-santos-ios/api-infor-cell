@@ -7,15 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api_infor_cell.src.Controllers
 {
-    [Route("api/salesOrders")]
+    [Route("api/sales-orders")]
     [ApiController]
-    public class SalesOrderController(ISalesOrderService sales) : ControllerBase
+    public class SalesOrderController(ISalesOrderService service) : ControllerBase
     {
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            PaginationApi<List<dynamic>> response = await sales.GetAllAsync(new(Request.Query));
+            PaginationApi<List<dynamic>> response = await service.GetAllAsync(new(Request.Query));
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
@@ -23,47 +23,48 @@ namespace api_infor_cell.src.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {
-            ResponseApi<dynamic?> response = await sales.GetByIdAggregateAsync(id);
+            ResponseApi<dynamic?> response = await service.GetByIdAggregateAsync(id);
             return StatusCode(response.StatusCode, new { response.Result });
         }
-
-        // [Authorize]
-        // [HttpGet("select")]
-        // public async Task<IActionResult> GetSelect()
-        // {
-        //     ResponseApi<List<dynamic>> response = await sales.GetSelectAsync(new(Request.Query));
-        //     return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        // }
         
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateSalesOrderDTO body)
+        public async Task<IActionResult> Create([FromBody] CreateSalesOrderDTO request)
         {
-            if (body == null) return BadRequest("Dados inválidos.");
+            if (request == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<SalesOrder?> response = await sales.CreateAsync(body);
+            ResponseApi<SalesOrder?> response = await service.CreateAsync(request);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateSalesOrderDTO body)
+        public async Task<IActionResult> Update([FromBody] UpdateSalesOrderDTO request)
         {
-            if (body == null) return BadRequest("Dados inválidos.");
+            if (request == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<SalesOrder?> response = await sales.UpdateAsync(body);
+            ResponseApi<SalesOrder?> response = await service.UpdateAsync(request);
 
             return StatusCode(response.StatusCode, new { response.Result });
-        }
-
+        }        
         
+        [Authorize]
+        [HttpPut("finish")]
+        public async Task<IActionResult> Finish([FromBody] FinishSalesOrderDTO request)
+        {
+            if (request == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<SalesOrder?> response = await service.FinishAsync(request);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }        
         
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<SalesOrder> response = await sales.DeleteAsync(id);
+            ResponseApi<SalesOrder> response = await service.DeleteAsync(id);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

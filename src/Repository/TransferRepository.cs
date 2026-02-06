@@ -28,6 +28,9 @@ namespace api_infor_cell.src.Repository
                 MongoUtil.Lookup("stores", ["$storeOriginId"], ["$_id"], "_storeOrigin", [["deleted", false]], 1),
                 MongoUtil.Lookup("stores", ["$storeDestinationId"], ["$_id"], "_storeDestination", [["deleted", false]], 1),
                 
+                MongoUtil.Lookup("employees", ["$createdBy"], ["$_id"], "_employee", [["deleted", false]], 1),
+                MongoUtil.Lookup("users", ["$createdBy"], ["$_id"], "_user", [["deleted", false]], 1),
+
                 new("$addFields", new BsonDocument
                 {
                     {"productId", MongoUtil.First("_purchaseOrderItem.productId")},
@@ -41,6 +44,8 @@ namespace api_infor_cell.src.Repository
                     {"productName", MongoUtil.First("_product.name")},
                     {"storeOriginName", MongoUtil.First("_storeOrigin.tradeName")},
                     {"storeDestinationName", MongoUtil.First("_storeDestination.tradeName")},
+                    {"userName", MongoUtil.First("_user.name")},
+                    {"employeeName", MongoUtil.First("_employee.name")},
                 }),
                 new("$project", new BsonDocument
                 {

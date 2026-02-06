@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api_infor_cell.src.Controllers
 {
-    [Route("api/salesOrderItems")]
+    [Route("api/sales-orders-items")]
     [ApiController]
     public class SalesOrderItemController(ISalesOrderItemService service) : ControllerBase
     {

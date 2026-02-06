@@ -24,5 +24,8 @@ namespace api_infor_cell.src.Models.Base
         
         [BsonElement("deletedAt")]
         public DateTime? DeletedAt {get;set;}
+        
+        [BsonElement("deletedBy")]
+        public string DeletedBy {get;set;} = string.Empty;
     }
 }

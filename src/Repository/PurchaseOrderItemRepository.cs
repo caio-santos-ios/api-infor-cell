@@ -39,8 +39,10 @@ namespace api_infor_cell.src.Repository
                     {"priceDiscount", 1},
                     {"moveStock", 1},
                     {"createdAt", 1},
+                    {"variations", 1},
                     {"productName", MongoUtil.First("_product.name")},
-                    {"supplierName", MongoUtil.First("_supplier.tradeName")}
+                    {"hasProductSerial", MongoUtil.First("_product.hasSerial")},
+                    {"supplierName", MongoUtil.First("_supplier.tradeName")},
                 }),
                 new("$sort", pagination.PipelineSort),
             };

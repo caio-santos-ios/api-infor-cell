@@ -9,96 +9,113 @@ using AutoMapper;
 namespace api_infor_cell.src.Services
 {
     public class StockService(IStockRepository repository, IMapper _mapper) : IStockService
-{
-    #region READ
-    public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
     {
-        try
+        #region READ
+        public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
         {
-            PaginationUtil<Stock> pagination = new(request.QueryParams);
-            ResponseApi<List<dynamic>> Stocks = await repository.GetAllAsync(pagination);
-            int count = await repository.GetCountDocumentsAsync(pagination);
-            return new(Stocks.Data, count, pagination.PageNumber, pagination.PageSize);
+            try
+            {
+                PaginationUtil<Stock> pagination = new(request.QueryParams);
+                ResponseApi<List<dynamic>> Stocks = await repository.GetAllAsync(pagination);
+                int count = await repository.GetCountDocumentsAsync(pagination);
+                return new(Stocks.Data, count, pagination.PageNumber, pagination.PageSize);
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
         }
-        catch
+        
+        public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
         {
-            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            try
+            {
+                ResponseApi<dynamic?> Stock = await repository.GetByIdAggregateAsync(id);
+                if(Stock.Data is null) return new(null, 404, "Estoque não encontrada");
+                return new(Stock.Data);
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
         }
-    }
-    
-    public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
-    {
-        try
+        #endregion
+        
+        #region CREATE
+        public async Task<ResponseApi<Stock?>> CreateAsync(CreateStockDTO request)
         {
-            ResponseApi<dynamic?> Stock = await repository.GetByIdAggregateAsync(id);
-            if(Stock.Data is null) return new(null, 404, "Estoque não encontrada");
-            return new(Stock.Data);
-        }
-        catch
-        {
-            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-        }
-    }
-    #endregion
-    
-    #region CREATE
-    public async Task<ResponseApi<Stock?>> CreateAsync(CreateStockDTO request)
-    {
-        try
-        {
-            Stock stock = _mapper.Map<Stock>(request);
-            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
-            stock.Code = code.Data.ToString().PadLeft(6, '0');
+            try
+            {
+                Stock stock = _mapper.Map<Stock>(request);
+                ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
+                stock.Code = code.Data.ToString().PadLeft(6, '0');
+                string costPart = request.Cost.ToString().PadLeft(7, '0');
+                string quantityPart = request.Quantity.ToString().PadLeft(4, '0');
+                stock.SerialNumber = $"{costPart}{quantityPart}";
 
-            ResponseApi<Stock?> response = await repository.CreateAsync(stock);
+                ResponseApi<Stock?> response = await repository.CreateAsync(stock);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Estoque.");
-            return new(response.Data, 201, "Estoque criada com sucesso.");
+                if(response.Data is null) return new(null, 400, "Falha ao criar Estoque.");
+                return new(response.Data, 201, "Estoque criada com sucesso.");
+            }
+            catch
+            { 
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+            }
         }
-        catch
-        { 
-            return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
-        }
-    }
-    #endregion
-    
-    #region UPDATE
-    public async Task<ResponseApi<Stock?>> UpdateAsync(UpdateStockDTO request)
-    {
-        try
+        #endregion
+        
+        #region UPDATE
+        public async Task<ResponseApi<Stock?>> UpdateAsync(UpdateStockDTO request)
         {
-            ResponseApi<Stock?> StockResponse = await repository.GetByIdAsync(request.Id);
-            if(StockResponse.Data is null) return new(null, 404, "Falha ao atualizar");
-            
-            Stock Stock = _mapper.Map<Stock>(request);
-            Stock.UpdatedAt = DateTime.UtcNow;
+            try
+            {
+                ResponseApi<Stock?> StockResponse = await repository.GetByIdAsync(request.Id);
+                if(StockResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+                
+                Stock Stock = _mapper.Map<Stock>(request);
+                Stock.UpdatedAt = DateTime.UtcNow;
 
-            ResponseApi<Stock?> response = await repository.UpdateAsync(Stock);
-            if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
-            return new(response.Data, 201, "Atualizada com sucesso");
+                ResponseApi<Stock?> response = await repository.UpdateAsync(Stock);
+                if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
+                return new(response.Data, 201, "Atualizado com sucesso");
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
         }
-        catch
+
+        #endregion
+        
+        #region DELETE
+        public async Task<ResponseApi<Stock>> DeleteAllByProductAsync(DeleteDTO request)
         {
-            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            try
+            {
+
+                ResponseApi<Stock> stock = await repository.DeleteAllByProductAsync(request);
+                if(!stock.IsSuccess) return new(null, 400, stock.Message);
+                return new(null, 204, "Excluída com sucesso");
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
         }
+        public async Task<ResponseApi<Stock>> DeleteAsync(string id)
+        {
+            try
+            {
+                ResponseApi<Stock> Stock = await repository.DeleteAsync(id);
+                if(!Stock.IsSuccess) return new(null, 400, Stock.Message);
+                return new(null, 204, "Excluída com sucesso");
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
+        }
+        #endregion 
     }
-   
-    #endregion
-    
-    #region DELETE
-    public async Task<ResponseApi<Stock>> DeleteAsync(string id)
-    {
-        try
-        {
-            ResponseApi<Stock> Stock = await repository.DeleteAsync(id);
-            if(!Stock.IsSuccess) return new(null, 400, Stock.Message);
-            return new(null, 204, "Excluída com sucesso");
-        }
-        catch
-        {
-            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-        }
-    }
-    #endregion 
-}
 }

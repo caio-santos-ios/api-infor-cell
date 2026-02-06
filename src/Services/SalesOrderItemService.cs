@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class SalesOrderItemService(ISalesOrderItemRepository repository, IMapper _mapper) : ISalesOrderItemService
+    public class SalesOrderItemService(ISalesOrderItemRepository repository, ISalesOrderRepository salesOrderRepository, IMapper _mapper) : ISalesOrderItemService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> SalesOrderItem = await repository.GetByIdAggregateAsync(id);
-            if(SalesOrderItem.Data is null) return new(null, 404, "Loja não encontrada");
+            if(SalesOrderItem.Data is null) return new(null, 404, "Item do Pedido de Venda não encontrada");
             return new(SalesOrderItem.Data);
         }
         catch
@@ -46,11 +46,30 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            SalesOrderItem SalesOrderItem = _mapper.Map<SalesOrderItem>(request);
-            ResponseApi<SalesOrderItem?> response = await repository.CreateAsync(SalesOrderItem);
+            SalesOrderItem salesOrderItem = _mapper.Map<SalesOrderItem>(request);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+
+            ResponseApi<SalesOrderItem?> response = await repository.CreateAsync(salesOrderItem);
+            if(response.Data is null) return new(null, 400, "Falha ao criar Item do Pedido de Venda.");
+            
+            ResponseApi<SalesOrder?> salesOrder = await salesOrderRepository.GetByIdAsync(request.SalesOrderId);
+            if(salesOrder.Data is not null)
+            {
+                // decimal total = items.Data.Sum(x => x.Total);
+                // decimal quantity = items.Data.Sum(x => x.Quantity);
+                // decimal discountValue = items.Data.Sum(x => x.DiscountValue);
+
+                salesOrder.Data.Total = request.Total;
+                salesOrder.Data.Quantity = request.Quantity;
+                salesOrder.Data.DiscountValue = request.DiscountValue;
+                salesOrder.Data.UpdatedAt = DateTime.UtcNow;
+                salesOrder.Data.UpdatedBy = request.UpdatedBy;
+
+                await salesOrderRepository.UpdateAsync(salesOrder.Data);
+            };
+            
+
+            return new(response.Data, 201, "Item do Pedido de Venda criada com sucesso.");
         }
         catch
         { 
@@ -64,14 +83,37 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<SalesOrderItem?> SalesOrderItemResponse = await repository.GetByIdAsync(request.Id);
-            if(SalesOrderItemResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<SalesOrderItem?> salesOrderItemResponse = await repository.GetByIdAsync(request.Id);
+            if(salesOrderItemResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            SalesOrderItem SalesOrderItem = _mapper.Map<SalesOrderItem>(request);
-            SalesOrderItem.UpdatedAt = DateTime.UtcNow;
+            SalesOrderItem salesOrderItem = _mapper.Map<SalesOrderItem>(request);
+            salesOrderItem.UpdatedAt = DateTime.UtcNow;
+            salesOrderItem.CreatedAt = salesOrderItemResponse.Data.CreatedAt;
 
-            ResponseApi<SalesOrderItem?> response = await repository.UpdateAsync(SalesOrderItem);
+            ResponseApi<SalesOrderItem?> response = await repository.UpdateAsync(salesOrderItem);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
+
+            ResponseApi<List<SalesOrderItem>> items = await repository.GetBySalesOrderIdAsync(request.SalesOrderId, request.Plan, request.Company, request.Store);
+            if(items.Data is not null)
+            {
+                ResponseApi<SalesOrder?> salesOrder = await salesOrderRepository.GetByIdAsync(request.SalesOrderId);
+
+                if(salesOrder.Data is not null)
+                {
+                    decimal total = items.Data.Sum(x => x.Total);
+                    decimal quantity = items.Data.Sum(x => x.Quantity);
+                    decimal discountValue = items.Data.Sum(x => x.DiscountValue);
+
+                    salesOrder.Data.Total = total;
+                    salesOrder.Data.Quantity = quantity;
+                    salesOrder.Data.DiscountValue = discountValue;
+                    salesOrder.Data.UpdatedAt = DateTime.UtcNow;
+                    salesOrder.Data.UpdatedBy = request.UpdatedBy;
+
+                    await salesOrderRepository.UpdateAsync(salesOrder.Data);
+                };
+            };
+
             return new(response.Data, 201, "Atualizada com sucesso");
         }
         catch
@@ -79,7 +121,7 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
-   
+
     #endregion
     
     #region DELETE
@@ -87,8 +129,29 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<SalesOrderItem> SalesOrderItem = await repository.DeleteAsync(id);
-            if(!SalesOrderItem.IsSuccess) return new(null, 400, SalesOrderItem.Message);
+            ResponseApi<SalesOrderItem> salesOrderItem = await repository.DeleteAsync(id);
+            if(!salesOrderItem.IsSuccess || salesOrderItem.Data is null) return new(null, 400, salesOrderItem.Message);
+
+            ResponseApi<List<SalesOrderItem>> items = await repository.GetBySalesOrderIdAsync(salesOrderItem.Data.SalesOrderId, salesOrderItem.Data.Plan, salesOrderItem.Data.Company, salesOrderItem.Data.Store);
+            if(items.Data is not null)
+            {
+                ResponseApi<SalesOrder?> salesOrder = await salesOrderRepository.GetByIdAsync(salesOrderItem.Data.SalesOrderId);
+
+                if(salesOrder.Data is not null)
+                {
+                    decimal total = items.Data.Sum(x => x.Total);
+                    decimal quantity = items.Data.Sum(x => x.Quantity);
+                    decimal discountValue = items.Data.Sum(x => x.DiscountValue);
+
+                    salesOrder.Data.Total = total;
+                    salesOrder.Data.Quantity = quantity;
+                    salesOrder.Data.DiscountValue = discountValue;
+                    salesOrder.Data.UpdatedAt = DateTime.UtcNow;
+
+                    await salesOrderRepository.UpdateAsync(salesOrder.Data);
+                };
+            };
+
             return new(null, 204, "Excluída com sucesso");
         }
         catch

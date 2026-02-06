@@ -1,17 +1,20 @@
 using System.ComponentModel.DataAnnotations;
+using api_infor_cell.src.Models;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
     public class CreateExchangeDTO : RequestDTO
     {
-        [Required(ErrorMessage = "A Loja de Origem é obrigatório.")]
-        [Display(Order = 1)]
-        public string StoreOriginId { get; set; } = string.Empty;
+        public string Origin { get; set; } = string.Empty;
+        public decimal Cost { get; set; }
+        public List<VariationProduct> Variations {get;set;} = [];
+        public List<string> VariationsCode { get; set; } = [];
 
-        [Required(ErrorMessage = "A Loja de Destino é obrigatório.")]
-        [Display(Order = 2)]
-        public string StoreDestinationId { get; set; } = string.Empty;
-        public string PurchaseOrderItemId { get; set; } = string.Empty;
-        public decimal Quantity { get; set; }
+        // TROCA
+        [Required(ErrorMessage = "O Produto é obrigatório.")]
+        [Display(Order = 1)]
+        public string ProductId { get; set; } = string.Empty;
+        public string SalesOrderItemId { get; set; } = string.Empty;
+        public string ForSale { get; set; } = string.Empty;
     }
 }

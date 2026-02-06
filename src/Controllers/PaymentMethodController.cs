@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api_infor_cell.src.Controllers
 {
-    [Route("api/paymentMethods")]
+    [Route("api/payment-methods")]
     [ApiController]
     public class PaymentMethodController(IPaymentMethodService service) : ControllerBase
     {

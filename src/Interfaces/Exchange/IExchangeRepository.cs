@@ -8,7 +8,9 @@ public interface IExchangeRepository
 {
     Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Exchange> pagination);
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
+    Task<ResponseApi<List<dynamic>>> GetBySalesOrderItemIdAggregateAsync(string salesOrderItemId);
     Task<ResponseApi<Exchange?>> GetByIdAsync(string id);
+    Task<ResponseApi<List<Exchange>>> GetReleasedStockAsync(string plan, string company, string store);
     Task<int> GetCountDocumentsAsync(PaginationUtil<Exchange> pagination);
     Task<ResponseApi<Exchange?>> CreateAsync(Exchange address);
     Task<ResponseApi<Exchange?>> UpdateAsync(Exchange address);

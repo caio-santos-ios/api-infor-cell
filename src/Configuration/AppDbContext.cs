@@ -88,7 +88,7 @@ namespace api_infor_cell.src.Configuration
         }
         public IMongoCollection<Flag> Flags
         {
-             get { return Database.GetCollection<Flag>("flags"); }
+            get { return Database.GetCollection<Flag>("flags"); }
         }
         public IMongoCollection<Model> Models
         {
@@ -96,15 +96,15 @@ namespace api_infor_cell.src.Configuration
         }
         public IMongoCollection<PaymentMethod> PaymentMethods
         {
-            get { return Database.GetCollection<PaymentMethod>("paymentmethods"); }
+            get { return Database.GetCollection<PaymentMethod>("payment_methods"); }
         }
         public IMongoCollection<ServiceOrder> ServiceOrders
         {
-            get { return Database.GetCollection<ServiceOrder>("serviceorders"); }
+            get { return Database.GetCollection<ServiceOrder>("service_orders"); }
         }
         public IMongoCollection<SalesOrder> SalesOrders
         {
-            get { return Database.GetCollection<SalesOrder>("salesorders"); }
+            get { return Database.GetCollection<SalesOrder>("sales_orders"); }
         }
         public IMongoCollection<Stock> Stocks
         {
@@ -116,11 +116,11 @@ namespace api_infor_cell.src.Configuration
         }
         public IMongoCollection<ServiceOrderItem> ServiceOrderItems
         {
-            get { return Database.GetCollection<ServiceOrderItem>("serviceorderitems"); }
+            get { return Database.GetCollection<ServiceOrderItem>("service_order_items"); }
         }
         public IMongoCollection<SalesOrderItem> SalesOrderItems
         {
-            get { return Database.GetCollection<SalesOrderItem>("salesorderitems"); }
+            get { return Database.GetCollection<SalesOrderItem>("sales_order_items"); }
         }
         public IMongoCollection<Customer> Customers
         {
@@ -146,6 +146,10 @@ namespace api_infor_cell.src.Configuration
         public IMongoCollection<Variation> Variations
         {
             get { return Database.GetCollection<Variation>("variations"); }
+        }
+        public IMongoCollection<ProfilePermission> ProfilePermissions
+        {
+            get { return Database.GetCollection<ProfilePermission>("profile_permissions"); }
         }       
         #endregion
     }

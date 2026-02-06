@@ -23,13 +23,24 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
+
+                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+                MongoUtil.Lookup("employees", ["$sellerId"], ["$_id"], "_seller", [["deleted", false]], 1),
+                MongoUtil.Lookup("users", ["$sellerId"], ["$_id"], "_user", [["deleted", false]], 1),
+
                 new("$addFields", new BsonDocument
                 {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"customerName", MongoUtil.First("_customer.tradeName")},
+                    {"userName", MongoUtil.First("_user.name")},
+                    {"employeeName", MongoUtil.First("_seller.name")},
                 }),
                 new("$project", new BsonDocument
                 {
                     {"_id", 0}, 
+                    {"_customer", 0}, 
+                    {"_user", 0}, 
+                    {"_seller", 0}, 
                 }),
                 new("$sort", pagination.PipelineSort),
             };
@@ -53,12 +64,24 @@ namespace api_infor_cell.src.Repository
                     {"_id", new ObjectId(id)},
                     {"deleted", false}
                 }),
+                
+                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+                MongoUtil.Lookup("employees", ["$sellerId"], ["$_id"], "_seller", [["deleted", false]], 1),
+                MongoUtil.Lookup("users", ["$sellerId"], ["$_id"], "_user", [["deleted", false]], 1),
+
+
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"customerName", MongoUtil.First("_customer.tradeName")},
+                    {"userName", MongoUtil.First("_user.name")},
+                    {"employeeName", MongoUtil.First("_seller.name")},
                 }),
                 new("$project", new BsonDocument
                 {
                     {"_id", 0},
+                    {"_customer", 0},
+                    {"_user", 0},
+                    {"_seller", 0},
                 }),
             ];
 
@@ -85,6 +108,18 @@ namespace api_infor_cell.src.Repository
         }
     }
     
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.SalesOrders.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Próximo Código");
+        }
+    }
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<SalesOrder> pagination)
     {
         List<BsonDocument> pipeline = new()

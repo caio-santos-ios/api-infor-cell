@@ -16,6 +16,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("serialNumber")]
         public string SerialNumber { get; set; } = string.Empty;
         
+        [BsonElement("barcode")]
+        public string Barcode { get; set; } = string.Empty;
+        
         [BsonElement("productId")]
         public string ProductId { get; set; } = string.Empty;
 
@@ -24,6 +27,12 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("purchaseOrderItemId")]
         public string PurchaseOrderItemId { get; set; } = string.Empty;
+
+        [BsonElement("origin")]
+        public string Origin { get; set; } = string.Empty;
+        
+        [BsonElement("originDescription")]
+        public string OriginDescription { get; set; } = string.Empty;
 
         [BsonElement("cost")]
         public decimal Cost { get; set; }
@@ -41,6 +50,15 @@ namespace api_infor_cell.src.Models
         public decimal PriceDiscount { get; set; }
         
         [BsonElement("variations")]
-        public List<Variation> Variations {get;set;} = [];
+        public List<VariationProduct> Variations {get;set;} = [];
+        
+        [BsonElement("variationsCode")]
+        public List<string> VariationsCode { get; set; } = [];
+        
+        [BsonElement("forSale")]
+        public string ForSale { get; set; } = string.Empty;
+
+        [BsonElement("originId")]
+        public string OriginId { get; set; } = string.Empty;
     }
 }

@@ -64,22 +64,22 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<ServiceOrderItem?> ServiceOrderItemResponse = await repository.GetByIdAsync(request.Id);
-            if(ServiceOrderItemResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<ServiceOrderItem?> serviceOrderItemResponse = await repository.GetByIdAsync(request.Id);
+            if(serviceOrderItemResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            ServiceOrderItem ServiceOrderItem = _mapper.Map<ServiceOrderItem>(request);
-            ServiceOrderItem.UpdatedAt = DateTime.UtcNow;
+            ServiceOrderItem serviceOrderItem = _mapper.Map<ServiceOrderItem>(request);
+            serviceOrderItem.UpdatedAt = DateTime.UtcNow;
 
-            ResponseApi<ServiceOrderItem?> response = await repository.UpdateAsync(ServiceOrderItem);
+            ResponseApi<ServiceOrderItem?> response = await repository.UpdateAsync(serviceOrderItem);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
-            return new(response.Data, 201, "Atualizada com sucesso");
+            return new(response.Data, 201, "Atualizado com sucesso");
         }
         catch
         {
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
-   
+
     #endregion
     
     #region DELETE

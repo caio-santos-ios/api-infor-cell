@@ -74,6 +74,10 @@ namespace api_infor_cell.src.Services
             if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Fornecedor");
 
             Supplier accredited = _mapper.Map<Supplier>(request);
+            if(request.Type == "F")
+            {
+                accredited.TradeName = request.CorporateName;
+            }
             ResponseApi<Supplier?> response = await supplier.CreateAsync(accredited);
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Fornecedor.");
@@ -115,7 +119,10 @@ namespace api_infor_cell.src.Services
             Supplier accredited = _mapper.Map<Supplier>(request);
             accredited.UpdatedAt = DateTime.UtcNow;
             accredited.CreatedAt = accreditedResponse.Data.CreatedAt;
-
+            if(request.Type == "F")
+            {
+                accredited.TradeName = request.CorporateName;
+            };
             ResponseApi<Supplier?> response = await supplier.UpdateAsync(accredited);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");            
 

@@ -105,6 +105,18 @@ namespace api_infor_cell.src.Repository
         List<BsonDocument> results = await context.PaymentMethods.Aggregate<BsonDocument>(pipeline).ToListAsync();
         return results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).Count();
     }
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.PaymentMethods.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Próximo Código");
+        }
+    }
     #endregion
     
     #region CREATE

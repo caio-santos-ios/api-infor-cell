@@ -28,13 +28,13 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
-        // [Authorize]
-        // [HttpGet("select")]
-        // public async Task<IActionResult> GetSelect()
-        // {
-        //     ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
-        //     return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        // }
+        [Authorize]
+        [HttpGet("select/sellers")]
+        public async Task<IActionResult> GetSelectSellers([FromQuery] string plan, [FromQuery] string company, [FromQuery] string store)
+        {
+            ResponseApi<List<Employee>> response = await service.GetSellersAsync(plan, company, store);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
         
         [Authorize]
         [HttpPost]
@@ -66,7 +66,7 @@ namespace api_infor_cell.src.Controllers
 
             ResponseApi<Employee?> response = await service.UpdateModuleAsync(request);
 
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }        
         
         [Authorize]
@@ -77,7 +77,7 @@ namespace api_infor_cell.src.Controllers
 
             ResponseApi<Employee?> response = await service.UpdateCalendarAsync(request);
 
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }        
         
         [Authorize]
@@ -87,7 +87,7 @@ namespace api_infor_cell.src.Controllers
             string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             ResponseApi<dynamic?> response = await service.GetLoggedAsync(userId!);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [Authorize]

@@ -4,10 +4,11 @@ using api_infor_cell.src.Models.Base;
 using api_infor_cell.src.Shared.DTOs;
 using api_infor_cell.src.Shared.Utils;
 using AutoMapper;
+using MongoDB.Driver;
 
 namespace api_infor_cell.src.Services
 {
-    public class TransferService(ITransferRepository repository, IStockRepository stockRepository, IMapper _mapper) : ITransferService
+    public class TransferService(ITransferRepository repository, IStockRepository stockRepository, IStoreRepository storeRepository, IStockService stockService, IMapper _mapper) : ITransferService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -45,66 +46,157 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            var response = await stockRepository.GetByPurchaseItemIdAsync(
-                request.PurchaseOrderItemId, 
-                request.Plan, 
-                request.Company, 
-                request.StoreOriginId);
+            ResponseApi<List<Stock>> stocksOriginResponse = await stockRepository.GetStockTransfer(
+            request.ProductId, 
+            request.Barcode, 
+            request.ProductHasSerial,
+            request.Serial,
+            request.Plan, 
+            request.Company, 
+            request.StoreOriginId);
 
-            if (response.Data == null || !response.Data.Any())
-                return new(null, 404, "Estoque não encontrado na loja de origem.");
+            if (stocksOriginResponse.Data == null || stocksOriginResponse.Data.Count == 0) return new(null, 404, "Estoque de origem não encontrado para esta variação.");
+            ResponseApi<Store?> store = await storeRepository.GetByIdAsync(request.Store);
 
-            decimal quantityRemaining = request.Quantity;
-            decimal totalAvailable = response.Data.Sum(s => Convert.ToDecimal(s.Quantity));
-
-            if (totalAvailable < quantityRemaining)
-                return new(null, 400, "Saldo insuficiente para realizar a transferência.");
-
-            foreach (var stock in response.Data)
+            if(request.ProductHasSerial == "yes")
             {
-                if (quantityRemaining <= 0) break;
+                if(string.IsNullOrEmpty(request.Barcode)) return new(null, 400, "A Variação é obrigatória.");
+                if(string.IsNullOrEmpty(request.Serial)) return new(null, 400, "O Serial é obrigatório.");
+                System.Console.WriteLine(stocksOriginResponse.Data.Count);
+                Stock? stock = stocksOriginResponse.Data.Where(x => x.Variations.Where(v => v.Barcode == request.Barcode && v.VariationId == request.VariationId && v.Serials.Where(s => s.Code == request.Serial).Count() > 0).Count() > 0).FirstOrDefault();
+                if (stock is null) return new(null, 404, "Estoque de origem não encontrado para esta variação.");
 
-                decimal currentStockQty = Convert.ToDecimal(stock.Quantity);
-                if (currentStockQty <= 0) continue;
+                VariationProduct? variationProduct = stock.Variations.Where(v => v.Barcode == request.Barcode && v.VariationId == request.VariationId).FirstOrDefault();
+                if (variationProduct is null) return new(null, 404, "Estoque de origem não encontrado para esta variação.");
+                Util.ConsoleLog(variationProduct);
+                VariationItemSerial? variationItemSerial = variationProduct.Serials.Where(s => s.Code == request.Serial && s.HasAvailable).FirstOrDefault();
+                if (variationItemSerial is null) return new(null, 404, "Estoque de origem não encontrado para este serial.");
 
-                decimal amountToMove = Math.Min(currentStockQty, quantityRemaining);
-
-                var history = new Transfer
+                string costPart = stock.Cost.ToString().PadLeft(7, '0');
+                string quantityPart = "1".PadLeft(4, '0');
+                CreateStockDTO newStock = new()
                 {
-                    Store = request.Store,
-                    StoreOriginId = request.StoreOriginId,
-                    StoreDestinationId = request.StoreDestinationId,
-                    PurchaseOrderItemId = request.PurchaseOrderItemId,
-                    StockId = stock.Id, 
-                    Quantity = amountToMove,
+                    ProductId = request.ProductId,
+                    SupplierId = stock.SupplierId,
+                    Price = stock.Price,
+                    Cost = stock.Cost,
+                    CostDiscount = stock.CostDiscount,
+                    PriceDiscount = stock.PriceDiscount,
+                    PurchaseOrderItemId = stock.PurchaseOrderItemId,
+                    Store = request.StoreDestinationId,
+                    Quantity = 1,
+                    Barcode = request.Barcode,
+                    Variations = new List<VariationProduct>()
+                    {
+                        new VariationProduct()
+                        {
+                            Attributes = variationProduct.Attributes,
+                            Barcode = variationProduct.Barcode,
+                            Stock = variationProduct.Stock,
+                            Value = variationProduct.Value,
+                            VariationId = variationProduct.VariationId,
+                            VariationItemId = variationProduct.VariationItemId,
+                            Serials = new List<VariationItemSerial>()
+                            {
+                                new()
+                                {
+                                    Code = variationItemSerial.Code,
+                                    HasAvailable = variationItemSerial.HasAvailable,
+                                    Cost = variationItemSerial.Cost,
+                                    Price = variationItemSerial.Price
+                                }
+                            }
+                        }
+                    },
+                    VariationsCode = stock.VariationsCode,
                     Company = request.Company,
                     Plan = request.Plan,
-                    CreatedAt = DateTime.UtcNow
+                    Origin = store.Data is null ? "Transferência recebida por loja" :  $"Transferência recebida da loja {store.Data.CorporateName}",
+                    CreatedBy = request.CreatedBy
                 };
 
-                if (currentStockQty == amountToMove)
+                await stockService.CreateAsync(newStock);
+
+                List<VariationProduct> variationsOrigin = stock.Variations.Where(v => v.Barcode == request.Barcode && v.VariationId == request.VariationId).ToList();
+                foreach (VariationProduct variation in variationsOrigin)
                 {
-                    stock.Store = request.StoreDestinationId;
-                    await stockRepository.UpdateAsync(stock);
+                    List<VariationItemSerial> serialOrigin = variation.Serials.Where(s => s.Code != request.Serial).ToList();
+
+                    variation.Serials = serialOrigin;
+                    variation.Stock -= 1;
                 }
-                else
+
+                stock.Quantity -= 1;
+                stock.Variations = variationsOrigin;
+
+                await stockRepository.UpdateAsync(stock);
+
+                await repository.CreateAsync(new Transfer()
                 {
-                    var newStock = stock;
-                    newStock.Store = request.StoreDestinationId;
-                    newStock.Quantity = amountToMove;
+                    Plan = request.Plan,
+                    Company = request.Company,
+                    Store = request.Store,
+                    CreatedBy = request.CreatedBy,
+                    PurchaseOrderItemId = stock.PurchaseOrderItemId,
+                    StockId = stock.Id,
+                    StoreDestinationId = request.StoreDestinationId,
+                    StoreOriginId = request.StoreOriginId,
+                    Quantity = 1
+                });
+            }
+            else
+            {
+                // decimal totalBalanceOrigin = stocksOriginResponse.Data.Sum(x => x.Quantity);
+
+                // if (totalBalanceOrigin < request.Quantity) return new(null, 400, $"Saldo insuficiente na origem. Disponível: {totalBalanceOrigin:N2}");
+
+                // var stockOrigin = stocksOriginResponse.Data.First();
+
+                // stockOrigin.Quantity -= request.Quantity;
+                // stockOrigin.UpdatedAt = DateTime.UtcNow;
+                // stockOrigin.UpdatedBy = request.UpdatedBy;
+                
+                // await stockRepository.UpdateAsync(stockOrigin);
+
+                // ResponseApi<List<Stock>> stocksDestinationResponse = await stockRepository.GetStockTransfer(
+                //     request.ProductId, 
+                //     request.Barcode, 
+                //     request.Plan, 
+                //     request.Company, 
+                //     request.StoreDestinationId);
+
+                // Stock? stockDest = stocksDestinationResponse.Data?.FirstOrDefault();
+
+                // if (stockDest != null)
+                // {
+                //     stockDest.Quantity += request.Quantity;
+                //     stockDest.UpdatedAt = DateTime.UtcNow;
+                //     stockDest.UpdatedBy = request.UpdatedBy;
+                //     stockDest.Origin = store.Data is null ? "Transferência recebida por loja" :  $"Transferência recebida da loja {store.Data.CorporateName}";
                     
-                    var nextCode = await stockRepository.GetNextCodeAsync(newStock.Plan, newStock.Company, newStock.Store);
-                    newStock.Code = nextCode.Data.ToString().PadLeft(6, '0');
+                //     await stockRepository.UpdateAsync(stockDest);
+                // }
+                // else
+                // {                
+                //     Stock newStock = new()
+                //     {
+                //         ProductId = request.ProductId,
+                //         Store = request.StoreDestinationId,
+                //         Quantity = request.Quantity,
+                //         Barcode = request.Barcode,
+                //         // Variation = stockOrigin.Variation, 
+                //         VariationsCode = stockOrigin.VariationsCode,
+                //         Company = request.Company,
+                //         Plan = request.Plan,
+                //         Active = true,
+                //         Deleted = false,
+                //         Origin = store.Data is null ? "Transferência recebida por loja" :  $"Transferência recebida da loja {store.Data.CorporateName}",
+                //         CreatedAt = DateTime.UtcNow,
+                //         CreatedBy = request.CreatedBy
+                //     };
 
-                    await stockRepository.CreateAsync(newStock);
-
-                    stock.Quantity = currentStockQty - amountToMove;
-                    await stockRepository.UpdateAsync(stock);
-                }
-
-                await repository.CreateAsync(history);
-
-                quantityRemaining -= amountToMove;
+                //     await stockRepository.CreateAsync(newStock);
+                // }
             }
 
             return new(null, 201, "Transferência concluída e registrada com sucesso!");

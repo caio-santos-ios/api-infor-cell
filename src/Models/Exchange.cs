@@ -10,19 +10,28 @@ namespace api_infor_cell.src.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
-        [BsonElement("storeOriginId")]
-        public string StoreOriginId { get; set; } = string.Empty;
-
-        [BsonElement("storeDestinationId")]
-        public string StoreDestinationId { get; set; } = string.Empty;
+        [BsonElement("salesOrderItemId")]
+        public string SalesOrderItemId { get; set; } = string.Empty;
         
-        [BsonElement("stockId")]
-        public string StockId { get; set; } = string.Empty;
+        [BsonElement("productId")]
+        public string ProductId { get; set; } = string.Empty;
+        
+        [BsonElement("forSale")]
+        public string ForSale { get; set; } = string.Empty;
+        
+        [BsonElement("origin")]
+        public string Origin { get; set; } = string.Empty;
 
-        [BsonElement("purchaseOrderItemId")]
-        public string PurchaseOrderItemId { get; set; } = string.Empty;
-    
-        [BsonElement("quantity")]
-        public decimal Quantity { get; set; }
+        [BsonElement("variations")]
+        public List<VariationProduct> Variations {get;set;} = [];
+        
+        [BsonElement("variationsCode")]
+        public List<string> VariationsCode { get; set; } = [];
+
+        [BsonElement("cost")]
+        public decimal Cost { get; set; }
+
+        [BsonElement("releasedStock")]
+        public bool ReleasedStock { get; set; } = false;
     }
 }

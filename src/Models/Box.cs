@@ -10,10 +10,10 @@ namespace api_infor_cell.src.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
-        [BsonElement("name")]
-        public string Name { get; set; } = string.Empty;
+        [BsonElement("openingValue")]
+        public decimal OpeningValue {get; set;} = 0;
 
-        [BsonElement("brandId")]
-        public string BrandId { get; set; } = string.Empty;
+        [BsonElement("status")]
+        public string Status {get; set;} = string.Empty;
     }
 }

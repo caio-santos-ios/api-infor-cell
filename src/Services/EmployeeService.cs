@@ -9,7 +9,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class EmployeeService(IEmployeeRepository repository, MailHandler mailHandler, IMapper _mapper) : IEmployeeService
+    public class EmployeeService(IEmployeeRepository repository, IProfilePermissionRepository profilePermissionRepository, MailHandler mailHandler, IMapper _mapper) : IEmployeeService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -52,6 +52,18 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
+    public async Task<ResponseApi<List<Employee>>> GetSellersAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            ResponseApi<List<Employee>> employee = await repository.GetSellersAsync(planId, companyId, storeId);
+            return new(employee.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
     #endregion
     
     #region CREATE
@@ -69,83 +81,12 @@ namespace api_infor_cell.src.Services
 
             dynamic access = Util.GenerateCodeAccess();
 
-            List<api_infor_cell.src.Models.Module> modules = [];
-            if(employee.Type == "technical")
-            {
-                modules.Add(new ()
-                {
-                    Code = "D",
-                    Description = "Ordens de Serviços",
-                    Routines = 
-                    [
-                        new()
-                        {
-                            Code = "D1",
-                            Description = "Gerenciar O.S.",
-                            Permissions = new ()
-                            {
-                                Create = true,
-                                Update = true,
-                                Delete = true,
-                                Read = true,
-                            }
-                        },  
-                        new()
-                        {
-                            Code = "D2",
-                            Description = "Painel",
-                            Permissions = new ()
-                            {
-                                Create = true,
-                                Update = true,
-                                Delete = true,
-                                Read = true,
-                            }
-                        },  
-                    ]
-                });
-            }
-
-            if(employee.Type == "seller")
-            {
-                modules.Add(new ()
-                {
-                    Code = "C",
-                    Description = "Comercial",
-                    Routines = 
-                    [
-                        new()
-                        {
-                            Code = "C1",
-                            Description = "Pedidos de Vendas",
-                            Permissions = new ()
-                            {
-                                Create = true,
-                                Update = true,
-                                Delete = true,
-                                Read = true,
-                            }
-                        },  
-                        new()
-                        {
-                            Code = "C2",
-                            Description = "Orçamentos",
-                            Permissions = new ()
-                            {
-                                Create = true,
-                                Update = true,
-                                Delete = true,
-                                Read = true,
-                            }
-                        },  
-                    ]
-                });
-            }
+            ResponseApi<ProfilePermission?> profile = await profilePermissionRepository.GetByIdAsync(request.Type);
 
             employee.ValidatedAccess = true;
             employee.CodeAccessExpiration = null;
             employee.Password = BCrypt.Net.BCrypt.HashPassword(access.CodeAccess);
-            employee.Modules = modules;
+            employee.Modules = profile.Data is null ? new() : profile.Data.Modules;
             employee.Companies.Add(request.Company);
             employee.Stores.Add(request.Store);
 

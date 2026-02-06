@@ -2,6 +2,7 @@ using api_infor_cell.src.Configuration;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
+using api_infor_cell.src.Shared.DTOs;
 using api_infor_cell.src.Shared.Utils;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -35,6 +36,8 @@ namespace api_infor_cell.src.Repository
                     { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
                     { "createdAt", MongoUtil.First("createdAt") },
                     { "store", MongoUtil.First("store") },
+                    { "origin", MongoUtil.First("origin") },
+                    { "variations", MongoUtil.First("variations") },
                 }),
 
 
@@ -54,7 +57,8 @@ namespace api_infor_cell.src.Repository
                         }) 
                     },
                     {"productName", MongoUtil.First("_product.name")},
-                    {"variations", MongoUtil.First("_product.variations")},
+                    {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                    // {"variations", MongoUtil.First("_product.variations")},
                 }),
 
                 MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
@@ -72,7 +76,9 @@ namespace api_infor_cell.src.Repository
                 {
                     {"productName", MongoUtil.First("_product.name")},
                     {"supplierName", MongoUtil.First("_supplier.tradeName")},
-                    {"variations", MongoUtil.First("_product.variations")},
+                    // {"variations", MongoUtil.First("_product.variations")},
+                    // {"productHasSerial", MongoUtil.First("_product.variations")},
+                    {"productHasSerial", MongoUtil.First("_product.hasSerial")},
                     {"purchaseOrderDate", MongoUtil.First("_purchaseOrder.date")},
                 }),
 
@@ -94,9 +100,8 @@ namespace api_infor_cell.src.Repository
             List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
             return new(list);
         }
-        catch(Exception ex)
+        catch
         {
-            System.Console.WriteLine(ex.Message);
             return new(null, 500, "Falha ao buscar Estoque");
         }
     }
@@ -139,12 +144,42 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Estoque");
         }
     }
-    public async Task<ResponseApi<List<Stock>>> GetByPurchaseItemIdAsync(string purchaseOrderItemId, string planId, string companyId, string storeId)
+    public async Task<ResponseApi<Stock?>> GetByOriginIdAsync(string originId)
     {
         try
         {
-            List<Stock> stocks = await context.Stocks.Find(x => x.PurchaseOrderItemId == purchaseOrderItemId && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            Stock? stock = await context.Stocks.Find(x => x.OriginId == originId && !x.Deleted).FirstOrDefaultAsync();
+            return new(stock);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
+    public async Task<ResponseApi<List<Stock>>> GetStockTransfer(string productId, string barcode, string hasSerial, string serial, string planId, string companyId, string storeId)
+    {
+        try
+        {
+            // if(hasSerial == "yes")
+            // {
+            //     List<Stock> stocksSerial = await context.Stocks.Find(x => x.ProductId == productId && x.Variations.Where(x => x.Barcode == barcode && x.Serials.Where(s => s.Code == serial).Any()).Count() > 0 && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            //     return new(stocksSerial);
+            // };
+            
+            List<Stock> stocks = await context.Stocks.Find(x => x.ProductId == productId && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
             return new(stocks);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
+    public async Task<ResponseApi<Stock?>> GetVerifyStock(string productId, string planId, string companyId, string storeId)
+    {
+        try
+        {
+            Stock stock = await context.Stocks.Find(x => x.ProductId == productId && x.ForSale == "yes" && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).FirstOrDefaultAsync();
+            return new(stock);
         }
         catch
         {
@@ -218,6 +253,29 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region DELETE
+    public async Task<ResponseApi<Stock>> DeleteAllByProductAsync(DeleteDTO request)
+    {
+        try
+        {
+            List<Stock> stocks = await context.Stocks.Find(x => x.Plan == request.Plan && x.Company == request.Company && x.Store == request.Store && x.ProductId == request.Id && !x.Deleted).ToListAsync();
+            if(stocks is null) return new(null, 404, "Estoque não encontrado");
+
+            foreach (Stock stock in stocks)
+            {
+                stock.Deleted = true;
+                stock.DeletedAt = DateTime.UtcNow;
+                stock.DeletedBy = request.DeletedBy;
+
+                await context.Stocks.ReplaceOneAsync(x => x.Id == stock.Id, stock);
+            }
+
+            return new(null, 204, "Estoque excluída com sucesso");
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao excluír Estoque");
+        }
+    }
     public async Task<ResponseApi<Stock>> DeleteAsync(string id)
     {
         try

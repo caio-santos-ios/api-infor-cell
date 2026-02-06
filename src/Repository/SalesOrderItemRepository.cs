@@ -23,13 +23,27 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
+
+                MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+                MongoUtil.Lookup("attachments", ["$productId"], ["$parentId"], "_images", [["deleted", false]], 1),
+                MongoUtil.Lookup("stock", ["$productId"], ["$productId"], "_stock", [["deleted", false]], 1),
+
                 new("$addFields", new BsonDocument
                 {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"productName", MongoUtil.First("_product.name")},
+                    {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                    {"productVariations", MongoUtil.First("_product.variations")},
+                    {"averageCost", MongoUtil.First("_product.averageCost")},
+                    {"image", MongoUtil.First("_images.uri")},
+                    {"stockVariations", MongoUtil.First("_stock")}
                 }),
+                
                 new("$project", new BsonDocument
                 {
                     {"_id", 0}, 
+                    {"_product", 0},
+                    {"_images", 0}
                 }),
                 new("$sort", pagination.PipelineSort),
             };
@@ -76,15 +90,38 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            SalesOrderItem? address = await context.SalesOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            SalesOrderItem? salesOrderItem = await context.SalesOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(salesOrderItem);
         }
         catch
         {
             return new(null, 500, "Falha ao buscar Lojas");
         }
     }
-    
+    public async Task<ResponseApi<SalesOrderItem?>> GetByProductIdAsync(string productId, string barcode, string plan, string company, string store)
+    {
+        try
+        {
+            SalesOrderItem? salesOrderItem = await context.SalesOrderItems.Find(x => x.ProductId == productId && x.Barcode == barcode && x.Plan == plan && x.Company == company && x.Store == store && !x.Deleted).FirstOrDefaultAsync();
+            return new(salesOrderItem);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Lojas");
+        }
+    }
+    public async Task<ResponseApi<List<SalesOrderItem>>> GetBySalesOrderIdAsync(string salesOrderId, string plan, string company, string store)
+    {
+        try
+        {
+            List<SalesOrderItem> salesOrderItems = await context.SalesOrderItems.Find(x => x.SalesOrderId == salesOrderId && x.Plan == plan && x.Company == company && x.Store == store && !x.Deleted).ToListAsync();
+            return new(salesOrderItems);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Lojas");
+        }
+    }
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<SalesOrderItem> pagination)
     {
         List<BsonDocument> pipeline = new()
@@ -108,13 +145,13 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<SalesOrderItem?>> CreateAsync(SalesOrderItem address)
+    public async Task<ResponseApi<SalesOrderItem?>> CreateAsync(SalesOrderItem salesOrderItem)
     {
         try
         {
-            await context.SalesOrderItems.InsertOneAsync(address);
+            await context.SalesOrderItems.InsertOneAsync(salesOrderItem);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(salesOrderItem, 201, "Lojas criada com sucesso");
         }
         catch
         {
@@ -124,13 +161,13 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<SalesOrderItem?>> UpdateAsync(SalesOrderItem address)
+    public async Task<ResponseApi<SalesOrderItem?>> UpdateAsync(SalesOrderItem salesOrderItem)
     {
         try
         {
-            await context.SalesOrderItems.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.SalesOrderItems.ReplaceOneAsync(x => x.Id == salesOrderItem.Id, salesOrderItem);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(salesOrderItem, 201, "Lojas atualizada com sucesso");
         }
         catch
         {
@@ -144,14 +181,14 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            SalesOrderItem? address = await context.SalesOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            SalesOrderItem? salesOrderItem = await context.SalesOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(salesOrderItem is null) return new(null, 404, "Lojas não encontrado");
+            salesOrderItem.Deleted = true;
+            salesOrderItem.DeletedAt = DateTime.UtcNow;
 
-            await context.SalesOrderItems.ReplaceOneAsync(x => x.Id == id, address);
+            await context.SalesOrderItems.ReplaceOneAsync(x => x.Id == id, salesOrderItem);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(salesOrderItem, 204, "Lojas excluída com sucesso");
         }
         catch
         {

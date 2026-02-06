@@ -40,10 +40,4 @@ namespace api_infor_cell.src.Models
         [BsonElement("serial")]
         public List<VariationItemSerial> Serial {get;set;} = [];
     }
-
-    public class VariationItemSerial
-    {
-        [BsonElement("value")]
-        public string Value {get;set;} = string.Empty;
-    }
 }

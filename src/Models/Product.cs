@@ -48,9 +48,9 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("variations")]
         public List<VariationProduct> Variations {get;set;} = [];
-        
-        // [BsonElement("serials")]
-        // public List<SerialControl> Serials {get;set;} = [];
+
+        [BsonElement("variationsCode")]
+        public List<string> VariationsCode { get; set; } = [];
 
         [BsonElement("sku")]
         public string Sku { get; set; } = string.Empty;
@@ -169,40 +169,40 @@ namespace api_infor_cell.src.Models
         [BsonElement("variationItemId")]
         public string VariationItemId {get;set;} = string.Empty;
 
+        [BsonElement("value")]
+        public string Value {get;set;} = string.Empty;
+
         [BsonElement("stock")]
         public decimal Stock {get;set;} 
+
+        [BsonElement("attributes")]
+        public List<VariationAttribute> Attributes {get;set;} = []; 
+
+        [BsonElement("serials")]
+        public List<VariationItemSerial> Serials {get;set;} = []; 
     }
 
-    public class SerialControl 
+    public class VariationAttribute 
     {
-        [BsonElement("serialNumber")]
-        public string SerialNumber {get;set;} = string.Empty; 
+        [BsonElement("key")]
+        public string Key {get;set;} = string.Empty; 
 
-        [BsonElement("imei1")]
-        public string Imei1 {get;set;} = string.Empty; 
+        [BsonElement("value")]
+        public string Value {get;set;} = string.Empty; 
+    }
 
-        [BsonElement("imei2")]
-        public string Imei2 {get;set;} = string.Empty;  
+    public class VariationItemSerial
+    {
+        [BsonElement("code")]
+        public string Code {get;set;} = string.Empty;
         
-        [BsonElement("status")]
-        public string Status {get;set;} = string.Empty;  
+        [BsonElement("cost")]
+        public decimal Cost {get;set;}
         
-        [BsonElement("individualCost")]
-        public decimal IndividualCost {get;set;}  
-        
-        [BsonElement("individualPrice")]
-        public decimal IndividualPrice {get;set;}  
-        
-        [BsonElement("origin")]
-        public string Origin {get;set;} = string.Empty;  
-        
-        [BsonElement("originDoc")]
-        public string OriginDoc {get;set;} = string.Empty;  
-        
-        [BsonElement("warrantyExpiration")]
-        public DateTime? WarrantyExpiration {get;set;}  
-        
-        [BsonElement("observations")]
-        public string Observations {get;set;} = string.Empty;  
+        [BsonElement("price")]
+        public decimal Price {get;set;}
+
+        [BsonElement("hasAvailable")]
+        public bool HasAvailable {get;set;}
     }
 }

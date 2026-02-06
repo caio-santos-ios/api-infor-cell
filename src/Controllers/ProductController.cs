@@ -20,6 +20,14 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("autocomplete")]
+        public async Task<IActionResult> GetAutocomplete()
+        {
+            PaginationApi<List<dynamic>> response = await service.GetAutocompleteAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {
@@ -58,12 +66,12 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
-        [HttpPut("variations")]
-        public async Task<IActionResult> UpdateVariation([FromBody] UpdateProductDTO body)
+        [HttpPut("stock")]
+        public async Task<IActionResult> UpdateStock([FromBody] UpdateProductDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Product?> response = await service.UpdateVariationAsync(body);
+            ResponseApi<Product?> response = await service.UpdateStockAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

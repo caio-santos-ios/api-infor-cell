@@ -1,7 +1,6 @@
 using System.Text;
 using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Interfaces;
-using api_infor_cell.src.Models;
 using api_infor_cell.src.Repository;
 using api_infor_cell.src.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -125,6 +124,9 @@ namespace api_infor_cell.src.Configuration
 
             builder.Services.AddTransient<IVariationService, VariationService>();
             builder.Services.AddTransient<IVariationRepository, VariationRepository>();
+
+            builder.Services.AddTransient<IProfilePermissionService, ProfilePermissionService>();
+            builder.Services.AddTransient<IProfilePermissionRepository, ProfilePermissionRepository>();
             
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();

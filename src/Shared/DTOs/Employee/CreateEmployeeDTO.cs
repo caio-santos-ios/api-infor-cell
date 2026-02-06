@@ -30,7 +30,7 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Photo {get;set;} = string.Empty;
         public List<string> Companies {get;set;} = [];
         public List<string> Stores {get;set;} = [];
-        public List<Module> Modules {get;set;} = [];
+        public List<ModuleCreateDTO> Modules {get;set;} = [];
         
         [Required(ErrorMessage = "O Tipo é obrigatório.")]
         [Display(Order = 5)]

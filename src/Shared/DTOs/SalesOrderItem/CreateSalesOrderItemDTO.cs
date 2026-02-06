@@ -1,43 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class CreateSalesOrderItemDTO
+    public class CreateSalesOrderItemDTO : RequestDTO
     {
-       
-
-        public string CompanyId { get; set; } = string.Empty; 
-        
-      
-        public string Document { get; set; } = string.Empty; 
-
-       
-        public string CorporateName { get; set; } = string.Empty; 
-
-        
-        public string TradeName { get; set; } = string.Empty; 
-
-        
-        public string StateRegistration { get; set; } = string.Empty; 
-        
-        public string MunicipalRegistration { get; set; } = string.Empty; 
-
-       
-        public string Email { get; set; } = string.Empty;
-
-        public string Phone { get; set; } = string.Empty;
-
-        public string Whatsapp { get; set; } = string.Empty;
-
-       
-        public string Photo { get; set; } = string.Empty;
-
-   
-        public string Website { get; set; } = string.Empty;
+        [Required(ErrorMessage = "O Produto é obrigatório.")]
+        [Display(Order = 1)]
+        public string ProductId { get; set; } = string.Empty;
+        public string SalesOrderId { get; set; } = string.Empty;
+        public string VariationId { get; set; } = string.Empty;
+        public decimal Total { get; set; }
+        public decimal Value { get; set; }
+        public decimal Quantity { get; set; }
+        public decimal DiscountValue { get; set; }
+        public string DiscountType { get; set; } = string.Empty;
+        public bool CreateItem {get; set;} = false;
+        public string Barcode { get; set; } = string.Empty;
+        public string Serial { get; set; } = string.Empty;
+        public string StockId { get; set; } = string.Empty;
     }
 }

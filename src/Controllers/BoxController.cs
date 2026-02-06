@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
@@ -26,14 +27,16 @@ namespace api_infor_cell.src.Controllers
             ResponseApi<dynamic?> response = await service.GetByIdAggregateAsync(id);
             return StatusCode(response.StatusCode, new { response.Result });
         }
-
-        // [Authorize]
-        // [HttpGet("select")]
-        // public async Task<IActionResult> GetSelect()
-        // {
-        //     ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
-        //     return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        // }
+        
+        [Authorize]
+        [HttpGet("verify")]
+        public async Task<IActionResult> GetVerifyAsync()
+        {
+            string? createdBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            ResponseApi<dynamic?> response = await service.GetByCreatedIdAggregateAsync(createdBy!);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
         
         [Authorize]
         [HttpPost]
@@ -55,9 +58,7 @@ namespace api_infor_cell.src.Controllers
             ResponseApi<Box?> response = await service.UpdateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
-        }
-
-        
+        }        
         
         [Authorize]
         [HttpDelete("{id}")]

@@ -10,7 +10,7 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Whatsapp { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
         public bool Blocked { get; set; } = false;
-        public List<Module> Modules {get;set;} = [];
+        public List<ModuleCreateDTO> Modules {get;set;} = [];
         public DateTime? EffectiveDate { get; set; }
     }
 }

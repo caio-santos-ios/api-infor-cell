@@ -10,6 +10,7 @@ public interface IPaymentMethodRepository
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<PaymentMethod?>> GetByIdAsync(string id);
     Task<int> GetCountDocumentsAsync(PaginationUtil<PaymentMethod> pagination);
+    Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId);
     Task<ResponseApi<PaymentMethod?>> CreateAsync(PaymentMethod address);
     Task<ResponseApi<PaymentMethod?>> UpdateAsync(PaymentMethod address);
     Task<ResponseApi<PaymentMethod>> DeleteAsync(string id);

@@ -150,7 +150,7 @@ namespace api_infor_cell.src.Repository
             }
             catch
             {
-                return new(null, 500, "Falha ao buscar Empresas");
+                return new(null, 500, "Falha ao buscar Lojas");
             }
         }
 

@@ -78,5 +78,13 @@ namespace api_infor_cell.src.Shared.Utils
         public static BsonDocument ValidateNull(string field, dynamic valueIfNull){
             return new BsonDocument("$ifNull", new BsonArray{$"${field}", valueIfNull});
         }
+
+        public static BsonDocument Concat(dynamic[] fields){
+            BsonArray bsonFields = [];
+            foreach(dynamic field in fields ){
+                bsonFields.Add(field);
+            }
+            return new BsonDocument ("$concat", bsonFields);
+        }
     }
 }

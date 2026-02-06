@@ -62,6 +62,5 @@ namespace api_infor_cell.src.Shared.DTOs
         public decimal Ipi { get; set; }
         public decimal Ibpt { get; set; }
         public string TaxGroup { get; set; } = string.Empty;
-        public List<SerialControl> Serials {get;set;} = [];
     }
 }

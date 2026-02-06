@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ExchangeService(IExchangeRepository repository, IStockRepository stockRepository, IMapper _mapper) : IExchangeService
+    public class ExchangeService(IExchangeRepository repository, IStockService stockService, IStockRepository stockRepository, IMapper _mapper) : IExchangeService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -38,6 +38,19 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
+    public async Task<ResponseApi<List<dynamic>>> GetBySalesOrderItemIdAggregateAsync(string salesOrderItemId)
+    {
+        try
+        {
+            ResponseApi<List<dynamic>> Exchange = await repository.GetBySalesOrderItemIdAggregateAsync(salesOrderItemId);
+            if(Exchange.Data is null) return new(null, 404, "Tranferência não encontrada");
+            return new(Exchange.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
     #endregion
     
     #region CREATE
@@ -45,74 +58,65 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            // 1. Buscar os lotes de estoque disponíveis na origem
-            var response = await stockRepository.GetByPurchaseItemIdAsync(
-                request.PurchaseOrderItemId, 
-                request.Plan, 
-                request.Company, 
-                request.StoreOriginId);
+            Exchange exchange = _mapper.Map<Exchange>(request);
+            exchange.UpdatedAt = DateTime.UtcNow;
+            exchange.ReleasedStock = false;
 
-            if (response.Data == null || !response.Data.Any())
-                return new(null, 404, "Estoque não encontrado na loja de origem.");
+            ResponseApi<Exchange?> response = await repository.CreateAsync(exchange);
+            if(!response.IsSuccess) return new(null, 400, "Falha ao salvar");
 
-            decimal quantityRemaining = request.Quantity;
-            decimal totalAvailable = response.Data.Sum(s => Convert.ToDecimal(s.Quantity));
+            // await stockService.CreateAsync(new () 
+            // {
+            //     ProductId = request.ProductId,
+            //     Variations = request.Variations,
+            //     VariationsCode = request.VariationsCode,
+            //     Quantity = 1,
+            //     Origin = request.Origin,
+            //     OriginId = request.SalesOrderItemId,
+            //     ForSale = request.ForSale,
+            //     Cost = request.Cost,
+            //     Plan = request.Plan,
+            //     Company = request.Company,
+            //     Store = request.Store
+            // });
 
-            if (totalAvailable < quantityRemaining)
-                return new(null, 400, "Saldo insuficiente para realizar a transferência.");
-
-            foreach (var stock in response.Data)
+            return new(response.Data, 201, "Troca salva com sucesso!");
+        }
+        catch
+        { 
+            return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+        }
+    }
+    public async Task<ResponseApi<Exchange?>> CreateReleasedStockAsync(CreateExchangeDTO request)
+    {
+        try
+        {
+            ResponseApi<List<Exchange>> exchanges = await repository.GetReleasedStockAsync(request.Plan, request.Company, request.Store);
+            
+            if(!exchanges.IsSuccess || exchanges.Data is null) return new(null, 400, "Falha ao salvar");
+            foreach (Exchange exchange in exchanges.Data)
             {
-                if (quantityRemaining <= 0) break;
-
-                decimal currentStockQty = Convert.ToDecimal(stock.Quantity);
-                if (currentStockQty <= 0) continue;
-
-                decimal amountToMove = Math.Min(currentStockQty, quantityRemaining);
-
-                // Criar o registro de Exchange (Histórico)
-                var history = new Exchange
+                exchange.UpdatedAt = DateTime.UtcNow;
+                exchange.UpdatedBy = request.UpdatedBy;
+                exchange.ReleasedStock = true;
+                
+                await stockService.CreateAsync(new () 
                 {
-                    StoreOriginId = request.StoreOriginId,
-                    StoreDestinationId = request.StoreDestinationId,
-                    PurchaseOrderItemId = request.PurchaseOrderItemId,
-                    StockId = stock.Id, // ID do estoque original sendo movido
-                    Quantity = amountToMove,
-                    Company = request.Company,
-                    Plan = request.Plan,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                if (currentStockQty == amountToMove)
-                {
-                    stock.Store = request.StoreDestinationId;
-                    await stockRepository.UpdateAsync(stock);
-                }
-                else
-                {
-                    // Parte o registro: cria novo no destino e subtrai na origem
-                    var newStock = stock;
-                    newStock.Store = request.StoreDestinationId;
-                    newStock.Quantity = amountToMove;
-                    
-                    // Gera um novo Code para o novo registro físico na loja de destino
-                    var nextCode = await stockRepository.GetNextCodeAsync(newStock.Plan, newStock.Company, newStock.Store);
-                    newStock.Code = nextCode.Data.ToString().PadLeft(6, '0');
-
-                    await stockRepository.CreateAsync(newStock);
-
-                    // Atualiza o original
-                    stock.Quantity = currentStockQty - amountToMove;
-                    await stockRepository.UpdateAsync(stock);
-                }
-
-                // Salva o log da transferência no banco
-                await repository.CreateAsync(history);
-
-                quantityRemaining -= amountToMove;
+                    ProductId = exchange.ProductId,
+                    Variations = exchange.Variations,
+                    VariationsCode = exchange.VariationsCode,
+                    Quantity = 1,
+                    Origin = exchange.Origin,
+                    OriginId = exchange.SalesOrderItemId,
+                    ForSale = exchange.ForSale,
+                    Cost = exchange.Cost,
+                    Plan = exchange.Plan,
+                    Company = exchange.Company,
+                    Store = exchange.Store
+                });
             }
 
-            return new(null, 201, "Transferência concluída e registrada com sucesso!");
+            return new(null, 201, "Troca salva com sucesso!");
         }
         catch
         { 
@@ -131,17 +135,38 @@ namespace api_infor_cell.src.Services
             
             Exchange Exchange = _mapper.Map<Exchange>(request);
             Exchange.UpdatedAt = DateTime.UtcNow;
+            Exchange.ReleasedStock = false;
 
             ResponseApi<Exchange?> response = await repository.UpdateAsync(Exchange);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
-            return new(response.Data, 201, "Atualizada com sucesso");
+
+            // ResponseApi<Stock?> stock = await stockRepository.GetByOriginIdAsync(request.SalesOrderItemId);
+
+            // if(!stock.IsSuccess || stock.Data is null) return new(null, 400, "Falha ao atualizar");
+
+            // stock.Data.ProductId = request.ProductId;
+            // stock.Data.Variations = request.Variations;
+            // stock.Data.VariationsCode = request.VariationsCode;
+            // stock.Data.Quantity = 1;
+            // stock.Data.Origin = request.Origin;
+            // stock.Data.OriginId = request.SalesOrderItemId;
+            // stock.Data.ForSale = request.ForSale;
+            // stock.Data.Cost = request.Cost;
+            // stock.Data.Plan = request.Plan;
+            // stock.Data.Company = request.Company;
+            // stock.Data.Store = request.Store;         
+            // stock.Data.UpdatedAt = DateTime.UtcNow;
+            // stock.Data.UpdatedBy = request.UpdatedBy;
+
+            // await stockRepository.UpdateAsync(stock.Data);
+
+            return new(response.Data, 201, "Atualizado com sucesso");
         }
         catch
         {
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
-   
     #endregion
     
     #region DELETE

@@ -87,10 +87,10 @@ namespace api_infor_cell.src.Services
                 ResponseApi<List<Variation>> existed = await repository.GetSerialExistedAsync(request.Serial);
                 if(existed.Data is null || existed.Data.Count > 1) return new(null, 400, "Serial já cadastrado");
 
-                var variati = existed.Data.Where(x => x.Id != request.Id && x.Items.Where(i => i.Serial.Where(s => s.Value == request.Serial).Any()).Any()).FirstOrDefault();
+                var variati = existed.Data.Where(x => x.Id != request.Id && x.Items.Where(i => i.Serial.Where(s => s.Code == request.Serial).Any()).Any()).FirstOrDefault();
                 if(variati is not null) return new(null, 400, "Serial já cadastrado");
 
-                var existedSerial = request.Items.Where(i => i.Serial.Where(s => s.Value == request.Serial).Count() > 1).Count();
+                var existedSerial = request.Items.Where(i => i.Serial.Where(s => s.Code == request.Serial).Count() > 1).Count();
 
                 if(existedSerial >= 1) return new(null, 400, "Serial já cadastrado");    
             };

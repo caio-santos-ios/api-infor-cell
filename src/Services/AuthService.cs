@@ -57,7 +57,8 @@ namespace api_infor_cell.src.Services
                     TypeUser = user is not null ? user.Type : "",
                     TypePlan = plan.Data is not null ? plan.Data.Type : "",
                     SubscriberPlan =  user!.SubscriberPlan,
-                    ExpirationDate = plan.Data!.ExpirationDate
+                    ExpirationDate = plan.Data!.ExpirationDate,
+                    Master = user.Master
                 };
 
                 return new(response);
@@ -532,7 +533,8 @@ namespace api_infor_cell.src.Services
                     Plan = responseEmployee.Data.Plan,
                     Email = responseEmployee.Data.Email,
                     Companies = responseEmployee.Data.Companies,
-                    Stores = responseEmployee.Data.Stores
+                    Stores = responseEmployee.Data.Stores,
+                    Master = false
                 };
             };
 

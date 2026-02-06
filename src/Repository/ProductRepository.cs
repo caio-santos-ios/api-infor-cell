@@ -50,6 +50,68 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Produto");
         }
     }    
+    public async Task<ResponseApi<List<dynamic>>> GetAutocompleteAsync(PaginationUtil<Product> pagination)
+    {
+        try
+        {
+            List<BsonDocument> pipeline = new()
+            {
+                new("$match", pagination.PipelineFilter),
+                new("$sort", pagination.PipelineSort),
+                new("$skip", pagination.Skip),
+                new("$limit", pagination.Limit),
+
+                new("$addFields", new BsonDocument {
+                    {"id", new BsonDocument("$toString", "$_id")},
+                }),
+                
+                MongoUtil.Lookup("models", ["$modelId"], ["$_id"], "_model", [["deleted", false]], 1),
+                MongoUtil.Lookup("categories", ["$categoryId"], ["$_id"], "_category", [["deleted", false]], 1),
+                MongoUtil.Lookup("attachments", ["$id"], ["$parentId"], "_images", [["deleted", false]], 1),
+                MongoUtil.Lookup("stock", ["$productId"], ["$id"], "_stock", [["deleted", false], ["quantity", 1, "gte"]]),
+
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0},
+                    {"id", 1},
+                    {"code", 1},
+                    {"name", 1},
+                    {"description", 1},
+                    {"createdAt", 1},
+                    {"variations", 1},
+                    {"price", 1},
+                    {"hasSerial", 1},
+                    {"modelName", MongoUtil.First("_model.name")},
+                    {"categoryName", MongoUtil.First("_category.name")},
+                    {"productName", MongoUtil.Concat(["$code", " - ", "$name"])},
+                    {"image", MongoUtil.First("_images.uri")},
+                    {"stock", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_stock"},
+                            {"as", "s"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$s._id")},
+                                    {"quantity", "$$s.quantity"},
+                                    {"deleted", "$$s.deleted"},
+                                    {"variations", "$$s.variations"}
+                                }
+                            }
+                        })
+                    }
+                }),
+                new("$sort", pagination.PipelineSort),
+            };
+
+            List<BsonDocument> results = await context.Products.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return new(list);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Produto");
+        }
+    }    
     public async Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Product> pagination)
     {
         try
@@ -67,6 +129,7 @@ namespace api_infor_cell.src.Repository
                     {"id", new BsonDocument("$toString", "$_id")},
                     {"code", 1},
                     {"name", 1},
+                    {"hasSerial", 1},
                     {"variations", 1}
                 }),
                 new("$sort", pagination.PipelineSort),

@@ -46,6 +46,8 @@ namespace api_infor_cell.src.Services
         try
         {
             PurchaseOrderItem purchaseOrderItem = _mapper.Map<PurchaseOrderItem>(request);
+            purchaseOrderItem.Variations = request.Variations;
+
             ResponseApi<PurchaseOrderItem?> response = await repository.CreateAsync(purchaseOrderItem);
 
             ResponseApi<PurchaseOrder?> purchaseOrder = await purchaseOrderRepository.GetByIdAsync(purchaseOrderItem.PurchaseOrderId);
@@ -76,10 +78,10 @@ namespace api_infor_cell.src.Services
         {
             ResponseApi<PurchaseOrderItem?> PurchaseOrderItemResponse = await repository.GetByIdAsync(request.Id);
             if(PurchaseOrderItemResponse.Data is null) return new(null, 404, "Falha ao atualizar");
-            
+
             PurchaseOrderItem purchaseOrderItem = _mapper.Map<PurchaseOrderItem>(request);
             purchaseOrderItem.UpdatedAt = DateTime.UtcNow;
-
+            purchaseOrderItem.UpdatedBy = request.UpdatedBy;
 
             ResponseApi<PurchaseOrderItem?> response = await repository.UpdateAsync(purchaseOrderItem);
             if(!response.IsSuccess || response.Data is null) return new(null, 400, "Falha ao atualizar");
@@ -91,13 +93,13 @@ namespace api_infor_cell.src.Services
 
                 if(items.Data is not null) 
                 {
-                    decimal total = items.Data.Sum(v => v.Cost);
+                    decimal cost = items.Data.Sum(v => v.Cost);
                     decimal quantity = items.Data.Sum(q => q.Quantity);
 
                     purchaseOrder.Data.UpdatedAt = DateTime.UtcNow;
                     purchaseOrder.Data.UpdatedBy = request.UpdatedBy;
                     purchaseOrder.Data.Quantity = quantity;
-                    purchaseOrder.Data.Total = total * quantity;
+                    purchaseOrder.Data.Total = cost * quantity;
 
                     await purchaseOrderRepository.UpdateAsync(purchaseOrder.Data);
                 }

@@ -23,10 +23,24 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
+
+                MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+                MongoUtil.Lookup("sales_order_items", ["$salesOrderItemId"], ["$_id"], "_salesOrderItem", [["deleted", false]], 1),
+                
                 new("$addFields", new BsonDocument
                 {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"productName", MongoUtil.First("_product.name")},
+                    {"salesOrderId", MongoUtil.First("_salesOrderItem.salesOrderId")},
                 }),
+
+                MongoUtil.Lookup("sales_orders", ["$salesOrderId"], ["$_id"], "_salesOrder", [["deleted", false]], 1),
+                
+                new("$addFields", new BsonDocument
+                {
+                    {"salesOrderCode", MongoUtil.First("_salesOrder.code")},
+                }),
+
                 new("$project", new BsonDocument
                 {
                     {"_id", 0}, 
@@ -40,7 +54,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Troca");
         }
     }
     
@@ -64,11 +78,44 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.Exchanges.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Troca não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Troca");
+        }
+    }
+    
+    public async Task<ResponseApi<List<dynamic>>> GetBySalesOrderItemIdAggregateAsync(string salesOrderItemId)
+    {
+        try
+        {
+            BsonDocument[] pipeline = [
+                new("$match", new BsonDocument{
+                    {"salesOrderItemId", salesOrderItemId},
+                    {"deleted", false}
+                }),
+                
+                MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument {
+                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"productCode", MongoUtil.First("_product.code")},
+                    {"productName", MongoUtil.First("_product.name")},
+                }),
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0},
+                }),
+            ];
+
+            List<BsonDocument> results = await context.Exchanges.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return new(list);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Troca");
         }
     }
     
@@ -76,12 +123,24 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Exchange? address = await context.Exchanges.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            Exchange? exchange = await context.Exchanges.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(exchange);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Troca");
+        }
+    }
+    public async Task<ResponseApi<List<Exchange>>> GetReleasedStockAsync(string plan, string company, string store)
+    {
+        try
+        {
+            List<Exchange> exchanges = await context.Exchanges.Find(x => x.Plan == plan && x.Company == company && x.Store == store && !x.Deleted).ToListAsync();
+            return new(exchanges);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Troca");
         }
     }
     
@@ -108,33 +167,33 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<Exchange?>> CreateAsync(Exchange address)
+    public async Task<ResponseApi<Exchange?>> CreateAsync(Exchange exchange)
     {
         try
         {
-            await context.Exchanges.InsertOneAsync(address);
+            await context.Exchanges.InsertOneAsync(exchange);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(exchange, 201, "Troca criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Troca");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<Exchange?>> UpdateAsync(Exchange address)
+    public async Task<ResponseApi<Exchange?>> UpdateAsync(Exchange exchange)
     {
         try
         {
-            await context.Exchanges.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.Exchanges.ReplaceOneAsync(x => x.Id == exchange.Id, exchange);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(exchange, 201, "Troca atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Troca");
         }
     }
     #endregion
@@ -144,18 +203,18 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Exchange? address = await context.Exchanges.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            Exchange? exchange = await context.Exchanges.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(exchange is null) return new(null, 404, "Troca não encontrado");
+            exchange.Deleted = true;
+            exchange.DeletedAt = DateTime.UtcNow;
 
-            await context.Exchanges.ReplaceOneAsync(x => x.Id == id, address);
+            await context.Exchanges.ReplaceOneAsync(x => x.Id == id, exchange);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(exchange, 204, "Troca excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Troca");
         }
     }
     #endregion

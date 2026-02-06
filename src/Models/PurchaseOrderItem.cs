@@ -44,6 +44,9 @@ namespace api_infor_cell.src.Models
         public string MoveStock {get;set;} = string.Empty;
 
         [BsonElement("variations")]
-        public List<Variation> Variations {get;set;} = [];
+        public List<VariationProduct> Variations {get;set;} = [];
+
+        [BsonElement("variationsCode")]
+        public List<string> VariationsCode { get; set; } = [];
     }
 }

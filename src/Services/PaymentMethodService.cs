@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> PaymentMethod = await repository.GetByIdAggregateAsync(id);
-            if(PaymentMethod.Data is null) return new(null, 404, "Loja não encontrada");
+            if(PaymentMethod.Data is null) return new(null, 404, "Formas de Pagamentos não encontrada");
             return new(PaymentMethod.Data);
         }
         catch
@@ -46,11 +46,15 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            PaymentMethod PaymentMethod = _mapper.Map<PaymentMethod>(request);
-            ResponseApi<PaymentMethod?> response = await repository.CreateAsync(PaymentMethod);
+            PaymentMethod paymentMethod = _mapper.Map<PaymentMethod>(request);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Loja.");
-            return new(response.Data, 201, "Loja criada com sucesso.");
+            ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
+            paymentMethod.Code = code.Data.ToString().PadLeft(6, '0');
+
+            ResponseApi<PaymentMethod?> response = await repository.CreateAsync(paymentMethod);
+
+            if(response.Data is null) return new(null, 400, "Falha ao criar Formas de Pagamentos.");
+            return new(response.Data, 201, "Formas de Pagamentos criada com sucesso.");
         }
         catch
         { 
@@ -64,13 +68,14 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<PaymentMethod?> PaymentMethodResponse = await repository.GetByIdAsync(request.Id);
-            if(PaymentMethodResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<PaymentMethod?> paymentMethodResponse = await repository.GetByIdAsync(request.Id);
+            if(paymentMethodResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            PaymentMethod PaymentMethod = _mapper.Map<PaymentMethod>(request);
-            PaymentMethod.UpdatedAt = DateTime.UtcNow;
+            PaymentMethod paymentMethod = _mapper.Map<PaymentMethod>(request);
+            paymentMethod.UpdatedAt = DateTime.UtcNow;
+            paymentMethod.Code = paymentMethodResponse.Data.Code;
 
-            ResponseApi<PaymentMethod?> response = await repository.UpdateAsync(PaymentMethod);
+            ResponseApi<PaymentMethod?> response = await repository.UpdateAsync(paymentMethod);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }

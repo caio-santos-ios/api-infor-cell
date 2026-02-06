@@ -4,7 +4,7 @@ using api_infor_cell.src.Shared.DTOs;
 
 namespace api_infor_cell.src.Interfaces
 {
-   public interface IStoreService
+    public interface IStoreService
     {
         Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);

@@ -9,8 +9,9 @@ namespace api_infor_cell.src.Configuration
     public class MapperProfile : Profile
     {
         public MapperProfile()
-        {
+        {            
             #region MASTER DATA
+
             CreateMap<CreatePlanDTO, Plan>().ReverseMap();
             CreateMap<UpdatePlanDTO, Plan>().ReverseMap();
 
@@ -28,7 +29,7 @@ namespace api_infor_cell.src.Configuration
 
             CreateMap<CreateAttachmentDTO, Attachment>().ReverseMap();
             CreateMap<UpdateAttachmentDTO, Attachment>().ReverseMap();      
-           
+
             CreateMap<CreateSupplierDTO, Supplier>().ReverseMap();
             CreateMap<UpdateSupplierDTO, Supplier>().ReverseMap(); 
 
@@ -61,6 +62,9 @@ namespace api_infor_cell.src.Configuration
 
             CreateMap<CreateSalesOrderDTO, SalesOrder>().ReverseMap();
             CreateMap<UpdateSalesOrderDTO, SalesOrder>().ReverseMap();
+            
+            CreateMap<CreateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
+            CreateMap<UpdateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
 
             CreateMap<CreateStockDTO, Stock>().ReverseMap();
             CreateMap<UpdateStockDTO, Stock>().ReverseMap();
@@ -71,8 +75,6 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreateServiceOrderItemDTO, ServiceOrderItem>().ReverseMap();
             CreateMap<UpdateServiceOrderItemDTO, ServiceOrderItem>().ReverseMap();
 
-            CreateMap<CreateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
-            CreateMap<UpdateSalesOrderItemDTO, SalesOrderItem>().ReverseMap();
 
             CreateMap<CreateCustomerDTO, Customer>().ReverseMap();
             CreateMap<UpdateCustomerDTO, Customer>().ReverseMap();
@@ -91,6 +93,8 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreateVariationDTO, Variation>().ReverseMap();
             CreateMap<UpdateVariationDTO, Variation>().ReverseMap();
 
+            CreateMap<CreateProfilePermissionDTO, ProfilePermission>().ReverseMap();
+            CreateMap<UpdateProfilePermissionDTO, ProfilePermission>().ReverseMap();
             #endregion
         }
     }

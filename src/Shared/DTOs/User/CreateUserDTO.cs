@@ -9,17 +9,14 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Whatsapp { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
         public bool Blocked { get; set; } = false;
-        public List<Module> Modules {get;set;} = [];
+        public List<ModuleCreateDTO> Modules {get;set;} = [];
         public DateTime? EffectiveDate { get; set; }
     }
 
-    public class Module 
+    public class ModuleCreateDTO 
     {
         public string Code {get;set;} = string.Empty;
-        
-        public string Description {get;set;} = string.Empty;
-
-        
+        public string Description {get;set;} = string.Empty;        
         public List<Routine> Routines {get;set;} = [];
     }
     
@@ -34,13 +31,9 @@ namespace api_infor_cell.src.Shared.DTOs
 
     public class PermissionRoutine 
     {
-        
-        public bool Read {get;set;} = false;
-        
+        public bool Read {get;set;} = false;   
         public bool Create {get;set;} = false;
-        
         public bool Update {get;set;} = false;
-        
         public bool Delete {get;set;} = false;
     }
 }
