@@ -92,7 +92,7 @@ namespace api_infor_cell.src.Configuration
         }
         public IMongoCollection<Model> Models
         {
-            get { return Database.GetCollection<Model>("models"); }
+            get { return Database.GetCollection<Model>("groups"); }
         }
         public IMongoCollection<PaymentMethod> PaymentMethods
         {

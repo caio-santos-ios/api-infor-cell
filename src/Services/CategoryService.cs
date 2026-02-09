@@ -1,4 +1,3 @@
-using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;

@@ -20,6 +20,17 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetByProductId(string productId)
+        {
+            string? plan = User.FindFirst("plan")?.Value;
+            string? company = User.FindFirst("company")?.Value;
+            
+            ResponseApi<List<dynamic>> response = await service.GetByProductIdAggregationAsync(plan!, company!, productId);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {

@@ -68,7 +68,7 @@ namespace api_infor_cell.src.Repository
                 MongoUtil.Lookup("models", ["$modelId"], ["$_id"], "_model", [["deleted", false]], 1),
                 MongoUtil.Lookup("categories", ["$categoryId"], ["$_id"], "_category", [["deleted", false]], 1),
                 MongoUtil.Lookup("attachments", ["$id"], ["$parentId"], "_images", [["deleted", false]], 1),
-                MongoUtil.Lookup("stock", ["$productId"], ["$id"], "_stock", [["deleted", false], ["quantity", 1, "gte"]]),
+                MongoUtil.Lookup("stock", ["$productId"], ["$_id"], "_stock", [["deleted", false], ["quantity", 1, "gte"]]),
 
                 new("$project", new BsonDocument
                 {
@@ -79,8 +79,10 @@ namespace api_infor_cell.src.Repository
                     {"description", 1},
                     {"createdAt", 1},
                     {"variations", 1},
+                    {"variationsCode", 1},
                     {"price", 1},
                     {"hasSerial", 1},
+                    {"hasVariations", 1},
                     {"modelName", MongoUtil.First("_model.name")},
                     {"categoryName", MongoUtil.First("_category.name")},
                     {"productName", MongoUtil.Concat(["$code", " - ", "$name"])},
@@ -153,9 +155,32 @@ namespace api_infor_cell.src.Repository
                     {"_id", new ObjectId(id)},
                     {"deleted", false}
                 }),
+                
+                // MongoUtil.Lookup("stock", ["$productId"], ["$_id"], "_stock", [["deleted", false]]),
+                MongoUtil.Lookup("stock", ["$_id", "$store"], ["$productId", "$store"], "_stock", [["deleted", false]]),
+
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
                 }),
+                
+                new("$addFields", new BsonDocument {
+                    {"stock", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_stock"},
+                            {"as", "s"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$s._id")},
+                                    {"store", "$$s.store"},
+                                    {"quantity", "$$s.quantity"},
+                                    {"deleted", "$$s.deleted"},
+                                    {"variations", "$$s.variations"}
+                                }
+                            }
+                        })
+                    },
+                }),
+
                 new("$project", new BsonDocument
                 {
                     {"_id", 0},

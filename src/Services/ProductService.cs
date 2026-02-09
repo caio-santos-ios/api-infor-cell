@@ -81,8 +81,9 @@ namespace api_infor_cell.src.Services
             if(response.Data is null) return new(null, 400, "Falha ao criar Produto.");
             return new(response.Data, 201, "Produto criado com sucesso.");
         }
-        catch
+        catch(Exception ex)
         { 
+            System.Console.WriteLine(ex.Message);
             return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
         }
     }

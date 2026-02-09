@@ -26,6 +26,7 @@ namespace api_infor_cell.src.Repository
                 
                 MongoUtil.Lookup("brands", ["$brandId"], ["$_id"], "_brand", [["deleted", false]], 1),
                 MongoUtil.Lookup("categories", ["$categoryId"], ["$_id"], "_category", [["deleted", false]], 1),
+                MongoUtil.Lookup("groups", ["$groupFather"], ["$_id"], "_group", [["deleted", false]], 1),
 
                 new("$project", new BsonDocument
                 {
@@ -35,7 +36,7 @@ namespace api_infor_cell.src.Repository
                     {"name", 1},
                     {"createdAt", 1},
                     {"brandName", MongoUtil.First("_brand.name")},
-                    {"categoryName", MongoUtil.First("_category.name")}
+                    {"groupName", MongoUtil.First("_group.name")}
                 }),
                 new("$sort", pagination.PipelineSort),
             };

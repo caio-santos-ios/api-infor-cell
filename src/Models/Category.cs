@@ -18,5 +18,17 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
+        
+        [BsonElement("subcategories")]
+        public List<Subcategory> Subcategories { get; set; } = [];
+    }
+
+    public class Subcategory
+    {
+        [BsonElement("code")]
+        public string Code { get; set; } = string.Empty;
+        
+        [BsonElement("name")]
+        public string Name { get; set; } = string.Empty;
     }
 }

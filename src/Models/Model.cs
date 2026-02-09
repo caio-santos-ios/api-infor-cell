@@ -13,6 +13,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("brandId")]
         public string BrandId { get; set; } = string.Empty;
 
+        [BsonElement("groupFather")]
+        public string GroupFather { get; set; } = string.Empty;
+
         [BsonElement("categoryId")]
         public string CategoryId { get; set; } = string.Empty;
 

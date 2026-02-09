@@ -5,6 +5,7 @@ using api_infor_cell.src.Shared.DTOs;
 using api_infor_cell.src.Shared.Utils;
 using AutoMapper;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace api_infor_cell.src.Services
 {
@@ -62,13 +63,13 @@ namespace api_infor_cell.src.Services
             {
                 if(string.IsNullOrEmpty(request.Barcode)) return new(null, 400, "A Variação é obrigatória.");
                 if(string.IsNullOrEmpty(request.Serial)) return new(null, 400, "O Serial é obrigatório.");
-                System.Console.WriteLine(stocksOriginResponse.Data.Count);
+                
                 Stock? stock = stocksOriginResponse.Data.Where(x => x.Variations.Where(v => v.Barcode == request.Barcode && v.VariationId == request.VariationId && v.Serials.Where(s => s.Code == request.Serial).Count() > 0).Count() > 0).FirstOrDefault();
                 if (stock is null) return new(null, 404, "Estoque de origem não encontrado para esta variação.");
 
                 VariationProduct? variationProduct = stock.Variations.Where(v => v.Barcode == request.Barcode && v.VariationId == request.VariationId).FirstOrDefault();
                 if (variationProduct is null) return new(null, 404, "Estoque de origem não encontrado para esta variação.");
-                Util.ConsoleLog(variationProduct);
+
                 VariationItemSerial? variationItemSerial = variationProduct.Serials.Where(s => s.Code == request.Serial && s.HasAvailable).FirstOrDefault();
                 if (variationItemSerial is null) return new(null, 404, "Estoque de origem não encontrado para este serial.");
 
@@ -146,6 +147,39 @@ namespace api_infor_cell.src.Services
             }
             else
             {
+                Stock? stock = stocksOriginResponse.Data.Where(x => true).FirstOrDefault();
+
+                if(stock is not null)
+                {
+                    CreateStockDTO newStock = new()
+                    {
+                        ProductId = request.ProductId,
+                        SupplierId = stock.SupplierId,
+                        Price = stock.Price,
+                        Cost = stock.Cost,
+                        CostDiscount = stock.CostDiscount,
+                        PriceDiscount = stock.PriceDiscount,
+                        PurchaseOrderItemId = stock.PurchaseOrderItemId,
+                        Store = request.StoreDestinationId,
+                        Quantity = request.Quantity,
+                        Barcode = request.Barcode,
+                        Variations = new List<VariationProduct>(),
+                        VariationsCode = stock.VariationsCode,
+                        Company = request.Company,
+                        Plan = request.Plan,
+                        Origin = store.Data is null ? "Transferência recebida por loja" :  $"Transferência recebida da loja {store.Data.CorporateName}",
+                        CreatedBy = request.CreatedBy
+                    };
+
+                    await stockService.CreateAsync(newStock);
+
+                    stock.Quantity -= request.Quantity;
+                    stock.UpdatedAt = DateTime.UtcNow;
+                    stock.UpdatedBy = request.UpdatedBy;
+                    
+                    await stockRepository.UpdateAsync(stock);
+                };
+
                 // decimal totalBalanceOrigin = stocksOriginResponse.Data.Sum(x => x.Quantity);
 
                 // if (totalBalanceOrigin < request.Quantity) return new(null, 400, $"Saldo insuficiente na origem. Disponível: {totalBalanceOrigin:N2}");

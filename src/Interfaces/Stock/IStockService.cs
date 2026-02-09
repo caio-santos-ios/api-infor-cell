@@ -7,6 +7,7 @@ namespace api_infor_cell.src.Interfaces
     public interface IStockService
     {
         Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request);
+        Task<ResponseApi<List<dynamic>>> GetByProductIdAggregationAsync(string plan, string company, string productId);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
         Task<ResponseApi<Stock?>> CreateAsync(CreateStockDTO request);
         Task<ResponseApi<Stock?>> UpdateAsync(UpdateStockDTO request);

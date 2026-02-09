@@ -8,6 +8,7 @@ namespace api_infor_cell.src.Interfaces
 public interface IStockRepository
 {
     Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Stock> pagination);
+    Task<ResponseApi<List<dynamic>>> GetByProductIdAggregationAsync(string plan, string company, string productId);
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<Stock?>> GetByIdAsync(string id);
     Task<ResponseApi<Stock?>> GetByOriginIdAsync(string originId);

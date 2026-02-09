@@ -22,8 +22,8 @@ namespace api_infor_cell.src.Models
         [BsonElement("imei")]
         public string Imei { get; set; } = string.Empty;
 
-        [BsonElement("modelId")]
-        public string ModelId { get; set; } = string.Empty;
+        [BsonElement("brandId")]
+        public string BrandId { get; set; } = string.Empty;
 
         [BsonElement("moveStock")]
         public string MoveStock { get; set; } = string.Empty;
@@ -66,9 +66,6 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
-
-        [BsonElement("subCategory")]
-        public string SubCategory { get; set; } = string.Empty;
 
         [BsonElement("type")]
         public string Type { get; set; } = string.Empty;
@@ -156,6 +153,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("taxGroup")]
         public string TaxGroup { get; set; } = string.Empty;
+
+        [BsonElement("subcategory")]
+        public string Subcategory { get; set; } = string.Empty;
     }
 
     public class VariationProduct

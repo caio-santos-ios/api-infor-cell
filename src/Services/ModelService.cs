@@ -1,4 +1,3 @@
-using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
@@ -31,7 +30,7 @@ namespace api_infor_cell.src.Services
         try
         {
             ResponseApi<dynamic?> Model = await repository.GetByIdAggregateAsync(id);
-            if(Model.Data is null) return new(null, 404, "Modelo não encontrada");
+            if(Model.Data is null) return new(null, 404, "Grupo não encontrada");
             return new(Model.Data);
         }
         catch
@@ -51,8 +50,8 @@ namespace api_infor_cell.src.Services
             model.Code = code.Data.ToString().PadLeft(6, '0');
             ResponseApi<Model?> response = await repository.CreateAsync(model);
 
-            if(response.Data is null) return new(null, 400, "Falha ao criar Modelo.");
-            return new(response.Data, 201, "Modelo criada com sucesso.");
+            if(response.Data is null) return new(null, 400, "Falha ao criar Grupo.");
+            return new(response.Data, 201, "Grupo criada com sucesso.");
         }
         catch
         { 

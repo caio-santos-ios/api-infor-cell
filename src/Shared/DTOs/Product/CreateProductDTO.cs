@@ -15,9 +15,9 @@ namespace api_infor_cell.src.Shared.DTOs
         [Display(Order = 2)]
         public string CategoryId { get; set; } = string.Empty;
         
-        [Required(ErrorMessage = "O Modelo é obrigatório.")]
+        [Required(ErrorMessage = "A Marca é obrigatória.")]
         [Display(Order = 3)]
-        public string ModelId { get; set; } = string.Empty;
+        public string BrandId { get; set; } = string.Empty;
         public string MoveStock { get; set; } = string.Empty;
         public int QuantityStock { get; set; }
         
@@ -36,7 +36,6 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Barcode { get; set; } = string.Empty;
         public string UnitOfMeasure { get; set; } = string.Empty;
         public string DescriptionComplet { get; set; } = string.Empty;
-        public string SubCategory { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public string Ean { get; set; } = string.Empty;
         public decimal MinimumStock { get; set; }
@@ -62,5 +61,6 @@ namespace api_infor_cell.src.Shared.DTOs
         public decimal Ipi { get; set; }
         public decimal Ibpt { get; set; }
         public string TaxGroup { get; set; } = string.Empty;
+        public string Subcategory { get; set; } = string.Empty;
     }
 }

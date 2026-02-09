@@ -26,6 +26,11 @@ namespace api_infor_cell.src.Repository
                 
                 MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
                 MongoUtil.Lookup("suppliers", ["$supplierId"], ["$_id"], "_supplier", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument 
+                {
+                    {"_productId", MongoUtil.First("_product._id")},
+                }),
                 
                 new("$project", new BsonDocument
                 {
@@ -42,6 +47,7 @@ namespace api_infor_cell.src.Repository
                     {"variations", 1},
                     {"productName", MongoUtil.First("_product.name")},
                     {"hasProductSerial", MongoUtil.First("_product.hasSerial")},
+                    {"productId", new BsonDocument("$toString", "$_productId")},
                     {"supplierName", MongoUtil.First("_supplier.tradeName")},
                 }),
                 new("$sort", pagination.PipelineSort),
@@ -66,9 +72,14 @@ namespace api_infor_cell.src.Repository
                     {"_id", new ObjectId(id)},
                     {"deleted", false}
                 }),
+
+                MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"productName", MongoUtil.First("_product.name")},
                 }),
+                
                 new("$project", new BsonDocument
                 {
                     {"_id", 0},

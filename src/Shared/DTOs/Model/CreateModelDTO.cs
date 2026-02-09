@@ -10,13 +10,8 @@ namespace api_infor_cell.src.Shared.DTOs
         [Display(Order = 1)]
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        
-        [Required(ErrorMessage = "A Marca é obrigatória.")]
-        [Display(Order = 2)]
         public string BrandId { get; set; } = string.Empty;
-        
-        [Required(ErrorMessage = "A Categoria é obrigatória.")]
-        [Display(Order = 3)]
         public string CategoryId { get; set; } = string.Empty;
+        public string GroupFather { get; set; } = string.Empty;
     }
 }

@@ -27,8 +27,8 @@ namespace api_infor_cell.src.Repository
                     { "_id", new BsonDocument 
                         { 
                             { "productId", "$productId" }, 
-                            { "supplierId", "$supplierId" }, 
-                            { "purchaseOrderItemId", "$purchaseOrderItemId" } 
+                            // { "supplierId", "$supplierId" }, 
+                            // { "purchaseOrderItemId", "$purchaseOrderItemId" } 
                         } 
                     },
 
@@ -36,7 +36,7 @@ namespace api_infor_cell.src.Repository
                     { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
                     { "createdAt", MongoUtil.First("createdAt") },
                     { "store", MongoUtil.First("store") },
-                    { "origin", MongoUtil.First("origin") },
+                    { "originDescription", MongoUtil.First("originDescription") },
                     { "variations", MongoUtil.First("variations") },
                 }),
 
@@ -44,20 +44,21 @@ namespace api_infor_cell.src.Repository
                 new("$addFields", new BsonDocument
                 {
                     { "productId", "$_id.productId" },
-                    { "supplierId", "$_id.supplierId" },
-                    { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
+                    // { "supplierId", "$_id.supplierId" },
+                    // { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
 
                     { "id", new BsonDocument("$concat", new BsonArray 
                         { 
                             "$_id.productId", 
-                            "_", 
-                            "$_id.supplierId", 
-                            "_", 
-                            "$_id.purchaseOrderItemId" 
+                            // "_", 
+                            // "$_id.supplierId", 
+                            // "_", 
+                            // "$_id.purchaseOrderItemId" 
                         }) 
                     },
                     {"productName", MongoUtil.First("_product.name")},
                     {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                    {"productHasVariations", MongoUtil.First("_product.hasVariations")},
                     // {"variations", MongoUtil.First("_product.variations")},
                 }),
 
@@ -79,12 +80,108 @@ namespace api_infor_cell.src.Repository
                     // {"variations", MongoUtil.First("_product.variations")},
                     // {"productHasSerial", MongoUtil.First("_product.variations")},
                     {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                    {"productHasVariations", MongoUtil.First("_product.hasVariations")},
                     {"purchaseOrderDate", MongoUtil.First("_purchaseOrder.date")},
                 }),
 
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
+
+                new("$project", new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "_product", 0 },
+                    { "_supplier", 0 },
+                    { "_purchaseOrderItem", 0 },
+                    { "_purchaseOrder", 0 },
+                })
+            };
+
+            List<BsonDocument> results = await context.Stocks.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return new(list);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
+    public async Task<ResponseApi<List<dynamic>>> GetByProductIdAggregationAsync(string plan, string company, string productId)
+    {
+        try
+        {
+            List<BsonDocument> pipeline = new()
+            {
+                new("$match", new BsonDocument 
+                {
+                    {"deleted", false},
+                    {"plan", plan},
+                    {"company", company},
+                    {"productId", productId}
+                }),
+
+                new("$group", new BsonDocument
+                {
+                    { "_id", new BsonDocument 
+                        { 
+                            { "productId", "$productId" }, 
+                            { "store", "$store" }, 
+                            // { "supplierId", "$supplierId" }, 
+                            // { "purchaseOrderItemId", "$purchaseOrderItemId" } 
+                        } 
+                    },
+
+                    { "quantity", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantity")) },
+                    { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
+                    { "createdAt", MongoUtil.First("createdAt") },
+                    { "store", MongoUtil.First("store") },
+                    { "originDescription", MongoUtil.First("originDescription") },
+                    { "variations", MongoUtil.First("variations") },
+                }),
+
+
+                new("$addFields", new BsonDocument
+                {
+                    { "productId", "$_id.productId" },
+                    { "store", "$_id.store" },
+                    // { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
+
+                    { "id", new BsonDocument("$concat", new BsonArray 
+                        { 
+                            "$_id.productId", 
+                            "_", 
+                            "$_id.store", 
+                            // "_", 
+                            // "$_id.purchaseOrderItemId" 
+                        }) 
+                    },
+                    {"productName", MongoUtil.First("_product.name")},
+                    {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                }),
+
+                MongoUtil.Lookup("stores", ["$store"], ["$_id"], "_store", [["deleted", false]], 1),
+                MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+                MongoUtil.Lookup("suppliers", ["$supplierId"], ["$_id"], "_supplier", [["deleted", false]], 1),
+                MongoUtil.Lookup("purchase_order_items", ["$purchaseOrderItemId"], ["$_id"], "_purchaseOrderItem", [["deleted", false]], 1),
+                
+                new("$addFields", new BsonDocument
+                {
+                    {"purchaseOrderId", MongoUtil.First("_purchaseOrderItem.purchaseOrderId")},
+                }),
+
+                MongoUtil.Lookup("purchase_orders", ["$purchaseOrderId"], ["$_id"], "_purchaseOrder", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument
+                {
+                    {"productName", MongoUtil.First("_product.name")},
+                    {"supplierName", MongoUtil.First("_supplier.tradeName")},
+                    {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                    {"productHasVariations", MongoUtil.First("_product.hasVariations")},
+                    {"purchaseOrderDate", MongoUtil.First("_purchaseOrder.date")},
+                    {"storeName", MongoUtil.First("_store.tradeName")},
+                }),
+
 
                 new("$project", new BsonDocument
                 {
@@ -160,12 +257,6 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            // if(hasSerial == "yes")
-            // {
-            //     List<Stock> stocksSerial = await context.Stocks.Find(x => x.ProductId == productId && x.Variations.Where(x => x.Barcode == barcode && x.Serials.Where(s => s.Code == serial).Any()).Count() > 0 && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
-            //     return new(stocksSerial);
-            // };
-            
             List<Stock> stocks = await context.Stocks.Find(x => x.ProductId == productId && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
             return new(stocks);
         }
@@ -203,16 +294,79 @@ namespace api_infor_cell.src.Repository
         List<BsonDocument> pipeline = new()
         {
             new("$match", pagination.PipelineFilter),
-            new("$sort", pagination.PipelineSort),
+
+            new("$group", new BsonDocument
+            {
+                { "_id", new BsonDocument 
+                    { 
+                        { "productId", "$productId" }, 
+                        // { "supplierId", "$supplierId" }, 
+                        // { "purchaseOrderItemId", "$purchaseOrderItemId" } 
+                    } 
+                },
+
+                { "quantity", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantity")) },
+                { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
+                { "createdAt", MongoUtil.First("createdAt") },
+                { "store", MongoUtil.First("store") },
+                { "originDescription", MongoUtil.First("originDescription") },
+                { "variations", MongoUtil.First("variations") },
+            }),
+
+
             new("$addFields", new BsonDocument
             {
-                {"id", new BsonDocument("$toString", "$_id")},
+                { "productId", "$_id.productId" },
+                // { "supplierId", "$_id.supplierId" },
+                // { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
+
+                { "id", new BsonDocument("$concat", new BsonArray 
+                    { 
+                        "$_id.productId", 
+                        // "_", 
+                        // "$_id.supplierId", 
+                        // "_", 
+                        // "$_id.purchaseOrderItemId" 
+                    }) 
+                },
+                {"productName", MongoUtil.First("_product.name")},
+                {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                // {"variations", MongoUtil.First("_product.variations")},
             }),
+
+            MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+            MongoUtil.Lookup("suppliers", ["$supplierId"], ["$_id"], "_supplier", [["deleted", false]], 1),
+            MongoUtil.Lookup("purchase_order_items", ["$purchaseOrderItemId"], ["$_id"], "_purchaseOrderItem", [["deleted", false]], 1),
+            
+            new("$addFields", new BsonDocument
+            {
+                {"purchaseOrderId", MongoUtil.First("_purchaseOrderItem.purchaseOrderId")},
+            }),
+
+            MongoUtil.Lookup("purchase_orders", ["$purchaseOrderId"], ["$_id"], "_purchaseOrder", [["deleted", false]], 1),
+
+            new("$addFields", new BsonDocument
+            {
+                {"productName", MongoUtil.First("_product.name")},
+                {"supplierName", MongoUtil.First("_supplier.tradeName")},
+                // {"variations", MongoUtil.First("_product.variations")},
+                // {"productHasSerial", MongoUtil.First("_product.variations")},
+                {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                {"purchaseOrderDate", MongoUtil.First("_purchaseOrder.date")},
+            }),
+
+            new("$sort", pagination.PipelineSort),
+            new("$skip", pagination.Skip),
+            new("$limit", pagination.Limit),
+
             new("$project", new BsonDocument
             {
-                {"_id", 0},
-            }),
-            new("$sort", pagination.PipelineSort),
+                { "_id", 0 },
+                { "_product", 0 },
+                { "_supplier", 0 },
+                { "_purchaseOrderItem", 0 },
+                { "_purchaseOrder", 0 },
+            })
         };
 
         List<BsonDocument> results = await context.Stocks.Aggregate<BsonDocument>(pipeline).ToListAsync();
