@@ -77,7 +77,7 @@ namespace api_infor_cell.src.Services
                         CreatedAt = DateTime.UtcNow,
                         SalesOrderId = response.Data.Id,
                         VariationId = request.VariationId,
-                        Barcode = request.Barcode
+                        Barcode = request.Barcode,
                     });
                 };
                 

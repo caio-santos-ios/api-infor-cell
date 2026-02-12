@@ -22,6 +22,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("origin")]
         public string Origin { get; set; } = string.Empty;
 
+        [BsonElement("originDescription")]
+        public string OriginDescription { get; set; } = string.Empty;
+
         [BsonElement("variations")]
         public List<VariationProduct> Variations {get;set;} = [];
         

@@ -6,6 +6,7 @@ namespace api_infor_cell.src.Shared.DTOs
     public class CreateExchangeDTO : RequestDTO
     {
         public string Origin { get; set; } = string.Empty;
+        public string OriginDescription { get; set; } = string.Empty;
         public decimal Cost { get; set; }
         public List<VariationProduct> Variations {get;set;} = [];
         public List<string> VariationsCode { get; set; } = [];

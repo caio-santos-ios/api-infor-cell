@@ -68,7 +68,7 @@ namespace api_infor_cell.src.Repository
                 MongoUtil.Lookup("models", ["$modelId"], ["$_id"], "_model", [["deleted", false]], 1),
                 MongoUtil.Lookup("categories", ["$categoryId"], ["$_id"], "_category", [["deleted", false]], 1),
                 MongoUtil.Lookup("attachments", ["$id"], ["$parentId"], "_images", [["deleted", false]], 1),
-                MongoUtil.Lookup("stock", ["$productId"], ["$_id"], "_stock", [["deleted", false], ["quantity", 1, "gte"]]),
+                MongoUtil.Lookup("stock", ["$_id"], ["$productId"], "_stock", [["deleted", false]]),
 
                 new("$project", new BsonDocument
                 {

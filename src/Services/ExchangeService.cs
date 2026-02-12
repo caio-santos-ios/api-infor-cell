@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ExchangeService(IExchangeRepository repository, IStockService stockService, IStockRepository stockRepository, IMapper _mapper) : IExchangeService
+    public class ExchangeService(IExchangeRepository repository, IStockService stockService, IMapper _mapper) : IExchangeService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

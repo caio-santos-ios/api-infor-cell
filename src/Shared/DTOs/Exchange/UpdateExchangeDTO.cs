@@ -8,6 +8,7 @@ namespace api_infor_cell.src.Shared.DTOs
     {
         public string Id { get; set; } = string.Empty;
         public string Origin { get; set; } = string.Empty;
+        public string OriginDescription { get; set; } = string.Empty;
         public decimal Cost { get; set; }
         public List<VariationProduct> Variations {get;set;} = [];
         public List<string> VariationsCode { get; set; } = [];

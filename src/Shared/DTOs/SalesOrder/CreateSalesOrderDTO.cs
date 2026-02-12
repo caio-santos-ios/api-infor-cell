@@ -13,8 +13,8 @@ namespace api_infor_cell.src.Shared.DTOs
         [Display(Order = 2)]
         public string SellerId { get; set; } = string.Empty;
         
-        [Required(ErrorMessage = "A Variação é obrigatória.")]
-        [Display(Order = 3)]
+        // [Required(ErrorMessage = "A Variação é obrigatória.")]
+        // [Display(Order = 3)]
         public string VariationId { get; set; } = string.Empty;
         public decimal Total { get; set; }
         public decimal Value { get; set; }

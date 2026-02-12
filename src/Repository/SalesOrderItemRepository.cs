@@ -27,6 +27,7 @@ namespace api_infor_cell.src.Repository
                 MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
                 MongoUtil.Lookup("attachments", ["$productId"], ["$parentId"], "_images", [["deleted", false]], 1),
                 MongoUtil.Lookup("stock", ["$productId"], ["$productId"], "_stock", [["deleted", false]], 1),
+                MongoUtil.Lookup("exchanges", ["$_id"], ["$salesOrderItemId"], "_exchange", [["deleted", false]]),
 
                 new("$addFields", new BsonDocument
                 {
@@ -36,14 +37,17 @@ namespace api_infor_cell.src.Repository
                     {"productVariations", MongoUtil.First("_product.variations")},
                     {"averageCost", MongoUtil.First("_product.averageCost")},
                     {"image", MongoUtil.First("_images.uri")},
-                    {"stockVariations", MongoUtil.First("_stock")}
+                    {"stockVariations", MongoUtil.First("_stock")},
+                    {"exchanges", "$_exchange"}
                 }),
                 
                 new("$project", new BsonDocument
                 {
                     {"_id", 0}, 
                     {"_product", 0},
-                    {"_images", 0}
+                    {"_images", 0},
+                    {"_stock", 0},
+                    {"_exchange", 0}
                 }),
                 new("$sort", pagination.PipelineSort),
             };

@@ -15,5 +15,8 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("status")]
         public string Status {get; set;} = string.Empty;
+
+        [BsonElement("twoSteps")]
+        public string TwoSteps {get; set;} = string.Empty;
     }
 }
