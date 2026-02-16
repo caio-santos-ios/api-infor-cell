@@ -9,6 +9,7 @@ public interface IBoxRepository
     Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Box> pagination);
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<dynamic?>> GetByCreatedIdAggregateAsync(string createdBy);
+    Task<ResponseApi<Box?>> GetByCreatedIdAsync(string createdBy);
     Task<ResponseApi<Box?>> GetByIdAsync(string id);
     Task<int> GetCountDocumentsAsync(PaginationUtil<Box> pagination);
     Task<ResponseApi<Box?>> CreateAsync(Box address);

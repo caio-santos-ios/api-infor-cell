@@ -42,6 +42,34 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, "Falha ao buscar Fornecedores");
             }
         }
+        public async Task<ResponseApi<List<dynamic>>> GetAutocompleteAsync(PaginationUtil<Supplier> pagination)
+        {
+            try
+            {
+                List<BsonDocument> pipeline = new()
+                {
+                    new("$match", pagination.PipelineFilter),
+                    new("$sort", pagination.PipelineSort),
+                    new("$skip", pagination.Skip),
+                    new("$limit", pagination.Limit),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0}, 
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"corporateName", 1}
+                    }),
+                    new("$sort", pagination.PipelineSort),
+                };
+
+                List<BsonDocument> results = await context.Suppliers.Aggregate<BsonDocument>(pipeline).ToListAsync();
+                List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+                return new(list);
+            }
+            catch
+            {
+                return new(null, 500, "Falha ao buscar Fornecedores");
+            }
+        }
         
         public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
         {

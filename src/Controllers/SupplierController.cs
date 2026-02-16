@@ -9,30 +9,39 @@ namespace api_infor_cell.src.Controllers
 {
     [Route("api/suppliers")]
     [ApiController]
-    public class SupplierController(ISupplierService supplierService) : ControllerBase
+    public class SupplierController(ISupplierService service) : ControllerBase
     {
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllAsync()
         {
-            PaginationApi<List<dynamic>> response = await supplierService.GetAllAsync(new(Request.Query));
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            PaginationApi<List<dynamic>> response = await service.GetAllAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
         }
+        
+        [Authorize]
+        [HttpGet("autocomplete")]
+        public async Task<IActionResult> GetAutocompleteAsync()
+        {
+            ResponseApi<List<dynamic>> response = await service.GetAutocompleteAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
         
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {
-            ResponseApi<dynamic?> response = await supplierService.GetByIdAggregateAsync(id);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            ResponseApi<dynamic?> response = await service.GetByIdAggregateAsync(id);
+            return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [Authorize]
         [HttpGet("select")]
         public async Task<IActionResult> GetSelect()
         {
-            ResponseApi<List<dynamic>> response = await supplierService.GetSelectAsync(new(Request.Query));
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            ResponseApi<List<dynamic>> response = await service.GetSelectAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -41,9 +50,9 @@ namespace api_infor_cell.src.Controllers
         {
             if (supplier == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Supplier?> response = await supplierService.CreateAsync(supplier);
+            ResponseApi<Supplier?> response = await service.CreateAsync(supplier);
 
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
@@ -52,18 +61,18 @@ namespace api_infor_cell.src.Controllers
         {
             if (supplier == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Supplier?> response = await supplierService.UpdateAsync(supplier);
+            ResponseApi<Supplier?> response = await service.UpdateAsync(supplier);
 
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<Supplier> response = await supplierService.DeleteAsync(id);
+            ResponseApi<Supplier> response = await service.DeleteAsync(id);
 
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
     }
 }

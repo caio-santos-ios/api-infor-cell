@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class StockService(IStockRepository repository, IMapper _mapper) : IStockService
+    public class StockService(IStockRepository repository, ILogApiRepository logApiRepository, IMapper _mapper) : IStockService
     {
         #region READ
         public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -61,13 +61,36 @@ namespace api_infor_cell.src.Services
                 Stock stock = _mapper.Map<Stock>(request);
                 ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
                 stock.Code = code.Data.ToString().PadLeft(6, '0');
+                decimal qtdSerial = request.Quantity;
+                
+                ResponseApi<List<Stock>> stocks = await repository.GetByProductId(request.ProductId, request.Plan, request.Company, request.Store);
+                if(stocks.IsSuccess && stocks.Data is not null)
+                {
+                    qtdSerial += stocks.Data.Sum(x => x.Quantity);
+                };
+
                 string costPart = request.Cost.ToString().PadLeft(7, '0');
-                string quantityPart = request.Quantity.ToString().PadLeft(4, '0');
+                string quantityPart = qtdSerial.ToString().PadLeft(4, '0');
                 stock.SerialNumber = $"{costPart}{quantityPart}";
 
                 ResponseApi<Stock?> response = await repository.CreateAsync(stock);
 
                 if(response.Data is null) return new(null, 400, "Falha ao criar Estoque.");
+
+                await logApiRepository.CreateAsync(new ()
+                {
+                    Plan = request.Plan,
+                    Company = request.Company,
+                    Store = request.Store,
+                    CreatedBy = request.CreatedBy,
+                    Description = request.OriginDescription,
+                    OriginId = stock.Id,
+                    OriginSecondaryId = stock.ProductId,
+                    ResponseMessage = "Estoque movimentado",
+                    Response = "success",
+                    Table = "stock"
+                });
+
                 return new(response.Data, 201, "Estoque criada com sucesso.");
             }
             catch

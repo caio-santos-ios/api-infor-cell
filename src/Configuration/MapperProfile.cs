@@ -95,6 +95,9 @@ namespace api_infor_cell.src.Configuration
 
             CreateMap<CreateProfilePermissionDTO, ProfilePermission>().ReverseMap();
             CreateMap<UpdateProfilePermissionDTO, ProfilePermission>().ReverseMap();
+            
+            CreateMap<CreateAdjustmentDTO, Adjustment>().ReverseMap();
+            CreateMap<UpdateAdjustmentDTO, Adjustment>().ReverseMap();
             #endregion
         }
     }

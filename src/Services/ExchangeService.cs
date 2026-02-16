@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ExchangeService(IExchangeRepository repository, IStockService stockService, IMapper _mapper) : IExchangeService
+    public class ExchangeService(IExchangeRepository repository, IStockService stockService, ISalesOrderItemRepository salesOrderItemRepository, IMapper _mapper) : IExchangeService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -65,20 +65,16 @@ namespace api_infor_cell.src.Services
             ResponseApi<Exchange?> response = await repository.CreateAsync(exchange);
             if(!response.IsSuccess) return new(null, 400, "Falha ao salvar");
 
-            // await stockService.CreateAsync(new () 
-            // {
-            //     ProductId = request.ProductId,
-            //     Variations = request.Variations,
-            //     VariationsCode = request.VariationsCode,
-            //     Quantity = 1,
-            //     Origin = request.Origin,
-            //     OriginId = request.SalesOrderItemId,
-            //     ForSale = request.ForSale,
-            //     Cost = request.Cost,
-            //     Plan = request.Plan,
-            //     Company = request.Company,
-            //     Store = request.Store
-            // });
+            ResponseApi<SalesOrderItem?> salesOrderItem = await salesOrderItemRepository.GetByIdAsync(request.SalesOrderItemId);
+            if(salesOrderItem.Data is not null)
+            {
+                salesOrderItem.Data.UpdatedAt = DateTime.Now;
+                salesOrderItem.Data.UpdatedBy = request.UpdatedBy;
+                decimal total = salesOrderItem.Data.Total - request.Cost;
+                salesOrderItem.Data.Total = total < 0 ? 0 : total;
+
+                await salesOrderItemRepository.UpdateAsync(salesOrderItem.Data);
+            };
 
             return new(response.Data, 201, "Troca salva com sucesso!");
         }
@@ -130,35 +126,32 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Exchange?> ExchangeResponse = await repository.GetByIdAsync(request.Id);
-            if(ExchangeResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+            ResponseApi<Exchange?> exchangeResponse = await repository.GetByIdAsync(request.Id);
+            if(exchangeResponse.Data is null) return new(null, 404, "Falha ao atualizar");
             
-            Exchange Exchange = _mapper.Map<Exchange>(request);
-            Exchange.UpdatedAt = DateTime.UtcNow;
-            Exchange.ReleasedStock = false;
+            decimal oldCost = exchangeResponse.Data.Cost;
 
-            ResponseApi<Exchange?> response = await repository.UpdateAsync(Exchange);
+            Exchange exchange = _mapper.Map<Exchange>(request);
+            exchange.UpdatedAt = DateTime.UtcNow;
+            exchange.ReleasedStock = false;
+
+            ResponseApi<Exchange?> response = await repository.UpdateAsync(exchange);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
 
-            // ResponseApi<Stock?> stock = await stockRepository.GetByOriginIdAsync(request.SalesOrderItemId);
+            ResponseApi<SalesOrderItem?> salesOrderItem = await salesOrderItemRepository.GetByIdAsync(request.SalesOrderItemId);
+            if(salesOrderItem.Data is not null)
+            {
+                decimal total = salesOrderItem.Data.Total + oldCost;
 
-            // if(!stock.IsSuccess || stock.Data is null) return new(null, 400, "Falha ao atualizar");
+                decimal newTotal = total - exchange.Cost;
 
-            // stock.Data.ProductId = request.ProductId;
-            // stock.Data.Variations = request.Variations;
-            // stock.Data.VariationsCode = request.VariationsCode;
-            // stock.Data.Quantity = 1;
-            // stock.Data.Origin = request.Origin;
-            // stock.Data.OriginId = request.SalesOrderItemId;
-            // stock.Data.ForSale = request.ForSale;
-            // stock.Data.Cost = request.Cost;
-            // stock.Data.Plan = request.Plan;
-            // stock.Data.Company = request.Company;
-            // stock.Data.Store = request.Store;         
-            // stock.Data.UpdatedAt = DateTime.UtcNow;
-            // stock.Data.UpdatedBy = request.UpdatedBy;
+                salesOrderItem.Data.Total = Math.Max(0, newTotal);
+                
+                salesOrderItem.Data.UpdatedAt = DateTime.Now;
+                salesOrderItem.Data.UpdatedBy = request.UpdatedBy;
 
-            // await stockRepository.UpdateAsync(stock.Data);
+                await salesOrderItemRepository.UpdateAsync(salesOrderItem.Data);
+            };
 
             return new(response.Data, 201, "Atualizado com sucesso");
         }
@@ -174,8 +167,18 @@ namespace api_infor_cell.src.Services
     {
         try
         {
-            ResponseApi<Exchange> Exchange = await repository.DeleteAsync(id);
-            if(!Exchange.IsSuccess) return new(null, 400, Exchange.Message);
+            ResponseApi<Exchange> exchange = await repository.DeleteAsync(id);
+            if(!exchange.IsSuccess || exchange.Data is null) return new(null, 400, exchange.Message);
+
+            ResponseApi<SalesOrderItem?> salesOrderItem = await salesOrderItemRepository.GetByIdAsync(exchange.Data.SalesOrderItemId);
+            if(salesOrderItem.Data is not null)
+            {
+                salesOrderItem.Data.UpdatedAt = DateTime.Now;
+                salesOrderItem.Data.Total = exchange.Data.Cost + salesOrderItem.Data.Total; 
+
+                await salesOrderItemRepository.UpdateAsync(salesOrderItem.Data);
+            };
+
             return new(null, 204, "Excluída com sucesso");
         }
         catch

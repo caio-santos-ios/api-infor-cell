@@ -40,11 +40,22 @@ namespace api_infor_cell.src.Models
 
     public class Payment 
     {
+        [BsonElement("paymentMethodId")]
         public string PaymentMethodId { get; set; } = string.Empty;
+        
+        [BsonElement("numberOfInstallments")]
         public decimal NumberOfInstallments { get; set; }
+        
+        [BsonElement("freight")]
         public decimal Freight { get; set; }
+        
+        [BsonElement("currier")]
         public string Currier { get; set; } = string.Empty;
+        
+        [BsonElement("discountValue")]
         public decimal DiscountValue { get; set; }
+        
+        [BsonElement("discountType")]
         public string DiscountType { get; set; } = string.Empty;
     }
 }

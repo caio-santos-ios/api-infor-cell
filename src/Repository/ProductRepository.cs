@@ -96,7 +96,8 @@ namespace api_infor_cell.src.Repository
                                     {"id", new BsonDocument("$toString", "$$s._id")},
                                     {"quantity", "$$s.quantity"},
                                     {"deleted", "$$s.deleted"},
-                                    {"variations", "$$s.variations"}
+                                    {"variations", "$$s.variations"},
+                                    {"price", "$$s.price"}
                                 }
                             }
                         })

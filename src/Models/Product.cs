@@ -162,6 +162,9 @@ namespace api_infor_cell.src.Models
     {
         [BsonElement("barcode")]
         public string Barcode {get;set;} = string.Empty; 
+        
+        [BsonElement("code")]
+        public Guid Code {get;set;} = Guid.NewGuid(); 
 
         [BsonElement("variationId")]
         public string VariationId {get;set;} = string.Empty; 

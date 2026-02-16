@@ -151,6 +151,14 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<ProfilePermission>("profile_permissions"); }
         }       
+        public IMongoCollection<Adjustment> Adjustments
+        {
+            get { return Database.GetCollection<Adjustment>("adjustments"); }
+        }       
+        public IMongoCollection<LogApi> LogApis
+        {
+            get { return Database.GetCollection<LogApi>("logs"); }
+        }       
         #endregion
     }
 }

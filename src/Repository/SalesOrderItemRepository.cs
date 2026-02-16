@@ -34,6 +34,7 @@ namespace api_infor_cell.src.Repository
                     {"id", new BsonDocument("$toString", "$_id")},
                     {"productName", MongoUtil.First("_product.name")},
                     {"productHasSerial", MongoUtil.First("_product.hasSerial")},
+                    {"productHasVariations", MongoUtil.First("_product.hasVariations")},
                     {"productVariations", MongoUtil.First("_product.variations")},
                     {"averageCost", MongoUtil.First("_product.averageCost")},
                     {"image", MongoUtil.First("_images.uri")},

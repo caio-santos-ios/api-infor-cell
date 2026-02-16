@@ -137,7 +137,9 @@ namespace api_infor_cell.src.Repository
                     { "createdAt", MongoUtil.First("createdAt") },
                     { "store", MongoUtil.First("store") },
                     { "originDescription", MongoUtil.First("originDescription") },
-                    { "variations", MongoUtil.First("variations") },
+                    // { "variations", MongoUtil.First("variations") },
+                    // { "variations", "$variations" },
+                    { "variations", new BsonDocument("$push", "$variations") },
                 }),
 
 
@@ -253,6 +255,18 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Estoque");
         }
     }
+    public async Task<ResponseApi<List<Stock>>> GetByOriginIdAllAsync(string originId, string origin)
+    {
+        try
+        {
+            List<Stock> stocks = await context.Stocks.Find(x => x.OriginId == originId && x.Origin == origin && !x.Deleted).ToListAsync();
+            return new(stocks);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
     public async Task<ResponseApi<List<Stock>>> GetStockTransfer(string productId, string barcode, string hasSerial, string serial, string planId, string companyId, string storeId)
     {
         try
@@ -271,6 +285,18 @@ namespace api_infor_cell.src.Repository
         {
             Stock stock = await context.Stocks.Find(x => x.ProductId == productId && x.ForSale == "yes" && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).FirstOrDefaultAsync();
             return new(stock);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
+    public async Task<ResponseApi<List<Stock>>> GetByProductId(string productId, string planId, string companyId, string storeId)
+    {
+        try
+        {
+            List<Stock> stocks = await context.Stocks.Find(x => x.ProductId == productId && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            return new(stocks);
         }
         catch
         {

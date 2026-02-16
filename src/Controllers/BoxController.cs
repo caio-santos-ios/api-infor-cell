@@ -58,6 +58,50 @@ namespace api_infor_cell.src.Controllers
             ResponseApi<Box?> response = await service.UpdateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
+        } 
+        
+        [Authorize]
+        [HttpPut("close")]
+        public async Task<IActionResult> UpdateClose([FromBody] UpdateBoxDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Box?> response = await service.UpdateCloseAsync(body);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }        
+        
+        [Authorize]
+        [HttpPut("sangria")]
+        public async Task<IActionResult> UpdateSangria([FromBody] UpdateBoxDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Box?> response = await service.UpdateSangriaAsync(body);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }        
+        
+        [Authorize]
+        [HttpPut("reinforce")]
+        public async Task<IActionResult> UpdateReinforce([FromBody] UpdateBoxDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Box?> response = await service.UpdateReinforceAsync(body);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }        
+        
+        [Authorize]
+        [HttpPut("closing")]
+        public async Task<IActionResult> UpdateClosing([FromBody] UpdateBoxDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Box?> response = await service.UpdateClosingAsync(body);
+
+            return StatusCode(response.StatusCode, new { response.Result });
         }        
         
         [Authorize]

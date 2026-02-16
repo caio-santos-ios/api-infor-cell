@@ -25,6 +25,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("total")]
         public decimal Total { get; set; }
 
+        [BsonElement("subTotal")]
+        public decimal SubTotal { get; set; }
+
         [BsonElement("value")]
         public decimal Value { get; set; }
 

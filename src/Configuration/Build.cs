@@ -128,6 +128,11 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IProfilePermissionService, ProfilePermissionService>();
             builder.Services.AddTransient<IProfilePermissionRepository, ProfilePermissionRepository>();
             
+            builder.Services.AddTransient<IAdjustmentService, AdjustmentService>();
+            builder.Services.AddTransient<IAdjustmentRepository, AdjustmentRepository>();
+            
+            builder.Services.AddTransient<ILogApiRepository, LogApiRepository>();
+            
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();
             builder.Services.AddTransient<IDashboardRepository, DashboardRepository>();

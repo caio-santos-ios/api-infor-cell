@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Models.Base
 
         [JsonIgnore]
         public bool IsSuccess => statusCode is >= 200 and <= 299;
-       
+
         [JsonIgnore]
         public int StatusCode;
 

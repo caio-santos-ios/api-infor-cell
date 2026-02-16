@@ -7,6 +7,7 @@ namespace api_infor_cell.src.Interfaces
 public interface ISupplierRepository
 {
     Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<Supplier> pagination);
+    Task<ResponseApi<List<dynamic>>> GetAutocompleteAsync(PaginationUtil<Supplier> pagination);
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<Supplier?>> GetByIdAsync(string id);
     Task<ResponseApi<List<dynamic>>> GetSelectAsync(PaginationUtil<Supplier> pagination);

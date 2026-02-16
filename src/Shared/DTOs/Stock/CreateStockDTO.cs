@@ -11,6 +11,8 @@ namespace api_infor_cell.src.Shared.DTOs
         public string SupplierId { get; set; } = string.Empty;
         public string PurchaseOrderItemId { get; set; } = string.Empty;
         public string OriginDescription { get; set; } = string.Empty;
+        public string HasProductVariations { get; set; } = string.Empty;
+        public string HasProductSerial { get; set; } = string.Empty;
         public string Origin { get; set; } = string.Empty;
         public decimal Cost { get; set; }
         public decimal CostDiscount { get; set; }

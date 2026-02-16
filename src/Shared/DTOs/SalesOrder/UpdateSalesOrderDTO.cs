@@ -6,17 +6,12 @@ namespace api_infor_cell.src.Shared.DTOs
     {
         public string Id { get; set; } = string.Empty;
         
-        [Required(ErrorMessage = "O Produto é obrigatório.")]
-        [Display(Order = 1)]
-        public string ProductId { get; set; } = string.Empty;
         public string CustomerId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "O Vendedor é obrigatório.")]
-        [Display(Order = 2)]
+        [Display(Order = 1)]
         public string SellerId { get; set; } = string.Empty;
-        
-        // [Required(ErrorMessage = "A Variação é obrigatória.")]
-        // [Display(Order = 3)]
+
         public string VariationId { get; set; } = string.Empty;
         public decimal Total { get; set; }
         public decimal Value { get; set; }

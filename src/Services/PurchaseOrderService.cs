@@ -121,75 +121,12 @@ namespace api_infor_cell.src.Services
                             OriginDescription = $"Pedido de Compra - Nº {purchaseOrderResponse.Data.Code}",
                             Origin = "sales-order-item",
                             ForSale = "yes",
-                            OriginId = item.Id
+                            OriginId = item.Id,
+                            HasProductSerial = request.HasProductSerial,
+                            HasProductVariations = request.HasProductVariations,
                         };
 
                         await stockService.CreateAsync(stock);
-                        // await stockService.CreateAsync(new ()
-                        // {
-                        //     PurchaseOrderItemId = item.Id,
-                        //     // SerialNumber = serialNumber,
-                        //     Cost = item.Cost,
-                        //     CostDiscount = item.CostDiscount,
-                        //     CreatedBy = request.CreatedBy,
-                        //     Price = item.Price,
-                        //     PriceDiscount = item.PriceDiscount,
-                        //     ProductId = item.ProductId,
-                        //     Quantity = item.Quantity,
-                        //     SupplierId = item.SupplierId,
-                        //     Variations = item.Variations,
-                        //     Company = PurchaseOrderResponse.Data.Company,
-                        //     Store = PurchaseOrderResponse.Data.Store,
-                        //     Plan = PurchaseOrderResponse.Data.Plan
-                        // });
-                        // var grupos = item.Variations
-                        //     .GroupBy(v => v.Key)
-                        //     .Select(g => g.Select(v => v.Value).Distinct().ToList())
-                        //     .ToList();
-
-                        // var combinacoes = grupos.Aggregate(
-                        //     (IEnumerable<IEnumerable<string>>)new[] { Enumerable.Empty<string>() },
-                        //     (acc, grupo) => from a in acc from g in grupo select a.Append(g)
-                        // ).ToList();
-
-                        // int globalSerial = 1;
-
-                        // for (int i = 0; i < item.Quantity; i++)
-                        // {
-                        //     foreach (var variations in combinacoes)
-                        //     {
-                        //         List<Variation> myVariations = new();
-                        //         foreach (string val in variations)
-                        //         {
-                        //             var originalVar = item.Variations.FirstOrDefault(v => v.Value == val);
-                        //             if (originalVar != null) myVariations.Add(new Variation { Key = originalVar.Key, Value = val });
-                        //         }
-
-                        //         string costPart = item.Cost.ToString().PadLeft(7, '0');
-                        //         string serialPart = globalSerial.ToString().PadLeft(4, '0'); 
-                        //         string serialNumber = $"{costPart}{serialPart}";
-
-                        //         await stockService.CreateAsync(new ()
-                        //         {
-                        //             PurchaseOrderItemId = item.Id,
-                        //             SerialNumber = serialNumber,
-                        //             Cost = item.Cost,
-                        //             CostDiscount = item.CostDiscount,
-                        //             CreatedBy = request.CreatedBy,
-                        //             Price = item.Price,
-                        //             PriceDiscount = item.PriceDiscount,
-                        //             ProductId = item.ProductId,
-                        //             Quantity = item.Quantity,
-                        //             SupplierId = item.SupplierId,
-                        //             Variations = myVariations,
-                        //             Company = PurchaseOrderResponse.Data.Company,
-                        //             Store = PurchaseOrderResponse.Data.Store,
-                        //             Plan = PurchaseOrderResponse.Data.Plan
-                        //         });
-                                
-                        //         globalSerial++; 
-                        //     }
-                        // }
                     }
                 };
             };

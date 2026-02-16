@@ -25,6 +25,20 @@ namespace api_infor_cell.src.Services
         }
     }
     
+    public async Task<ResponseApi<List<dynamic>>> GetAutocompleteAsync(GetAllDTO request)
+    {
+        try
+        {
+            PaginationUtil<Supplier> pagination = new(request.QueryParams);
+            ResponseApi<List<dynamic>> accrediteds = await supplier.GetAutocompleteAsync(pagination);
+            return new(accrediteds.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
+    
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try

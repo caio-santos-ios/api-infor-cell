@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class SalesOrderService(ISalesOrderRepository repository, ISalesOrderItemRepository salesOrderItemRepository, IStockRepository stockRepository, IProductRepository productRepository, IExchangeService exchangeService, IMapper _mapper) : ISalesOrderService
+    public class SalesOrderService(ISalesOrderRepository repository, ISalesOrderItemRepository salesOrderItemRepository, IStockRepository stockRepository, IProductRepository productRepository, IExchangeService exchangeService, IBoxRepository boxRepository, IMapper _mapper) : ISalesOrderService
     {
         #region READ
         public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -53,7 +53,7 @@ namespace api_infor_cell.src.Services
                 ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
                 
                 SalesOrder salesOrder = _mapper.Map<SalesOrder>(request);
-                salesOrder.Status = "Rascunho";
+                salesOrder.Status = "Em Aberto";
                 salesOrder.Code = code.Data.ToString().PadLeft(6, '0');
 
                 ResponseApi<SalesOrder?> response = await repository.CreateAsync(salesOrder);
@@ -95,13 +95,15 @@ namespace api_infor_cell.src.Services
         {
             try
             {
-                ResponseApi<SalesOrder?> SalesOrderResponse = await repository.GetByIdAsync(request.Id);
-                if(SalesOrderResponse.Data is null) return new(null, 404, "Falha ao atualizar");
+                ResponseApi<SalesOrder?> salesOrderResponse = await repository.GetByIdAsync(request.Id);
+                if(salesOrderResponse.Data is null) return new(null, 404, "Falha ao atualizar");
                 
-                SalesOrder SalesOrder = _mapper.Map<SalesOrder>(request);
-                SalesOrder.UpdatedAt = DateTime.UtcNow;
+                salesOrderResponse.Data.UpdatedAt = DateTime.UtcNow;
+                salesOrderResponse.Data.UpdatedBy = request.UpdatedBy;
+                salesOrderResponse.Data.SellerId = request.SellerId;
+                salesOrderResponse.Data.CustomerId = request.CustomerId.ToLower().Equals("ao consumidor") ? "" : request.CustomerId; 
 
-                ResponseApi<SalesOrder?> response = await repository.UpdateAsync(SalesOrder);
+                ResponseApi<SalesOrder?> response = await repository.UpdateAsync(salesOrderResponse.Data);
                 if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
                 return new(response.Data, 201, "Atualizado com sucesso");
             }
@@ -115,7 +117,7 @@ namespace api_infor_cell.src.Services
             try
             {
                 ResponseApi<SalesOrder?> salesOrderResponse = await repository.GetByIdAsync(request.Id);
-                if(salesOrderResponse.Data is null) return new(null, 404, "Falha ao finalizar Pedido de Venda");
+                if(salesOrderResponse.Data is null) return new(null, 404, "Falha ao finalizar Pedido de Venda 2 ");
 
                 ResponseApi<List<SalesOrderItem>> items = await salesOrderItemRepository.GetBySalesOrderIdAsync(request.Id, salesOrderResponse.Data.Plan, salesOrderResponse.Data.Company, salesOrderResponse.Data.Store);
                 if(items.Data is not null)
@@ -129,28 +131,53 @@ namespace api_infor_cell.src.Services
                         
                         if(stock.Data is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
 
-                        if(product.Data.HasSerial == "yes")
+                        if(product.Data.HasVariations == "yes")
                         {
-                            bool hasStockAvailable = false;
-                            foreach (var variation in stock.Data.Variations)
+                            if(product.Data.HasSerial == "yes")
                             {
-                                VariationItemSerial? serial = variation.Serials.Where(s => s.Code == salesOrderItem.Serial && s.HasAvailable).FirstOrDefault();
-                                if(serial is not null) 
+                                bool hasStockAvailable = false;
+                                foreach (var variation in stock.Data.Variations)
                                 {
-                                    serial.HasAvailable = false;
-                                    hasStockAvailable = true;
+                                    VariationItemSerial? serial = variation.Serials.Where(s => s.Code == salesOrderItem.Serial && s.HasAvailable).FirstOrDefault();
+                                    if(serial is not null) 
+                                    {
+                                        serial.HasAvailable = false;
+                                        hasStockAvailable = true;
+                                    };
                                 };
+
+                                if(!hasStockAvailable) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name} | Serial: {salesOrderItem.Serial}] não tem estoque disponível");
+
+                                stock.Data.UpdatedAt = DateTime.UtcNow;
+                                stock.Data.UpdatedBy = request.UpdatedBy;
+                                stock.Data.Quantity -= 1;
+
+                                await stockRepository.UpdateAsync(stock.Data);
+                            }
+                            else
+                            {
+                                VariationProduct? variation = stock.Data.Variations.Where(v => v.Barcode == salesOrderItem.Barcode).FirstOrDefault();
+                                if(variation is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
+                                
+                                stock.Data.UpdatedAt = DateTime.UtcNow;
+                                stock.Data.UpdatedBy = request.UpdatedBy;
+                                stock.Data.Quantity -= 1;
+                                variation.Stock -= salesOrderItem.Quantity;
+
+                                await stockRepository.UpdateAsync(stock.Data);
                             };
-
-                            if(!hasStockAvailable) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name} | Serial: {salesOrderItem.Serial}] não tem estoque disponível");
-
+                        } 
+                        else
+                        {
+                            VariationProduct? variation = stock.Data.Variations.Where(v => v.Barcode == salesOrderItem.Barcode).FirstOrDefault();
+                            if(variation is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
+                            
                             stock.Data.UpdatedAt = DateTime.UtcNow;
                             stock.Data.UpdatedBy = request.UpdatedBy;
-                            stock.Data.Quantity -= 1;
+                            stock.Data.Quantity -= salesOrderItem.Quantity;
 
                             await stockRepository.UpdateAsync(stock.Data);
                         }
-
                     }
                 };
 
@@ -170,7 +197,17 @@ namespace api_infor_cell.src.Services
                 if(!response.IsSuccess) return new(null, 400, "Falha ao finalizar Pedido de Venda");
                 
                 await exchangeService.CreateReleasedStockAsync(new CreateExchangeDTO() { Plan = request.Plan, Company = request.Company, Store = request.Store, UpdatedBy = request.UpdatedBy });
-                
+
+                ResponseApi<Box?> box = await boxRepository.GetByCreatedIdAsync(request.UpdatedBy);
+                if(box.Data is not null)
+                {
+                    box.Data.UpdatedAt = DateTime.Now;
+                    box.Data.UpdatedBy = request.UpdatedBy;
+                    box.Data.Value += salesOrderResponse.Data.Total;
+
+                    await boxRepository.UpdateAsync(box.Data);
+                };
+
                 return new(response.Data, 200, "Pedido de Venda Finalizado com sucesso");
             }
             catch

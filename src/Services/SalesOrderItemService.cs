@@ -55,17 +55,22 @@ namespace api_infor_cell.src.Services
             ResponseApi<SalesOrder?> salesOrder = await salesOrderRepository.GetByIdAsync(request.SalesOrderId);
             if(salesOrder.Data is not null)
             {
-                // decimal total = items.Data.Sum(x => x.Total);
-                // decimal quantity = items.Data.Sum(x => x.Quantity);
-                // decimal discountValue = items.Data.Sum(x => x.DiscountValue);
+                ResponseApi<List<SalesOrderItem>> items = await repository.GetBySalesOrderIdAsync(salesOrder.Data.Id, request.Plan, request.Company, request.Store);
+                
+                if(items.Data is not null)
+                {
+                    decimal total = items.Data.Sum(x => x.Total);
+                    decimal quantity = items.Data.Sum(x => x.Quantity);
+                    decimal discountValue = items.Data.Sum(x => x.DiscountValue);
 
-                salesOrder.Data.Total = request.Total;
-                salesOrder.Data.Quantity = request.Quantity;
-                salesOrder.Data.DiscountValue = request.DiscountValue;
-                salesOrder.Data.UpdatedAt = DateTime.UtcNow;
-                salesOrder.Data.UpdatedBy = request.UpdatedBy;
+                    salesOrder.Data.Total = total;
+                    salesOrder.Data.Quantity = quantity;
+                    salesOrder.Data.DiscountValue = discountValue;
+                    salesOrder.Data.UpdatedAt = DateTime.UtcNow;
+                    salesOrder.Data.UpdatedBy = request.UpdatedBy;
 
-                await salesOrderRepository.UpdateAsync(salesOrder.Data);
+                    await salesOrderRepository.UpdateAsync(salesOrder.Data);
+                };
             };
             
 

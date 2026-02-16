@@ -51,7 +51,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Pedidos de Venda");
         }
     }
     
@@ -87,11 +87,11 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.SalesOrders.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Pedidos de Venda não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Pedidos de Venda");
         }
     }
     
@@ -99,12 +99,12 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            SalesOrder? address = await context.SalesOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            SalesOrder? salesOrder = await context.SalesOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(salesOrder);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Pedidos de Venda");
         }
     }
     
@@ -143,33 +143,33 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<SalesOrder?>> CreateAsync(SalesOrder address)
+    public async Task<ResponseApi<SalesOrder?>> CreateAsync(SalesOrder salesOrder)
     {
         try
         {
-            await context.SalesOrders.InsertOneAsync(address);
+            await context.SalesOrders.InsertOneAsync(salesOrder);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(salesOrder, 201, "Pedidos de Venda criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Pedidos de Venda");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<SalesOrder?>> UpdateAsync(SalesOrder address)
+    public async Task<ResponseApi<SalesOrder?>> UpdateAsync(SalesOrder salesOrder)
     {
         try
         {
-            await context.SalesOrders.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.SalesOrders.ReplaceOneAsync(x => x.Id == salesOrder.Id, salesOrder);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(salesOrder, 201, "Pedidos de Venda atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Pedidos de Venda");
         }
     }
     #endregion
@@ -179,18 +179,18 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            SalesOrder? address = await context.SalesOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            SalesOrder? salesOrder = await context.SalesOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(salesOrder is null) return new(null, 404, "Pedidos de Venda não encontrado");
+            salesOrder.Deleted = true;
+            salesOrder.DeletedAt = DateTime.UtcNow;
 
-            await context.SalesOrders.ReplaceOneAsync(x => x.Id == id, address);
+            await context.SalesOrders.ReplaceOneAsync(x => x.Id == id, salesOrder);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(salesOrder, 204, "Pedidos de Venda excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Pedidos de Venda");
         }
     }
     #endregion

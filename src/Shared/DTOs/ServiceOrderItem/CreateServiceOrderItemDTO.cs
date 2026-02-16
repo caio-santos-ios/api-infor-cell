@@ -5,6 +5,7 @@ namespace api_infor_cell.src.Shared.DTOs
     {
         public string ProductId { get; set; } = string.Empty;
         public string VariationId { get; set; } = string.Empty;
+        public decimal SubTotal { get; set; }
         public decimal Total { get; set; }
         public decimal Value { get; set; }
         public decimal Quantity { get; set; }

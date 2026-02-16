@@ -74,15 +74,20 @@ namespace api_infor_cell.src.Repository
                 }),
 
                 MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
+                MongoUtil.Lookup("suppliers", ["$supplierId"], ["$_id"], "_supplier", [["deleted", false]], 1),
 
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
                     {"productName", MongoUtil.First("_product.name")},
+                    {"hasProductSerial", MongoUtil.First("_product.hasSerial")},
+                    {"hasProductVariations", MongoUtil.First("_product.hasVariations")},
+                    {"supplierName", MongoUtil.First("_supplier.corporateName")},
                 }),
                 
                 new("$project", new BsonDocument
                 {
                     {"_id", 0},
+                    {"_product", 0},
                 }),
             ];
 
