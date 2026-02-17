@@ -20,12 +20,15 @@ namespace api_infor_cell.src.Models
         public string SellerId { get; set; } = string.Empty;
 
         [BsonElement("total")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal Total { get; set; }
         
         [BsonElement("quantity")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal Quantity { get; set; }
 
         [BsonElement("discountValue")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal DiscountValue { get; set; }
 
         [BsonElement("discountType")]
@@ -44,15 +47,18 @@ namespace api_infor_cell.src.Models
         public string PaymentMethodId { get; set; } = string.Empty;
         
         [BsonElement("numberOfInstallments")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal NumberOfInstallments { get; set; }
         
         [BsonElement("freight")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal Freight { get; set; }
         
         [BsonElement("currier")]
         public string Currier { get; set; } = string.Empty;
         
         [BsonElement("discountValue")]
+        [BsonRepresentation(BsonType.Decimal128)]
         public decimal DiscountValue { get; set; }
         
         [BsonElement("discountType")]

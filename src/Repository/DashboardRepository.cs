@@ -1,447 +1,152 @@
 using api_infor_cell.src.Configuration;
 using api_infor_cell.src.Interfaces;
+using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
-using api_infor_cell.src.Shared.Utils;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace api_infor_cell.src.Repository
 {
     public class DashboardRepository(AppDbContext context) : IDashboardRepository
     {
-        public async Task<ResponseApi<dynamic>> GetCardsAsync(string plan, string company, string store)
+        public async Task<ResponseApi<dynamic>> GetCardsAsync(string startDate, string endDate, string storeId)
         {
             try
             {
                 DateTime now = DateTime.UtcNow;
-
-                DateTime startOfMonth     = new(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                DateTime endOfMonth       = startOfMonth.AddMonths(1).AddTicks(-1);
+                DateTime startOfMonth = new(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                DateTime endOfMonth = startOfMonth.AddMonths(1);
                 DateTime startOfPrevMonth = startOfMonth.AddMonths(-1);
-                DateTime endOfPrevMonth   = startOfMonth.AddTicks(-1);
 
-                // ── Vendas do mês atual ───────────────────────────────────────
-                List<BsonDocument> salesThisMonthPipeline = new()
+                var salesMonth = await context.SalesOrders.Find(x => x.CreatedAt >= startOfMonth).Project(x => new { x.Total, x.Status }).ToListAsync();
+                var salesPrevMonth = await context.SalesOrders.Find(x => x.CreatedAt >= startOfPrevMonth && x.CreatedAt < startOfMonth).Project(x => new { x.Total }).ToListAsync();
+                decimal totalSales = salesMonth.Sum(s => s.Total);
+                decimal prevTotalSales = salesPrevMonth.Sum(s => s.Total);
+
+                var stockData = await context.Products.Find(_ => true).Project(x => new { x.PriceTotal, x.QuantityStock }).ToListAsync();
+
+                var custMonth = await context.Customers.CountDocumentsAsync(x => x.CreatedAt >= startOfMonth);
+                var custPrevMonth = await context.Customers.CountDocumentsAsync(x => x.CreatedAt >= startOfPrevMonth && x.CreatedAt < startOfMonth);
+                
+                List<AccountReceivable> accountsReceivable = await context.AccountsReceivable.Find(x => x.CreatedAt >= startOfMonth && !x.Deleted && x.DueDate < endOfMonth).ToListAsync();
+                List<AccountPayable> accountsPayable = await context.AccountsPayable.Find(x => x.CreatedAt >= startOfMonth && !x.Deleted && x.DueDate < endOfMonth).ToListAsync();
+
+
+                dynamic obj = new
                 {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",   false },
-                        { "plan",      plan },
-                        { "company",   company },
-                        { "store",     store },
-                        { "status",    "Finalizado" },
-                        { "createdAt", new BsonDocument { { "$gte", startOfMonth }, { "$lte", endOfMonth } } }
-                    }),
-                    new("$group", new BsonDocument
-                    {
-                        { "_id",   BsonNull.Value },
-                        { "total", new BsonDocument("$sum", "$total") },
-                        { "count", new BsonDocument("$sum", 1) }
-                    })
-                };
-                BsonDocument? salesThisMonth = await context.SalesOrders
-                    .Aggregate<BsonDocument>(salesThisMonthPipeline)
-                    .FirstOrDefaultAsync();
-
-                // ── Vendas do mês anterior ────────────────────────────────────
-                List<BsonDocument> salesPrevMonthPipeline = new()
-                {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",   false },
-                        { "plan",      plan },
-                        { "company",   company },
-                        { "store",     store },
-                        { "status",    "Finalizado" },
-                        { "createdAt", new BsonDocument { { "$gte", startOfPrevMonth }, { "$lte", endOfPrevMonth } } }
-                    }),
-                    new("$group", new BsonDocument
-                    {
-                        { "_id",   BsonNull.Value },
-                        { "total", new BsonDocument("$sum", "$total") },
-                        { "count", new BsonDocument("$sum", 1) }
-                    })
-                };
-                BsonDocument? salesPrevMonth = await context.SalesOrders
-                    .Aggregate<BsonDocument>(salesPrevMonthPipeline)
-                    .FirstOrDefaultAsync();
-
-                // ── Pedidos em aberto ─────────────────────────────────────────
-                long openOrdersCount = await context.SalesOrders.CountDocumentsAsync(
-                    new BsonDocument
-                    {
-                        { "deleted",  false },
-                        { "plan",     plan },
-                        { "company",  company },
-                        { "store",    store },
-                        { "status",   "Em Aberto" }
-                    }
-                );
-
-                // ── Estoque — valor total e quantidade de itens ───────────────
-                List<BsonDocument> stockPipeline = new()
-                {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",  false },
-                        { "plan",     plan },
-                        { "company",  company },
-                        { "store",    store }
-                    }),
-                    new("$group", new BsonDocument
-                    {
-                        { "_id",        BsonNull.Value },
-                        { "totalValue", new BsonDocument("$sum", new BsonDocument("$multiply", new BsonArray
-                            {
-                                new BsonDocument("$toDouble", "$price"),
-                                new BsonDocument("$toDouble", "$quantity")
-                            }))
-                        },
-                        { "totalItems", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantity")) }
-                    })
-                };
-                BsonDocument? stockSummary = await context.Stocks
-                    .Aggregate<BsonDocument>(stockPipeline)
-                    .FirstOrDefaultAsync();
-
-                // ── Clientes cadastrados no mês atual ─────────────────────────
-                long customersThisMonth = await context.Customers.CountDocumentsAsync(
-                    new BsonDocument
-                    {
-                        { "deleted",   false },
-                        { "plan",      plan },
-                        { "company",   company },
-                        { "createdAt", new BsonDocument { { "$gte", startOfMonth }, { "$lte", endOfMonth } } }
-                    }
-                );
-
-                // ── Clientes cadastrados no mês anterior ──────────────────────
-                long customersPrevMonth = await context.Customers.CountDocumentsAsync(
-                    new BsonDocument
-                    {
-                        { "deleted",   false },
-                        { "plan",      plan },
-                        { "company",   company },
-                        { "createdAt", new BsonDocument { { "$gte", startOfPrevMonth }, { "$lte", endOfPrevMonth } } }
-                    }
-                );
-
-                // ── Contas a Receber ──────────────────────────────────────────
-                List<BsonDocument> arPipeline = new()
-                {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",  false },
-                        { "plan",     plan },
-                        { "company",  company },
-                        { "store",    store }
-                    }),
-                    new("$group", new BsonDocument
-                    {
-                        { "_id",   "$status" },
-                        { "total", new BsonDocument("$sum", "$amount") },
-                        { "count", new BsonDocument("$sum", 1) }
-                    })
-                };
-                List<BsonDocument> arSummary = await context.AccountsReceivable
-                    .Aggregate<BsonDocument>(arPipeline)
-                    .ToListAsync();
-
-                decimal arOpen = 0; long arOpenCount = 0;
-                decimal arOverdue = 0; long arOverdueCount = 0;
-                foreach (BsonDocument doc in arSummary)
-                {
-                    string status = doc["_id"].IsBsonNull ? "" : doc["_id"].AsString;
-                    decimal val   = (decimal)doc["total"].ToDouble();
-                    long cnt      = doc["count"].AsInt32;
-                    if (status == "open")    { arOpen    = val; arOpenCount    = cnt; }
-                    if (status == "overdue") { arOverdue = val; arOverdueCount = cnt; }
-                }
-
-                // ── Contas a Pagar ────────────────────────────────────────────
-                List<BsonDocument> apPipeline = new()
-                {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",  false },
-                        { "plan",     plan },
-                        { "company",  company },
-                        { "store",    store }
-                    }),
-                    new("$group", new BsonDocument
-                    {
-                        { "_id",   "$status" },
-                        { "total", new BsonDocument("$sum", "$amount") },
-                        { "count", new BsonDocument("$sum", 1) }
-                    })
-                };
-                List<BsonDocument> apSummary = await context.AccountsPayable
-                    .Aggregate<BsonDocument>(apPipeline)
-                    .ToListAsync();
-
-                decimal apOpen = 0; long apOpenCount = 0;
-                decimal apOverdue = 0; long apOverdueCount = 0;
-                foreach (BsonDocument doc in apSummary)
-                {
-                    string status = doc["_id"].IsBsonNull ? "" : doc["_id"].AsString;
-                    decimal val   = (decimal)doc["total"].ToDouble();
-                    long cnt      = doc["count"].AsInt32;
-                    if (status == "open")    { apOpen    = val; apOpenCount    = cnt; }
-                    if (status == "overdue") { apOverdue = val; apOverdueCount = cnt; }
-                }
-
-                // ── Cálculo de crescimento ────────────────────────────────────
-                decimal salesCurrentTotal = salesThisMonth != null ? (decimal)salesThisMonth["total"].ToDouble() : 0;
-                long    salesCurrentCount = salesThisMonth != null ? salesThisMonth["count"].AsInt32 : 0;
-                decimal salesPrevTotal    = salesPrevMonth != null ? (decimal)salesPrevMonth["total"].ToDouble() : 0;
-
-                decimal salesGrowth = salesPrevTotal > 0
-                    ? Math.Round((salesCurrentTotal - salesPrevTotal) / salesPrevTotal * 100, 1)
-                    : salesCurrentTotal > 0 ? 100 : 0;
-
-                decimal customersGrowth = customersPrevMonth > 0
-                    ? Math.Round((customersThisMonth - customersPrevMonth) / (decimal)customersPrevMonth * 100, 1)
-                    : customersThisMonth > 0 ? 100 : 0;
-
-                decimal stockTotalValue = stockSummary != null ? (decimal)stockSummary["totalValue"].ToDouble() : 0;
-                decimal stockTotalItems = stockSummary != null ? (decimal)stockSummary["totalItems"].ToDouble() : 0;
-
-                // ── Monta resposta ────────────────────────────────────────────
-                dynamic result = new
-                {
-                    sales = new
-                    {
-                        totalMonth    = salesCurrentTotal,
-                        countMonth    = salesCurrentCount,
-                        growthPercent = salesGrowth,
-                        openOrders    = openOrdersCount,
+                    sales = new {
+                        totalMonth = (double)totalSales,
+                        countMonth = salesMonth.Count,
+                        growthPercent = CalculateGrowth(totalSales, prevTotalSales),
+                        openOrders = salesMonth.Count(x => x.Status != "Finalizado")
                     },
-                    stock = new
-                    {
-                        totalValue = stockTotalValue,
-                        totalItems = stockTotalItems,
+                    stock = new {
+                        totalValue = (double)stockData.Sum(x => x.PriceTotal),
+                        totalItems = (int)stockData.Sum(x => x.QuantityStock)
                     },
-                    customers = new
-                    {
-                        countMonth    = customersThisMonth,
-                        growthPercent = customersGrowth,
+                    customers = new {
+                        countMonth = (int)custMonth,
+                        growthPercent = CalculateGrowth(custMonth, custPrevMonth)
                     },
-                    accountsReceivable = new
-                    {
-                        openAmount    = arOpen,
-                        openCount     = arOpenCount,
-                        overdueAmount = arOverdue,
-                        overdueCount  = arOverdueCount,
-                        totalAmount   = arOpen + arOverdue,
-                        totalCount    = arOpenCount + arOverdueCount,
+                    accountsReceivable = new 
+                    { 
+                        openAmount = accountsReceivable.Where(x => x.Status == "open").Sum(x => x.Amount), 
+                        openCount = accountsReceivable.Where(x => x.Status == "open").Count(), 
+                        overdueAmount = accountsReceivable.Where(x => x.DueDate.Date < DateTime.UtcNow.Date && x.Status == "open").Sum(x => x.Amount),
+                        overdueCount = accountsReceivable.Where(x => x.DueDate.Date < DateTime.UtcNow.Date && x.Status == "open").Count(), 
+                        totalAmount = accountsReceivable.Where(x => true).Sum(x => x.Amount), 
+                        totalCount = accountsReceivable.Count
                     },
-                    accountsPayable = new
-                    {
-                        openAmount    = apOpen,
-                        openCount     = apOpenCount,
-                        overdueAmount = apOverdue,
-                        overdueCount  = apOverdueCount,
-                        totalAmount   = apOpen + apOverdue,
-                        totalCount    = apOpenCount + apOverdueCount,
+                    accountsPayable = new 
+                    { 
+                        openAmount = accountsPayable.Where(x => x.Status == "open").Sum(x => x.Amount), 
+                        openCount = accountsPayable.Where(x => x.Status == "open").Count(), 
+                        overdueAmount = accountsPayable.Where(x => x.DueDate.Date < DateTime.UtcNow.Date && x.Status == "open").Sum(x => x.Amount),
+                        overdueCount = accountsPayable.Where(x => x.DueDate.Date < DateTime.UtcNow.Date && x.Status == "open").Count(), 
+                        totalAmount = accountsPayable.Where(x => true).Sum(x => x.Amount), 
+                        totalCount = accountsPayable.Count
                     }
                 };
 
-                return new(result);
+                return new ResponseApi<dynamic>(obj);
             }
-            catch (Exception ex)
-            {
-                return new(null, 500, $"Ocorreu um erro inesperado: {ex.Message}");
-            }
+            catch { return new ResponseApi<dynamic>(null, 500, "Erro ao carregar cards."); }
         }
 
-        // ── Vendas por mês do ano atual (gráfico de barras e linha) ───────────
-        public async Task<ResponseApi<dynamic>> GetMonthlySalesAsync(string plan, string company, string store)
+        public async Task<ResponseApi<dynamic>> GetRecentOrdersAsync(string startDate, string endDate, string storeId)
         {
             try
             {
-                int currentYear = DateTime.UtcNow.Year;
-
-                List<BsonDocument> pipeline = new()
-                {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",   false },
-                        { "plan",      plan },
-                        { "company",   company },
-                        { "store",     store },
-                        { "status",    "Finalizado" },
-                        { "createdAt", new BsonDocument
-                            {
-                                { "$gte", new DateTime(currentYear, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-                                { "$lte", new DateTime(currentYear, 12, 31, 23, 59, 59, DateTimeKind.Utc) }
-                            }
-                        }
-                    }),
-                    new("$group", new BsonDocument
-                    {
-                        { "_id",   new BsonDocument("$month", "$createdAt") },
-                        { "total", new BsonDocument("$sum", "$total") },
-                        { "count", new BsonDocument("$sum", 1) }
-                    }),
-                    new("$sort", new BsonDocument("_id", 1))
-                };
-
-                List<BsonDocument> results = await context.SalesOrders
-                    .Aggregate<BsonDocument>(pipeline)
+                var recent = await context.SalesOrders.Find(x => !x.Deleted && x.CreatedAt.Date == DateTime.UtcNow.Date)
+                    .SortByDescending(x => x.CreatedAt)
+                    .Limit(3)
                     .ToListAsync();
 
-                // Monta array com 12 posições (Jan-Dez), zero para meses sem venda
-                decimal[] totals = new decimal[12];
-                int[] counts = new int[12];
-                foreach (BsonDocument doc in results)
-                {
-                    int month = doc["_id"].AsInt32 - 1;
-                    totals[month] = (decimal)doc["total"].ToDouble();
-                    counts[month] = doc["count"].AsInt32;
-                }
+                var result = recent.Select(x => new {
+                    id = x.Id,
+                    code = x.Code,
+                    customerName = "", 
+                    sellerName = "", 
+                    total = (double)x.Total,
+                    status = x.Status,
+                    createdAt = x.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                }).ToList();
 
-                dynamic result = new
-                {
-                    totals,
-                    counts
-                };
-
-                return new(result);
+                return new ResponseApi<dynamic>(result);
             }
-            catch (Exception ex)
-            {
-                return new(null, 500, $"Ocorreu um erro inesperado: {ex.Message}");
+            catch 
+            { 
+                return new ResponseApi<dynamic>(null, 500, "Erro ao carregar pedidos recentes."); 
             }
         }
 
-        // ── Meta mensal: mês atual vs mês anterior ────────────────────────────
-        public async Task<ResponseApi<dynamic>> GetMonthlyTargetAsync(string plan, string company, string store)
+        public async Task<ResponseApi<dynamic>> GetMonthlySalesAsync(string startDate, string endDate, string storeId)
+        {
+            try
+            {
+                var year = DateTime.UtcNow.Year;
+                var totals = new double[12];
+                var counts = new int[12];
+                var salesYear = await context.SalesOrders.Find(x => x.CreatedAt.Year == year).Project(x => new { x.Total, x.CreatedAt }).ToListAsync();
+
+                for (int i = 1; i <= 12; i++) {
+                    var monthSales = salesYear.Where(s => s.CreatedAt.Month == i).ToList();
+                    totals[i - 1] = (double)monthSales.Sum(s => s.Total);
+                    counts[i - 1] = monthSales.Count;
+                }
+                return new ResponseApi<dynamic>(new { totals, counts });
+            }
+            catch { return new ResponseApi<dynamic>(null, 500, "Erro ao carregar vendas mensais."); }
+        }
+
+        public async Task<ResponseApi<dynamic>> GetMonthlyTargetAsync(string startDate, string endDate, string storeId)
         {
             try
             {
                 DateTime now = DateTime.UtcNow;
-                DateTime startOfMonth     = new(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                DateTime endOfMonth       = startOfMonth.AddMonths(1).AddTicks(-1);
-                DateTime startOfPrevMonth = startOfMonth.AddMonths(-1);
-                DateTime endOfPrevMonth   = startOfMonth.AddTicks(-1);
-                DateTime startOfToday     = new(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
-                DateTime endOfToday       = startOfToday.AddDays(1).AddTicks(-1);
+                DateTime startM = new(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                DateTime startP = startM.AddMonths(-1);
 
-                BsonDocument baseFilter = new()
-                {
-                    { "deleted",  false },
-                    { "plan",     plan },
-                    { "company",  company },
-                    { "store",    store },
-                    { "status",   "Finalizado" }
-                };
+                var curS = await context.SalesOrders.Find(x => x.CreatedAt >= startM).Project(x => x.Total).ToListAsync();
+                var preS = await context.SalesOrders.Find(x => x.CreatedAt >= startP && x.CreatedAt < startM).Project(x => x.Total).ToListAsync();
+                var todS = await context.SalesOrders.Find(x => x.CreatedAt >= now.Date).Project(x => x.Total).ToListAsync();
 
-                // Mês atual
-                System.Console.WriteLine(startOfMonth);
-                System.Console.WriteLine(endOfMonth);
-                BsonDocument thisMonthFilter = baseFilter.DeepClone().AsBsonDocument;
-                thisMonthFilter.Add("createdAt", new BsonDocument { { "$gte", startOfMonth }, { "$lte", endOfMonth } });
-                BsonDocument? thisMonth = await context.SalesOrders.Aggregate<BsonDocument>(new List<BsonDocument>
-                {
-                    new("$match", thisMonthFilter),
-                    new("$group", new BsonDocument { { "_id", BsonNull.Value }, { "total", new BsonDocument("$sum", "$total") } })
-                }).FirstOrDefaultAsync();
+                decimal cur = curS.Sum();
+                decimal pre = preS.Sum();
 
-                // Mês anterior
-                BsonDocument prevMonthFilter = baseFilter.DeepClone().AsBsonDocument;
-                prevMonthFilter.Add("createdAt", new BsonDocument { { "$gte", startOfPrevMonth }, { "$lte", endOfPrevMonth } });
-                BsonDocument? prevMonth = await context.SalesOrders.Aggregate<BsonDocument>(new List<BsonDocument>
-                {
-                    new("$match", prevMonthFilter),
-                    new("$group", new BsonDocument { { "_id", BsonNull.Value }, { "total", new BsonDocument("$sum", "$total") } })
-                }).FirstOrDefaultAsync();
-
-                // Hoje
-                BsonDocument todayFilter = baseFilter.DeepClone().AsBsonDocument;
-                todayFilter.Add("createdAt", new BsonDocument { { "$gte", startOfToday }, { "$lte", endOfToday } });
-                BsonDocument? today = await context.SalesOrders.Aggregate<BsonDocument>(new List<BsonDocument>
-                {
-                    new("$match", todayFilter),
-                    new("$group", new BsonDocument { { "_id", BsonNull.Value }, { "total", new BsonDocument("$sum", "$total") } })
-                }).FirstOrDefaultAsync();
-
-                decimal currentTotal  = thisMonth != null ? (decimal)thisMonth["total"].ToDouble() : 0;
-                decimal prevTotal     = prevMonth != null ? (decimal)prevMonth["total"].ToDouble() : 0;
-                decimal todayTotal    = today     != null ? (decimal)today["total"].ToDouble() : 0;
-
-                decimal growthPercent = prevTotal > 0
-                    ? Math.Round((currentTotal - prevTotal) / prevTotal * 100, 1)
-                    : currentTotal > 0 ? 100 : 0;
-
-                dynamic result = new
-                {
-                    currentMonth  = currentTotal,
-                    previousMonth = prevTotal,
-                    today         = todayTotal,
-                    growthPercent,
-                };
-
-                return new(result);
+                return new ResponseApi<dynamic>(new {
+                    currentMonth = (double)cur,
+                    previousMonth = (double)pre,
+                    today = (double)todS.Sum(),
+                    growthPercent = CalculateGrowth(cur, pre)
+                });
             }
-            catch (Exception ex)
-            {
-                return new(null, 500, $"Ocorreu um erro inesperado: {ex.Message}");
-            }
+            catch { return new ResponseApi<dynamic>(null, 500, "Erro ao carregar metas."); }
         }
 
-        // ── Últimos pedidos de venda ───────────────────────────────────────────
-        public async Task<ResponseApi<dynamic>> GetRecentOrdersAsync(string plan, string company, string store)
+        private static double CalculateGrowth(decimal current, decimal previous)
         {
-            try
-            {
-                List<BsonDocument> pipeline = new()
-                {
-                    new("$match", new BsonDocument
-                    {
-                        { "deleted",  false },
-                        { "plan",     plan },
-                        { "company",  company },
-                        { "store",    store }
-                    }),
-                    new("$sort",  new BsonDocument("createdAt", -1)),
-                    new("$limit", 8),
-                    MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
-                    MongoUtil.Lookup("employees", ["$sellerId"],  ["$_id"], "_seller",   [["deleted", false]], 1),
-                    MongoUtil.Lookup("users",     ["$sellerId"],  ["$_id"], "_user",     [["deleted", false]], 1),
-                    new("$addFields", new BsonDocument
-                    {
-                        { "id",           new BsonDocument("$toString", "$_id") },
-                        { "customerName", MongoUtil.First("_customer.tradeName") },
-                        { "sellerName",   new BsonDocument("$ifNull", new BsonArray
-                            {
-                                MongoUtil.First("_seller.name"),
-                                MongoUtil.First("_user.name")
-                            })
-                        }
-                    }),
-                    new("$project", new BsonDocument
-                    {
-                        { "_id",      0 },
-                        { "_customer",0 },
-                        { "_seller",  0 },
-                        { "_user",    0 }
-                    })
-                };
-
-                List<BsonDocument> results = await context.SalesOrders
-                    .Aggregate<BsonDocument>(pipeline)
-                    .ToListAsync();
-
-                List<dynamic> list = results
-                    .Select(doc => MongoDB.Bson.Serialization.BsonSerializer.Deserialize<dynamic>(doc))
-                    .ToList();
-
-                return new(list);
-            }
-            catch (Exception ex)
-            {
-                return new(null, 500, $"Ocorreu um erro inesperado: {ex.Message}");
-            }
+            if (previous == 0) return current > 0 ? 100 : 0;
+            return (double)Math.Round(((current - previous) / previous) * 100, 2);
         }
     }
 }

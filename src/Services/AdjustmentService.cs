@@ -88,7 +88,20 @@ namespace api_infor_cell.src.Services
                     {
                         if(request.HasSerial == "yes")
                         {
-                            System.Console.WriteLine("teste");
+                            foreach (Guid currentCode in request.Codes)
+                            {
+                                var stockItem = listStock.FirstOrDefault(x => x.Variations.Any(v => v.Serials.Any(s => s.Code == currentCode.ToString())));
+                                if(stockItem != null)
+                                {
+                                    foreach(var v in stockItem.Variations)
+                                    {
+                                        v.Serials = v.Serials.Where(s => s.Code != currentCode.ToString()).ToList();
+                                    };
+                                    
+                                    stockItem.Quantity -= 1;
+                                    await stockRepository.UpdateAsync(stockItem);
+                                }
+                            }
                         }
                         else
                         {
