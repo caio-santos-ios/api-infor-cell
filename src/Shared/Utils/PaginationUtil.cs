@@ -117,22 +117,30 @@ namespace api_infor_cell.src.Shared.Utils
 
                             if (logic == "and")
                             {
-                                pipelineFilter.Add(field, valueDt);
-                            };
-
-                            if (logic == "or")
+                                // VERIFICAÇÃO DE DUPLICIDADE:
+                                // Se o campo (ex: issueDate) já existe no filtro, mesclamos as condições.
+                                if (pipelineFilter.Contains(field))
+                                {
+                                    // Pega o documento existente (ex: { "$gte": "data1" }) 
+                                    // e adiciona a nova comparação (ex: "$lte": "data2")
+                                    pipelineFilter[field].AsBsonDocument.Add(comparison, Convert.ToDateTime(value));
+                                }
+                                else
+                                {
+                                    pipelineFilter.Add(field, valueDt);
+                                }
+                            }
+                            else if (logic == "or")
                             {
-                                bool isOrExisted = pipelineFilter.Contains("$or");
-
-                                if (isOrExisted)
+                                if (pipelineFilter.Contains("$or"))
                                 {
                                     pipelineFilter["$or"].AsBsonArray.Add(new BsonDocument(field, valueDt));
                                 }
                                 else
                                 {
                                     pipelineFilter.Add("$or", new BsonArray { new BsonDocument(field, valueDt) });
-                                };
-                            };
+                                }
+                            }
                             break;
 
                         default:

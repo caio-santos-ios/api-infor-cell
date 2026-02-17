@@ -94,6 +94,73 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Pedidos de Venda");
         }
     }
+    public async Task<ResponseApi<dynamic?>> GetReceiptByIdAggregateAsync(string id)
+    {
+        try
+        {
+            BsonDocument[] pipeline = [
+                new("$match", new BsonDocument{
+                    {"_id", new ObjectId(id)},
+                    {"deleted", false}
+                }),
+                
+                MongoUtil.Lookup("stores", ["$store"], ["$_id"], "_store", [["deleted", false]], 1),
+                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+                MongoUtil.Lookup("sales_order_items", ["$_id"], ["$salesOrderId"], "_items", [["deleted", false]]),
+
+                new("$unwind", "$_items"),
+
+                MongoUtil.Lookup("products", ["$_items.productId"], ["$_id"], "_items._product", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument {
+                    {"storeName", MongoUtil.First("_store.corporateName")},
+                    {"storePhone", MongoUtil.First("_store.phone")},
+                    {"storeDocument", MongoUtil.First("_store.document")},
+                    {"customerName", MongoUtil.First("_customer.tradeName")},
+                }),
+                new("$group", new BsonDocument
+                {
+                    {"_id", "$_id"},
+                    {"storeName", MongoUtil.First("storeName")},
+                    {"storePhone", MongoUtil.First("storePhone")},
+                    {"storeDocument", MongoUtil.First("storeDocument")},
+                    {"customerName", MongoUtil.First("customerName")},
+                    {"createdAt", MongoUtil.First("createdAt")},
+                    {"total", MongoUtil.First("total")},
+                    {"items", new BsonDocument("$push", new BsonDocument 
+                        {
+                            {"id", new BsonDocument("$toString", "$_items._id")},
+                            {"productName", MongoUtil.First("_items._product.name")}, 
+                            {"quantity", "$_items.quantity"},
+                            {"value", "$_items.value"},
+                            {"total", "$_items.total"}
+                        }
+                    )}
+                }),
+
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0},
+                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"storeName", 1},
+                    {"storePhone", 1},
+                    {"storeDocument", 1},
+                    {"customerName", 1},
+                    {"createdAt", 1},
+                    {"total", 1},
+                    {"items", 1}
+                })
+            ];
+
+            BsonDocument? response = await context.SalesOrders.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+            dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
+            return result is null ? new(null, 404, "Pedidos de Venda não encontrado") : new(result);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Pedidos de Venda");
+        }
+    }
     
     public async Task<ResponseApi<SalesOrder?>> GetByIdAsync(string id)
     {

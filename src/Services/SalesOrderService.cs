@@ -38,6 +38,19 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
+        public async Task<ResponseApi<dynamic?>> GetReceiptByIdAggregateAsync(string id)
+        {
+            try
+            {
+                ResponseApi<dynamic?> SalesOrder = await repository.GetReceiptByIdAggregateAsync(id);
+                if(SalesOrder.Data is null) return new(null, 404, "Pedido de Venda não encontrada");
+                return new(SalesOrder.Data);
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
+        }
         #endregion
         
         #region CREATE

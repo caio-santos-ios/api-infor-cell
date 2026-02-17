@@ -28,6 +28,14 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("receipt/{id}")]
+        public async Task<IActionResult> GetReceiptByIdAsync(string id)
+        {
+            ResponseApi<dynamic?> response = await service.GetReceiptByIdAggregateAsync(id);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSalesOrderDTO request)
         {

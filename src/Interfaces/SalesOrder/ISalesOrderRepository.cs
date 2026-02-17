@@ -8,6 +8,7 @@ public interface ISalesOrderRepository
 {
     Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<SalesOrder> pagination);
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
+    Task<ResponseApi<dynamic?>> GetReceiptByIdAggregateAsync(string id);
     Task<ResponseApi<SalesOrder?>> GetByIdAsync(string id);
     Task<int> GetCountDocumentsAsync(PaginationUtil<SalesOrder> pagination);
     Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId);

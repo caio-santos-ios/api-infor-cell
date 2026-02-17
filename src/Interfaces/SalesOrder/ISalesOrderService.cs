@@ -8,6 +8,7 @@ namespace api_infor_cell.src.Interfaces
     {
         Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
+        Task<ResponseApi<dynamic?>> GetReceiptByIdAggregateAsync(string id);
         Task<ResponseApi<SalesOrder?>> CreateAsync(CreateSalesOrderDTO request);
         Task<ResponseApi<SalesOrder?>> UpdateAsync(UpdateSalesOrderDTO request);
         Task<ResponseApi<SalesOrder?>> FinishAsync(FinishSalesOrderDTO request);
