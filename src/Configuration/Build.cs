@@ -132,6 +132,13 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IAdjustmentRepository, AdjustmentRepository>();
             
             builder.Services.AddTransient<ILogApiRepository, LogApiRepository>();
+
+            // FINANCIAL
+            builder.Services.AddTransient<IAccountReceivableService, AccountReceivableService>();
+            builder.Services.AddTransient<IAccountReceivableRepository, AccountReceivableRepository>();
+
+            builder.Services.AddTransient<IAccountPayableService, AccountPayableService>();
+            builder.Services.AddTransient<IAccountPayableRepository, AccountPayableRepository>();
             
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();

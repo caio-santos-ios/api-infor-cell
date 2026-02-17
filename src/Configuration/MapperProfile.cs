@@ -54,9 +54,6 @@ namespace api_infor_cell.src.Configuration
             CreateMap<CreateModelDTO, Model>().ReverseMap();
             CreateMap<UpdateModelDTO, Model>().ReverseMap();
 
-            CreateMap<CreatePaymentMethodDTO, PaymentMethod>().ReverseMap();
-            CreateMap<UpdatePaymentMethodDTO, PaymentMethod>().ReverseMap();
-
             CreateMap<CreateServiceOrderDTO, ServiceOrder>().ReverseMap();
             CreateMap<UpdateServiceOrderDTO, ServiceOrder>().ReverseMap();
 
@@ -98,6 +95,17 @@ namespace api_infor_cell.src.Configuration
             
             CreateMap<CreateAdjustmentDTO, Adjustment>().ReverseMap();
             CreateMap<UpdateAdjustmentDTO, Adjustment>().ReverseMap();
+            #endregion
+
+            #region FINANCIAL
+            CreateMap<CreateAccountReceivableDTO, AccountReceivable>().ReverseMap();
+            CreateMap<UpdateAccountReceivableDTO, AccountReceivable>().ReverseMap();
+
+            CreateMap<CreateAccountPayableDTO, AccountPayable>().ReverseMap();
+            CreateMap<UpdateAccountPayableDTO, AccountPayable>().ReverseMap();
+
+            CreateMap<CreatePaymentMethodDTO, PaymentMethod>().ReverseMap();
+            CreateMap<UpdatePaymentMethodDTO, PaymentMethod>().ReverseMap();
             #endregion
         }
     }

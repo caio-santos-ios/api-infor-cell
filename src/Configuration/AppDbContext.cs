@@ -94,10 +94,6 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<Model>("groups"); }
         }
-        public IMongoCollection<PaymentMethod> PaymentMethods
-        {
-            get { return Database.GetCollection<PaymentMethod>("payment_methods"); }
-        }
         public IMongoCollection<ServiceOrder> ServiceOrders
         {
             get { return Database.GetCollection<ServiceOrder>("service_orders"); }
@@ -154,11 +150,26 @@ namespace api_infor_cell.src.Configuration
         public IMongoCollection<Adjustment> Adjustments
         {
             get { return Database.GetCollection<Adjustment>("adjustments"); }
-        }       
+        }  
         public IMongoCollection<LogApi> LogApis
         {
             get { return Database.GetCollection<LogApi>("logs"); }
         }       
+        #endregion
+
+        #region FINANCIAL
+        public IMongoCollection<PaymentMethod> PaymentMethods
+        {
+            get { return Database.GetCollection<PaymentMethod>("payment_methods"); }
+        }
+        public IMongoCollection<AccountReceivable> AccountsReceivable
+        {
+            get { return Database.GetCollection<AccountReceivable>("accounts_receivable"); }
+        }     
+        public IMongoCollection<AccountPayable> AccountsPayable
+        {
+            get { return Database.GetCollection<AccountPayable>("accounts_payable"); }
+        }
         #endregion
     }
 }

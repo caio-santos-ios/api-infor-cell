@@ -1,12 +1,12 @@
 using api_infor_cell.src.Models.Base;
-using api_infor_cell.src.Shared.DTOs;
 
 namespace api_infor_cell.src.Interfaces
 {
     public interface IDashboardService
     {
-        Task<ResponseApi<dynamic?>> GetFirstCardAsync();
-        Task<ResponseApi<List<dynamic>>> GetRecentPatientAsync();
-
+        Task<ResponseApi<dynamic?>> GetCardsAsync(string plan, string company, string store);
+        Task<ResponseApi<dynamic?>> GetMonthlySalesAsync(string plan, string company, string store);
+        Task<ResponseApi<dynamic?>> GetMonthlyTargetAsync(string plan, string company, string store);
+        Task<ResponseApi<dynamic?>> GetRecentOrdersAsync(string plan, string company, string store);
     }
 }
