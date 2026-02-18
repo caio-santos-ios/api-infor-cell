@@ -34,6 +34,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("paymentMethodName")]
         public string PaymentMethodName { get; set; } = string.Empty;
 
+        [BsonElement("chartOfAccountsId")]
+        public string ChartOfAccountsId { get; set; } = string.Empty;
+
         [BsonElement("amount")]
         public decimal Amount { get; set; }
 

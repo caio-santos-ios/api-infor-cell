@@ -170,6 +170,7 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<AccountPayable>("accounts_payable"); }
         }
+        public IMongoCollection<ChartOfAccounts> ChartOfAccounts => Database.GetCollection<ChartOfAccounts>("chart_of_accounts");
         #endregion
     }
 }

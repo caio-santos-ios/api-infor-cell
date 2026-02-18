@@ -136,9 +136,12 @@ namespace api_infor_cell.src.Configuration
             // FINANCIAL
             builder.Services.AddTransient<IAccountReceivableService, AccountReceivableService>();
             builder.Services.AddTransient<IAccountReceivableRepository, AccountReceivableRepository>();
-
             builder.Services.AddTransient<IAccountPayableService, AccountPayableService>();
             builder.Services.AddTransient<IAccountPayableRepository, AccountPayableRepository>();
+            builder.Services.AddScoped<IChartOfAccountsRepository, ChartOfAccountsRepository>();
+            builder.Services.AddScoped<IChartOfAccountsService, ChartOfAccountsService>();
+            builder.Services.AddScoped<IDreRepository, DreRepository>();
+            builder.Services.AddScoped<IDreService, DreService>();
             
             // DASHBOARD
             builder.Services.AddTransient<IDashboardService, DashboardService>();
