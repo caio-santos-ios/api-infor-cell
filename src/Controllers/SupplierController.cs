@@ -27,7 +27,6 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
-        
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
@@ -51,6 +50,17 @@ namespace api_infor_cell.src.Controllers
             if (supplier == null) return BadRequest("Dados inválidos.");
 
             ResponseApi<Supplier?> response = await service.CreateAsync(supplier);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+
+        [Authorize]
+        [HttpPost("minimal")]
+        public async Task<IActionResult> CreateMinimal([FromBody] CreateSupplierMinimalDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Supplier?> response = await service.CreateMinimalAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

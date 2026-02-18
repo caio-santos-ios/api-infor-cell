@@ -22,13 +22,18 @@ namespace api_infor_cell.src.Repository
                     new("$sort", pagination.PipelineSort),
                     new("$skip", pagination.Skip),
                     new("$limit", pagination.Limit),
+
+                    MongoUtil.Lookup("payment_methods", ["$paymentMethodId"], ["$_id"], "_paymentMethod", [["deleted", false]], 1),
+
                     new("$addFields", new BsonDocument
                     {
                         {"id", new BsonDocument("$toString", "$_id")},
+                        {"paymentMethodName", MongoUtil.First("_paymentMethod.name")},
                     }),
                     new("$project", new BsonDocument
                     {
                         {"_id", 0},
+                        {"_paymentMethod", 0},
                     }),
                     new("$sort", pagination.PipelineSort),
                 };

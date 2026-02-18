@@ -75,22 +75,22 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: ProductionCorsPolicy, policy =>
     {
         policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 
     options.AddPolicy(name: DevelopmentCorsPolicy, policy  =>
     {
         policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build(); 
- 
+
 
 if (app.Environment.IsDevelopment())
 {

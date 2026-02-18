@@ -103,6 +103,29 @@ namespace api_infor_cell.src.Services
             return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
         }
     }
+    public async Task<ResponseApi<Supplier?>> CreateMinimalAsync(CreateSupplierMinimalDTO request)
+    {
+        try
+        {
+            ResponseApi<Supplier?> response = await supplier.CreateAsync(new ()
+            {
+                Plan = request.Plan,
+                Company = request.Company,
+                Store = request.Store,
+                CreatedBy = request.CreatedBy,
+                CorporateName = request.Name,
+                TradeName = request.Name
+            });
+
+            if(response.Data is null) return new(null, 400, "Falha ao criar Fornecedor.");
+
+            return new(response.Data, 201, "Fornecedor criado com sucesso.");
+        }
+        catch
+        { 
+            return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+        }
+    }
     #endregion
     
     #region UPDATE

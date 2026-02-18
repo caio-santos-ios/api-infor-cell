@@ -69,7 +69,30 @@ namespace api_infor_cell.src.Services
             ResponseApi<Customer?> response = await repository.CreateAsync(Customer);
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
-            return new(response.Data, 201, "Cliente criada com sucesso.");
+            return new(response.Data, 201, "Cliente criado com sucesso.");
+        }
+        catch
+        { 
+            return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+        }
+    }
+    public async Task<ResponseApi<Customer?>> CreateMinimalAsync(CreateCustomerMinimalDTO request)
+    {
+        try
+        {
+
+            ResponseApi<Customer?> response = await repository.CreateAsync(new()
+            {
+                Plan = request.Plan,
+                Company = request.Company,
+                Store = request.Store,
+                CreatedBy = request.CreatedBy,
+                CorporateName = request.Name,
+                TradeName = request.Name
+            });
+
+            if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
+            return new(response.Data, 201, "Cliente criado com sucesso.");
         }
         catch
         { 
