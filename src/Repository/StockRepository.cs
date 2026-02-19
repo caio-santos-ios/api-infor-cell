@@ -283,7 +283,7 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Stock stock = await context.Stocks.Find(x => x.ProductId == productId && x.ForSale == "yes" && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).FirstOrDefaultAsync();
+            Stock stock = await context.Stocks.Find(x => x.ProductId == productId && x.ForSale == "yes" && x.Quantity > 0 && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).FirstOrDefaultAsync();
             return new(stock);
         }
         catch

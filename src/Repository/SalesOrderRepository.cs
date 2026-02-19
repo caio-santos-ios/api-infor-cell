@@ -34,6 +34,10 @@ namespace api_infor_cell.src.Repository
                     {"customerName", MongoUtil.First("_customer.tradeName")},
                     {"userName", MongoUtil.First("_user.name")},
                     {"employeeName", MongoUtil.First("_seller.name")},
+                    {"quantity", new BsonDocument("$toInt", "$quantity")},
+                    {"total", new BsonDocument("$toInt", "$total")},
+                    {"value", new BsonDocument("$toInt", "$value")},
+                    {"discount", new BsonDocument("$toInt", "$discount")},
                 }),
                 new("$project", new BsonDocument
                 {
