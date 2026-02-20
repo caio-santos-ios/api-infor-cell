@@ -36,7 +36,7 @@ namespace api_infor_cell.src.Services
                 string billingType = request.BillingType.ToUpper();
                 if (!new[] { "PIX", "BOLETO", "CREDIT_CARD", "DEBIT_CARD" }.Contains(billingType)) return new(null, 400, "Forma de pagamento inválida. Opções: PIX, BOLETO, CREDIT_CARD, DEBIT_CARD");
 
-                ResponseApi<Company?> companyResp = await companyRepository.GetByIdAsync(userId);
+                ResponseApi<Company?> companyResp = await companyRepository.GetByIdAsync(request.Company);
                 if (companyResp.Data is null) return new(null, 404, "Usuário não encontrado");
                 Company company = companyResp.Data;
 
