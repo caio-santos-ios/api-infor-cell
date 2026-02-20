@@ -10,6 +10,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<dynamic?>> GetLoggedAsync(string id);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
         Task<ResponseApi<List<Employee>>> GetSellersAsync(string planId, string companyId, string storeId);
+        Task<ResponseApi<List<Employee>>> GetTechniciansAsync(string planId, string companyId, string storeId);
         Task<ResponseApi<Employee?>> CreateAsync(CreateEmployeeDTO request);
         Task<ResponseApi<Employee?>> UpdateAsync(UpdateEmployeeDTO request);
         Task<ResponseApi<Employee?>> UpdateModuleAsync(UpdateModuleEmployeeDTO request);

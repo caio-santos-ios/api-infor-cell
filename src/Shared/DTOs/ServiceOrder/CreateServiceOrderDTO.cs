@@ -1,36 +1,31 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace api_infor_cell.src.Shared.DTOs
 {
     public class CreateServiceOrderDTO : RequestDTO
     {
-       
+        [Required(ErrorMessage = "O Cliente é obrigatório.")]
+        [Display(Order = 1)]
+        public string CustomerId { get; set; } = string.Empty;
+        public string OpenedByUserId { get; set; } = string.Empty;
 
-        public string CompanyId { get; set; } = string.Empty; 
-        
-      
-        public string Document { get; set; } = string.Empty; 
+        // Device
+        [Required(ErrorMessage = "O Tipo de Equipamento é obrigatório.")]
+        [Display(Order = 2)]
+        public string DeviceType { get; set; } = string.Empty;
 
-       
-        public string CorporateName { get; set; } = string.Empty; 
+        [Required(ErrorMessage = "A Marca é obrigatório.")]
+        [Display(Order = 3)]
+        public string BrandId { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
 
-        
-        public string TradeName { get; set; } = string.Empty; 
-
-        
-        public string StateRegistration { get; set; } = string.Empty; 
-        
-        public string MunicipalRegistration { get; set; } = string.Empty; 
-
-       
-        public string Email { get; set; } = string.Empty;
-
-        public string Phone { get; set; } = string.Empty;
-
-        public string Whatsapp { get; set; } = string.Empty;
-
-       
-        public string Photo { get; set; } = string.Empty;
-
-   
-        public string Website { get; set; } = string.Empty;
+        [Required(ErrorMessage = "O Nº de Série/IMEI é obrigatório.")]
+        [Display(Order = 4)]
+        public string SerialImei { get; set; } = string.Empty;
+        public string CustomerReportedIssue { get; set; } = string.Empty;
+        public string UnlockPassword { get; set; } = string.Empty;
+        public string Accessories { get; set; } = string.Empty;
+        public string PhysicalCondition { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
     }
 }

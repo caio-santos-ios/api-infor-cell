@@ -276,7 +276,6 @@ namespace api_infor_cell.src.Repository
         List<BsonDocument> results = await context.Employees.Aggregate<BsonDocument>(pipeline).ToListAsync();
         return results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).Count();
     }
-
     public async Task<ResponseApi<List<Employee>>> GetSellersAsync(string planId, string companyId, string storeId)
     {
         try
@@ -318,6 +317,49 @@ namespace api_infor_cell.src.Repository
         catch
         {
             return new(null, 500, "Falha ao buscar Vendedores");
+        }
+    } 
+    public async Task<ResponseApi<List<Employee>>> GetTechniciansAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            List<User> users = await context.Users.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted && x.Admin && x.Master).ToListAsync();
+            List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            List<Employee> sellers = [];
+
+            foreach (Employee employee in employees)
+            {
+                Module? moduleCommercial = employee.Modules.Where(m => m.Code == "D").FirstOrDefault();
+                if(moduleCommercial is not null)
+                {
+                    Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "D1").FirstOrDefault();
+                    if(routineSalerOrder is not null)
+                    {
+                        if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
+                        {
+                            sellers.Add(new () 
+                            {
+                                Id = employee.Id,
+                                Name = employee.Name
+                            });
+                        }
+                    };
+                };
+            };
+
+            foreach (User user in users)
+            {
+                sellers.Add(new () {
+                    Id = user.Id,
+                    Name = user.Name
+                });
+            }
+
+            return new(sellers);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Técnicos");
         }
     } 
     #endregion

@@ -37,6 +37,14 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("select/technicians")]
+        public async Task<IActionResult> GetSelectTechnicians([FromQuery] string plan, [FromQuery] string company, [FromQuery] string store)
+        {
+            ResponseApi<List<Employee>> response = await service.GetTechniciansAsync(plan, company, store);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEmployeeDTO body)
         {

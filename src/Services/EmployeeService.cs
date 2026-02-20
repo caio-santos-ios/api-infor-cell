@@ -64,6 +64,18 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
+    public async Task<ResponseApi<List<Employee>>> GetTechniciansAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            ResponseApi<List<Employee>> employee = await repository.GetTechniciansAsync(planId, companyId, storeId);
+            return new(employee.Data);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
     #endregion
     
     #region CREATE

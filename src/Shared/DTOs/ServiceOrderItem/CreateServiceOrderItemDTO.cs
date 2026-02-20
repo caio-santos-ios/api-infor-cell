@@ -1,18 +1,28 @@
-
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class CreateServiceOrderItemDTO
+    public class CreateServiceOrderItemDTO : RequestDTO
     {
+        public string ServiceOrderId { get; set; } = string.Empty;
+
+        // service | part
+        public string ItemType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+
         public string ProductId { get; set; } = string.Empty;
-        public string VariationId { get; set; } = string.Empty;
-        public decimal SubTotal { get; set; }
+        public bool IsManual { get; set; } = false;
+
+        public decimal Quantity { get; set; } = 1;
+        public decimal Price { get; set; }
+        public decimal Cost { get; set; }
         public decimal Total { get; set; }
-        public decimal Value { get; set; }
-        public decimal Quantity { get; set; }
-        public decimal DiscountValue { get; set; }
-        public string DiscountType { get; set; } = string.Empty;
-        public bool CreateItem {get; set;} = false;
-        public string Barcode { get; set; } = string.Empty;
-        public string Serial { get; set; } = string.Empty;
+
+        public string SupplierId { get; set; } = string.Empty;
+        public string SupplierName { get; set; } = string.Empty;
+
+        public string TechnicianId { get; set; } = string.Empty;
+        public string TechnicianName { get; set; } = string.Empty;
+
+        public decimal Commission { get; set; }
+        public string CommissionType { get; set; } = string.Empty;
     }
 }

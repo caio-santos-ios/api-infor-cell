@@ -1,29 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class UpdateServiceOrderItemDTO
+    public class UpdateServiceOrderItemDTO : RequestDTO
     {
         public string Id { get; set; } = string.Empty;
-        [Required(ErrorMessage = "O Produto é obrigatório.")]
-        [Display(Order = 1)]
+        public string ServiceOrderId { get; set; } = string.Empty;
+        public string ItemType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string ProductId { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "A Variação é obrigatória.")]
-        [Display(Order = 2)]
-        public string VariationId { get; set; } = string.Empty;
+        public bool IsManual { get; set; } = false;
+        public decimal Quantity { get; set; } = 1;
+        public decimal Price { get; set; }
+        public decimal Cost { get; set; }
         public decimal Total { get; set; }
-        public decimal Value { get; set; }
-        public decimal Quantity { get; set; }
-        public decimal DiscountValue { get; set; }
-        public string DiscountType { get; set; } = string.Empty;
-        public string Barcode { get; set; } = string.Empty;
-        public string Serial { get; set; } = string.Empty;
+        public string SupplierId { get; set; } = string.Empty;
+        public string SupplierName { get; set; } = string.Empty;
+        public string TechnicianId { get; set; } = string.Empty;
+        public string TechnicianName { get; set; } = string.Empty;
+        public decimal Commission { get; set; }
+        public string CommissionType { get; set; } = string.Empty;
     }
 }

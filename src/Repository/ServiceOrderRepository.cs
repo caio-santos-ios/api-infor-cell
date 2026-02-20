@@ -23,14 +23,19 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                new("$addFields", new BsonDocument
-                {
+                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+
+                new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"customerName", MongoUtil.First("_customer.tradeName")},
                 }),
+
                 new("$project", new BsonDocument
                 {
-                    {"_id", 0}, 
+                    {"_id", 0},
+                    {"_customer", 0},
                 }),
+                
                 new("$sort", pagination.PipelineSort),
             };
 
@@ -40,10 +45,10 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Ordens de Serviço");
         }
     }
-    
+
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {
         try
@@ -53,38 +58,43 @@ namespace api_infor_cell.src.Repository
                     {"_id", new ObjectId(id)},
                     {"deleted", false}
                 }),
+                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
+                    {"customerName", MongoUtil.First("_customer.tradeName")},
                 }),
+
                 new("$project", new BsonDocument
                 {
                     {"_id", 0},
+                    {"_customer", 0},
                 }),
             ];
 
             BsonDocument? response = await context.ServiceOrders.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Ordem de Serviço não encontrada") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Ordem de Serviço");
         }
     }
-    
+
     public async Task<ResponseApi<ServiceOrder?>> GetByIdAsync(string id)
     {
         try
         {
-            ServiceOrder? address = await context.ServiceOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            ServiceOrder? serviceOrder = await context.ServiceOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(serviceOrder);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Ordem de Serviço");
         }
     }
-    
+
     public async Task<int> GetCountDocumentsAsync(PaginationUtil<ServiceOrder> pagination)
     {
         List<BsonDocument> pipeline = new()
@@ -105,57 +115,109 @@ namespace api_infor_cell.src.Repository
         List<BsonDocument> results = await context.ServiceOrders.Aggregate<BsonDocument>(pipeline).ToListAsync();
         return results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).Count();
     }
+
+    public async Task<ResponseApi<dynamic?>> CheckWarrantyAsync(string? customerId, string? serialImei)
+    {
+        try
+        {
+            var filterBuilder = Builders<ServiceOrder>.Filter;
+            var filters = new List<FilterDefinition<ServiceOrder>>
+            {
+                filterBuilder.Eq(x => x.Deleted, false),
+                filterBuilder.Eq(x => x.Status, "closed"),
+                filterBuilder.Gt(x => x.WarrantyUntil, DateTime.UtcNow),
+            };
+
+            if (!string.IsNullOrEmpty(serialImei))
+            {
+                filters.Add(filterBuilder.Eq(x => x.Device.SerialImei, serialImei));
+            }
+            else if (!string.IsNullOrEmpty(customerId))
+            {
+                filters.Add(filterBuilder.Eq(x => x.CustomerId, customerId));
+            }
+            else
+            {
+                return new(null);
+            }
+
+            ServiceOrder? found = await context.ServiceOrders.Find(filterBuilder.And(filters)).FirstOrDefaultAsync();
+            if (found is null) return new(null);
+
+            dynamic result = new System.Dynamic.ExpandoObject();
+            var dict = (IDictionary<string, object>)result;
+            dict["id"] = found.Id;
+            dict["status"] = found.Status;
+            dict["warrantyUntil"] = found.WarrantyUntil?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? "";
+            dict["matchType"] = !string.IsNullOrEmpty(serialImei) ? "serial" : "customer";
+
+            return new(result);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao verificar garantia");
+        }
+    }
+    public async Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId)
+    {
+        try
+        {
+            long code = await context.ServiceOrders.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId).CountDocumentsAsync() + 1;
+            return new(code);
+        }
+        catch
+        {
+            return new(0, 500, "Falha ao buscar Próximo Código");
+        }
+    }
     #endregion
-    
+
     #region CREATE
-    public async Task<ResponseApi<ServiceOrder?>> CreateAsync(ServiceOrder address)
+    public async Task<ResponseApi<ServiceOrder?>> CreateAsync(ServiceOrder serviceOrder)
     {
         try
         {
-            await context.ServiceOrders.InsertOneAsync(address);
-
-            return new(address, 201, "Lojas criada com sucesso");
+            await context.ServiceOrders.InsertOneAsync(serviceOrder);
+            return new(serviceOrder, 201, "Ordem de Serviço criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Ordem de Serviço");
         }
     }
     #endregion
-    
+
     #region UPDATE
-    public async Task<ResponseApi<ServiceOrder?>> UpdateAsync(ServiceOrder address)
+    public async Task<ResponseApi<ServiceOrder?>> UpdateAsync(ServiceOrder serviceOrder)
     {
         try
         {
-            await context.ServiceOrders.ReplaceOneAsync(x => x.Id == address.Id, address);
-
-            return new(address, 201, "Lojas atualizada com sucesso");
+            await context.ServiceOrders.ReplaceOneAsync(x => x.Id == serviceOrder.Id, serviceOrder);
+            return new(serviceOrder, 200, "Ordem de Serviço atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Ordem de Serviço");
         }
     }
     #endregion
-    
+
     #region DELETE
     public async Task<ResponseApi<ServiceOrder>> DeleteAsync(string id)
     {
         try
         {
-            ServiceOrder? address = await context.ServiceOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            ServiceOrder? serviceOrder = await context.ServiceOrders.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if (serviceOrder is null) return new(null, 404, "Ordem de Serviço não encontrada");
+            serviceOrder.Deleted = true;
+            serviceOrder.DeletedAt = DateTime.UtcNow;
 
-            await context.ServiceOrders.ReplaceOneAsync(x => x.Id == id, address);
-
-            return new(address, 204, "Lojas excluída com sucesso");
+            await context.ServiceOrders.ReplaceOneAsync(x => x.Id == id, serviceOrder);
+            return new(serviceOrder, 204, "Ordem de Serviço excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Ordem de Serviço");
         }
     }
     #endregion

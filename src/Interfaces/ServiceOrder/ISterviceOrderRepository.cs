@@ -10,6 +10,8 @@ public interface IServiceOrderRepository
     Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
     Task<ResponseApi<ServiceOrder?>> GetByIdAsync(string id);
     Task<int> GetCountDocumentsAsync(PaginationUtil<ServiceOrder> pagination);
+    Task<ResponseApi<dynamic?>> CheckWarrantyAsync(string? customerId, string? serialImei);
+    Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId, string storeId);
     Task<ResponseApi<ServiceOrder?>> CreateAsync(ServiceOrder serviceOrder);
     Task<ResponseApi<ServiceOrder?>> UpdateAsync(ServiceOrder serviceOrder);
     Task<ResponseApi<ServiceOrder>> DeleteAsync(string id);

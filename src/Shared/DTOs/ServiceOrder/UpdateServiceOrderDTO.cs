@@ -3,27 +3,30 @@ namespace api_infor_cell.src.Shared.DTOs
     public class UpdateServiceOrderDTO : RequestDTO
     {
         public string Id { get; set; } = string.Empty;
-       
-        public string CompanyId { get; set; } = string.Empty; 
-        
-        public string Document { get; set; } = string.Empty; 
+        public string CustomerId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+        public string CancelReason { get; set; } = string.Empty;
 
-        public string CorporateName { get; set; } = string.Empty; 
+        // Device
+        public string DeviceType { get; set; } = string.Empty;
+        public string BrandId { get; set; } = string.Empty;
+        public string BrandName { get; set; } = string.Empty;
+        public string ModelId { get; set; } = string.Empty;
+        public string ModelName { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string SerialImei { get; set; } = string.Empty;
+        public string CustomerReportedIssue { get; set; } = string.Empty;
+        public string UnlockPassword { get; set; } = string.Empty;
+        public string Accessories { get; set; } = string.Empty;
+        public string PhysicalCondition { get; set; } = string.Empty;
 
-        public string TradeName { get; set; } = string.Empty; 
+        // Laudo
+        public string TechnicalReport { get; set; } = string.Empty;
+        public string TestsPerformed { get; set; } = string.Empty;
+        public string RepairStatus { get; set; } = string.Empty;
 
-        public string StateRegistration { get; set; } = string.Empty; 
-
-        public string MunicipalRegistration { get; set; } = string.Empty; 
-
-        public string Email { get; set; } = string.Empty;
-       
-        public string Phone { get; set; } = string.Empty;
-
-        public string Whatsapp { get; set; } = string.Empty;
-
-        public string Photo { get; set; } = string.Empty;
-
-        public string Website { get; set; } = string.Empty;
+        public decimal DiscountValue { get; set; }
+        public string DiscountType { get; set; } = string.Empty;
     }
 }

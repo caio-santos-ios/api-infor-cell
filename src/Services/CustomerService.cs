@@ -88,7 +88,8 @@ namespace api_infor_cell.src.Services
                 Store = request.Store,
                 CreatedBy = request.CreatedBy,
                 CorporateName = request.Name,
-                TradeName = request.Name
+                TradeName = request.Name,
+                Type = request.Type
             });
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
