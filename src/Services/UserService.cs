@@ -74,8 +74,6 @@ namespace api_infor_cell.src.Services
                 
                 await smsHandler.SendMessageAsync(request.Phone, messageCode);
                 
-                // await mailHandler.SendMailAsync(request.Email, "Primeiro acesso", MailTemplate.FirstAccess(request.Email, access.CodeAccess));
-
                 return new(null, 201, "Conta criada com sucesso, foi enviado o código de verificação para seu celular e e-mail.");
             }
             catch

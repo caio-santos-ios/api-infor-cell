@@ -10,6 +10,7 @@ namespace api_infor_cell.src.Services
         ISubscriptionRepository repository,
         IUserRepository userRepository,
         IPlanRepository planRepository,
+        ICompanyRepository companyRepository,
         AsaasHandler asaasHandler) : ISubscriptionService
     {
         // Mapeamento de tipo de plano para preço e duração (meses)
@@ -33,24 +34,17 @@ namespace api_infor_cell.src.Services
                     return new(null, 400, $"Plano '{request.PlanType}' inválido. Opções: Bronze, Prata, Ouro, Platina");
 
                 string billingType = request.BillingType.ToUpper();
-                if (!new[] { "PIX", "BOLETO", "CREDIT_CARD", "DEBIT_CARD" }.Contains(billingType))
-                    return new(null, 400, "Forma de pagamento inválida. Opções: PIX, BOLETO, CREDIT_CARD, DEBIT_CARD");
+                if (!new[] { "PIX", "BOLETO", "CREDIT_CARD", "DEBIT_CARD" }.Contains(billingType)) return new(null, 400, "Forma de pagamento inválida. Opções: PIX, BOLETO, CREDIT_CARD, DEBIT_CARD");
 
-                // Buscar dados do usuário
-                ResponseApi<User?> userResp = await userRepository.GetByIdAsync(userId);
-                if (userResp.Data is null) return new(null, 404, "Usuário não encontrado");
-                User user = userResp.Data;
+                ResponseApi<Company?> companyResp = await companyRepository.GetByIdAsync(userId);
+                if (companyResp.Data is null) return new(null, 404, "Usuário não encontrado");
+                Company company = companyResp.Data;
 
-                // Criar ou buscar cliente no Asaas (usando CPF do responsável)
-                // O CPF deve estar cadastrado no usuário/empresa. 
-                // Aqui usamos o documento do usuário ou da empresa.
-                // Ajuste conforme sua estrutura de dados.
-                string cpfCnpj = ""; // TODO: buscar CPF/CNPJ do usuário ou empresa
                 AsaasCustomerResponse? customer = await asaasHandler.GetOrCreateCustomerAsync(
-                    name: user.Name,
-                    cpfCnpj: cpfCnpj,
-                    email: user.Email,
-                    phone: user.Phone
+                    name: company.CorporateName,
+                    cpfCnpj: company.Document,
+                    email: company.Email,
+                    phone: company.Phone
                 );
 
                 if (customer is null)
@@ -65,16 +59,16 @@ namespace api_infor_cell.src.Services
 
                     cardData = new AsaasCardData
                     {
-                        HolderName = request.CardHolderName ?? user.Name,
+                        HolderName = request.CardHolderName ?? company.CorporateName,
                         Number = request.CardNumber ?? string.Empty,
                         ExpiryMonth = request.CardExpiryMonth ?? string.Empty,
                         ExpiryYear = request.CardExpiryYear ?? string.Empty,
                         Cvv = request.CardCvv ?? string.Empty,
-                        HolderEmail = user.Email,
-                        HolderCpfCnpj = cpfCnpj,
+                        HolderEmail = company.Email,
+                        HolderCpfCnpj = company.Document,
                         HolderPostalCode = "",    // TODO: buscar CEP do usuário/empresa
                         HolderAddressNumber = "", // TODO: buscar número do endereço
-                        HolderPhone = user.Phone
+                        HolderPhone = company.Phone
                     };
                 }
 

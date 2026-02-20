@@ -7,6 +7,7 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Whatsapp { get; set; } = string.Empty;
+        public string Document { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool PrivacyPolicy { get; set; } = false;
     }

@@ -75,6 +75,7 @@ namespace api_infor_cell.src.Services
                 if (!request.PrivacyPolicy) return new(null, 400, "Aceitar os Termos e Condições e nossa Política de Privacidade é obrigatório");
                 if (string.IsNullOrEmpty(request.CompanyName)) return new(null, 400, "Nome da empresa é obrigatório");
                 if (string.IsNullOrEmpty(request.Name)) return new(null, 400, "Nome completo é obrigatório");
+                if (string.IsNullOrEmpty(request.Document)) return new(null, 400, "CPF/CNPJ é obrigatório");
                 if (string.IsNullOrEmpty(request.Email)) return new(null, 400, "E-mail é obrigatório");
                 if (string.IsNullOrEmpty(request.Password)) return new(null, 400, "Senha é obrigatória");
                 
