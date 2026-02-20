@@ -19,16 +19,19 @@ namespace api_infor_cell.src.Repository
         {
             List<BsonDocument> pipeline = new()
             {
-                new("$match", pagination.PipelineFilter),
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
 
+                MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+                
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
-                    {"customerName", MongoUtil.First("_customer.tradeName")},
+                    {"customerName", MongoUtil.First("_customer.tradeName")}
                 }),
+
+                new("$match", pagination.PipelineFilter),
+                
 
                 new("$project", new BsonDocument
                 {
@@ -63,6 +66,8 @@ namespace api_infor_cell.src.Repository
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
                     {"customerName", MongoUtil.First("_customer.tradeName")},
+                    {"customerEmail", MongoUtil.First("_customer.email")},
+                    {"customerPhone", MongoUtil.First("_customer.phone")},
                 }),
 
                 new("$project", new BsonDocument

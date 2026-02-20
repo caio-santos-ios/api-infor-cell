@@ -147,10 +147,16 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddTransient<IDashboardService, DashboardService>();
             builder.Services.AddTransient<IDashboardRepository, DashboardRepository>();
 
+
+            // Subscription
+            builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+
             // Handlers
             builder.Services.AddTransient<SmsHandler>();
             builder.Services.AddTransient<MailHandler>();
             builder.Services.AddTransient<CloudinaryHandler>();
+            builder.Services.AddSingleton<AsaasHandler>();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }

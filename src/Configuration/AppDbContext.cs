@@ -172,6 +172,13 @@ namespace api_infor_cell.src.Configuration
         }
         public IMongoCollection<ChartOfAccounts> ChartOfAccounts => Database.GetCollection<ChartOfAccounts>("chart_of_accounts");
         #endregion
+
+        #region PLAN
+        public IMongoCollection<Subscription> Subscriptions
+        {
+            get { return Database.GetCollection<Subscription>("subscriptions"); }
+        }
+        #endregion
     }
 }
 
