@@ -60,7 +60,16 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
-        
+        [Authorize]
+        [HttpPut("minimal")]
+        public async Task<IActionResult> UpdateMinimal([FromBody] CreateCustomerMinimalDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Customer?> response = await service.UpdateMinimalAsync(body);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
         
         [Authorize]
         [HttpDelete("{id}")]

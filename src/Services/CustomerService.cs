@@ -80,6 +80,14 @@ namespace api_infor_cell.src.Services
     {
         try
         {
+            if(string.IsNullOrEmpty(request.CorporateName)) return new(null, 400, request.Type == "F" ? "O Nome é obrigatório" : "A Razão Social é obrigatória");            
+
+            ResponseApi<Customer?> existedDocument = await repository.GetByDocumentAsync(request.Document, "");
+            string messageExited = request.Type == "F" ? "Este CPF já está sendo utilizado por outro Cliente" : "Este CNPJ já está sendo utilizado por outro Cliente";
+            if(existedDocument.Data is not null) return new(null, 400, messageExited);
+
+            ResponseApi<Customer?> existedEmail = await repository.GetByEmailAsync(request.Email, "");
+            if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Cliente");
 
             ResponseApi<Customer?> response = await repository.CreateAsync(new()
             {
@@ -87,9 +95,12 @@ namespace api_infor_cell.src.Services
                 Company = request.Company,
                 Store = request.Store,
                 CreatedBy = request.CreatedBy,
-                CorporateName = request.Name,
-                TradeName = request.Name,
-                Type = request.Type
+                CorporateName = request.CorporateName,
+                TradeName = request.TradeName,
+                Type = request.Type,
+                Document = request.Document,
+                Email = request.Email,
+                Phone = request.Phone
             });
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
@@ -136,7 +147,42 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
-   
+
+    public async Task<ResponseApi<Customer?>> UpdateMinimalAsync(CreateCustomerMinimalDTO request)
+    {
+        try
+        {
+            if(string.IsNullOrEmpty(request.CorporateName)) return new(null, 400, request.Type == "F" ? "O Nome é obrigatório" : "A Razão Social é obrigatória");            
+
+            ResponseApi<Customer?> existedDocument = await repository.GetByDocumentAsync(request.Document, "");
+            string messageExited = request.Type == "F" ? "Este CPF já está sendo utilizado por outro Cliente" : "Este CNPJ já está sendo utilizado por outro Cliente";
+            if(existedDocument.Data is not null) return new(null, 400, messageExited);
+
+            ResponseApi<Customer?> existedEmail = await repository.GetByEmailAsync(request.Email, "");
+            if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Cliente");
+            
+            ResponseApi<Customer?> response = await repository.CreateAsync(new()
+            {
+                Plan = request.Plan,
+                Company = request.Company,
+                Store = request.Store,
+                CreatedBy = request.CreatedBy,
+                CorporateName = request.CorporateName,
+                TradeName = request.TradeName,
+                Type = request.Type,
+                Document = request.Document,
+                Email = request.Email,
+                Phone = request.Phone
+            });
+
+            if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
+            return new(response.Data, 201, "Cliente criado com sucesso.");
+        }
+        catch
+        { 
+            return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+        }
+    }
     #endregion
     
     #region DELETE

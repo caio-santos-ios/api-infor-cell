@@ -13,7 +13,10 @@ namespace api_infor_cell.src.Handlers
     /// </summary>
     public class AsaasHandler()
     {
-        // private readonly string _apiKey = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmZkNTc2MWMwLTIwNDktNGYwMi1hYzkxLWEyNjFlNWYxYjY1Nzo6JGFhY2hfYTNmOTdkYTAtZjc4OS00MTZlLTkxZjYtMGMxOGU3MjYzZDQ4";
+        // DEV
+        // private readonly string _apiKey = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmMzYmNlNDJmLWU1MjQtNGJlNy1hYjQ0LWY0YzIyYTJiMGNjZTo6JGFhY2hfZjFkMDEyZGQtYTgwMy00MDIxLTljZTctYmQwZjg4NTYwYzI0";
+        
+        // PROD 
         private readonly string _apiKey = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjhlMzgyMzM2LThkNDYtNGQ1MC1iYWZjLTVmZGRlNDgzZWQ5Nzo6JGFhY2hfOWIzNGRmMzUtMWE5Yy00OWQzLTllNGMtZmVlZWIyODgzOGI3";
         private readonly string _baseUrl = Environment.GetEnvironmentVariable("URI_ASAAS") ?? "";
 

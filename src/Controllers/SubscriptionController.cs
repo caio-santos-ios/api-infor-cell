@@ -39,6 +39,16 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
+        /// <summary>Busca a assinatura ativa do usuário logado</summary>
+        [Authorize]
+        [HttpGet("plan")]
+        public async Task<IActionResult> GetPlan()
+        {
+            string? plan = User.FindFirst("plan")?.Value;
+            ResponseApi<Subscription?> response = await service.GetByPlanAsync(plan!);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+
         /// <summary>Cancela a assinatura do usuário logado</summary>
         [Authorize]
         [HttpDelete("cancel")]

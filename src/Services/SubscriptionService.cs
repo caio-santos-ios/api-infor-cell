@@ -6,12 +6,15 @@ using api_infor_cell.src.Shared.DTOs;
 
 namespace api_infor_cell.src.Services
 {
-    public class SubscriptionService(
+    public class SubscriptionService
+    (
         ISubscriptionRepository repository,
         IUserRepository userRepository,
         IPlanRepository planRepository,
         ICompanyRepository companyRepository,
-        AsaasHandler asaasHandler) : ISubscriptionService
+        IAddressRepository addressRepository,
+        AsaasHandler asaasHandler
+    ) : ISubscriptionService
     {
         // Mapeamento de tipo de plano para preço e duração (meses)
         private static readonly Dictionary<string, decimal> PlanPrices = new(StringComparer.OrdinalIgnoreCase)
@@ -51,6 +54,17 @@ namespace api_infor_cell.src.Services
                     return new(null, 500, "Erro ao criar cliente no Asaas");
 
                 // Montar dados do cartão (se aplicável)
+                string zipCode = "";
+                string number = "";
+                
+                ResponseApi<Address?> address = await addressRepository.GetByParentIdAsync(company.Id, "company");
+
+                if(address.Data is not null)
+                {
+                    zipCode = address.Data.ZipCode;
+                    number = address.Data.Number;
+                };
+
                 AsaasCardData? cardData = null;
                 if (billingType is "CREDIT_CARD" or "DEBIT_CARD")
                 {
@@ -66,8 +80,8 @@ namespace api_infor_cell.src.Services
                         Cvv = request.CardCvv ?? string.Empty,
                         HolderEmail = company.Email,
                         HolderCpfCnpj = company.Document,
-                        HolderPostalCode = "",    // TODO: buscar CEP do usuário/empresa
-                        HolderAddressNumber = "", // TODO: buscar número do endereço
+                        HolderPostalCode = zipCode,    // TODO: buscar CEP do usuário/empresa
+                        HolderAddressNumber = number, // TODO: buscar número do endereço
                         HolderPhone = company.Phone
                     };
                 }
@@ -86,7 +100,7 @@ namespace api_infor_cell.src.Services
                 if (asaasSubscription is null || (asaasSubscription.Errors?.Count > 0))
                 {
                     string errorMsg = asaasSubscription?.Errors?.FirstOrDefault()?.Description ?? "Erro ao criar assinatura no Asaas";
-                    return new(null, 500, errorMsg);
+                    return new(null, 400, errorMsg);
                 }
 
                 // Buscar detalhes do pagamento gerado (para PIX e Boleto)
@@ -118,10 +132,6 @@ namespace api_infor_cell.src.Services
                             identificationField = boleto.IdentificationField;
                     }
                 }
-
-                // Buscar o plan do banco para associar
-                // ResponseApi<List<dynamic>> plans = await planRepository.GetAllAsync(new Shared.Utils.PaginationUtil<Plan>(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues> { { "type", request.PlanType } }));
-                // string planId = plans.Data?.FirstOrDefault()?.id ?? "";
 
                 // Salvar assinatura no banco
                 Subscription subscription = new()
@@ -158,6 +168,18 @@ namespace api_infor_cell.src.Services
             try
             {
                 ResponseApi<Subscription?> sub = await repository.GetByUserIdAsync(userId);
+                return sub;
+            }
+            catch
+            {
+                return new(null, 500, "Erro ao buscar assinatura");
+            }
+        }
+        public async Task<ResponseApi<Subscription?>> GetByPlanAsync(string plan)
+        {
+            try
+            {
+                ResponseApi<Subscription?> sub = await repository.GetByPlanIdAsync(plan);
                 return sub;
             }
             catch
@@ -216,7 +238,7 @@ namespace api_infor_cell.src.Services
 
                 await repository.UpdateAsync(sub);
 
-                if(sub.Status == "PAYMENT_CONFIRMED") {
+                if(sub.Status == "ACTIVE") {
                     ResponseApi<Plan?> planResp = await planRepository.GetByIdAsync(sub.PlanId);
                     if (planResp.Data is null) return new(null, 404, "Plano não encontrado");
                     

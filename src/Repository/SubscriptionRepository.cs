@@ -23,6 +23,21 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, "Falha ao buscar assinatura");
             }
         }
+        public async Task<ResponseApi<Subscription?>> GetByPlanIdAsync(string planId)
+        {
+            try
+            {
+                Subscription? sub = await context.Subscriptions
+                    .Find(x => x.PlanId == planId && !x.Deleted)
+                    .SortByDescending(x => x.CreatedAt)
+                    .FirstOrDefaultAsync();
+                return new(sub);
+            }
+            catch
+            {
+                return new(null, 500, "Falha ao buscar assinatura");
+            }
+        }
 
         public async Task<ResponseApi<Subscription?>> GetByAsaasSubscriptionIdAsync(string asaasSubscriptionId)
         {

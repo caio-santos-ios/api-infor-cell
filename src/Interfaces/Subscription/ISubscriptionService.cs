@@ -8,6 +8,7 @@ namespace api_infor_cell.src.Interfaces
     {
         Task<ResponseApi<Subscription?>> CreateSubscriptionAsync(CreateSubscriptionDTO request, string userId);
         Task<ResponseApi<Subscription?>> GetCurrentSubscriptionAsync(string userId);
+        Task<ResponseApi<Subscription?>> GetByPlanAsync(string plan);
         Task<ResponseApi<Subscription?>> CancelSubscriptionAsync(string userId);
         Task<ResponseApi<string>> HandleWebhookAsync(AsaasWebhookDTO webhook);
     }

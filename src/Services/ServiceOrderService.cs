@@ -70,9 +70,7 @@ namespace api_infor_cell.src.Services
                 {
                     Type = request.DeviceType,
                     BrandId = request.BrandId,
-                    // BrandName = request.BrandName,
-                    // ModelId = request.ModelId,
-                    // ModelName = request.ModelName,
+                    ModelName = request.ModelName,
                     Color = request.Color,
                     SerialImei = request.SerialImei,
                     CustomerReportedIssue = request.CustomerReportedIssue,
@@ -81,34 +79,6 @@ namespace api_infor_cell.src.Services
                     PhysicalCondition = request.PhysicalCondition,
                 };
 
-                // ServiceOrder serviceOrder = new()
-                // {
-                //     OpenedByUserId = request.OpenedByUserId,
-                //     OpenedAt = DateTime.UtcNow,
-                //     CustomerId = request.CustomerId,
-                //     Status = "open",
-                //     Notes = request.Notes,
-                //     Company = request.Company,
-                //     Store = request.Store,
-                //     Plan = request.Plan,
-                //     CreatedBy = request.CreatedBy,
-                //     Device = new ServiceOrderDevice
-                //     {
-                //         Type = request.DeviceType,
-                //         BrandId = request.BrandId,
-                //         BrandName = request.BrandName,
-                //         ModelId = request.ModelId,
-                //         ModelName = request.ModelName,
-                //         Color = request.Color,
-                //         SerialImei = request.SerialImei,
-                //         CustomerReportedIssue = request.CustomerReportedIssue,
-                //         UnlockPassword = request.UnlockPassword,
-                //         Accessories = request.Accessories,
-                //         PhysicalCondition = request.PhysicalCondition,
-                //     }
-                // };
-
-                // Check for warranty
                 if (!string.IsNullOrEmpty(request.SerialImei) || !string.IsNullOrEmpty(request.CustomerId))
                 {
                     ResponseApi<dynamic?> warrantyCheck = await repository.CheckWarrantyAsync(request.CustomerId, request.SerialImei);
@@ -137,35 +107,38 @@ namespace api_infor_cell.src.Services
                 ResponseApi<ServiceOrder?> existing = await repository.GetByIdAsync(request.Id);
                 if (existing.Data is null) return new(null, 404, "Ordem de Serviço não encontrada");
 
-                ServiceOrder serviceOrder = existing.Data;
-                serviceOrder.CustomerId = request.CustomerId;
-                serviceOrder.Status = string.IsNullOrEmpty(request.Status) ? serviceOrder.Status : request.Status;
-                serviceOrder.Notes = request.Notes;
-                serviceOrder.CancelReason = request.CancelReason;
-                serviceOrder.DiscountValue = request.DiscountValue;
-                serviceOrder.DiscountType = request.DiscountType;
-                serviceOrder.UpdatedAt = DateTime.UtcNow;
-                serviceOrder.UpdatedBy = request.UpdatedBy;
+                existing.Data.OpenedAt = DateTime.UtcNow;
+                existing.Data.OpenedByUserId = request.CreatedBy;
+                existing.Data.Code = existing.Data.Code;
+                existing.Data.Device = new()
+                {
+                    Type = request.DeviceType,
+                    BrandId = request.BrandId,
+                    ModelName = request.ModelName,
+                    Color = request.Color,
+                    SerialImei = request.SerialImei,
+                    CustomerReportedIssue = request.CustomerReportedIssue,
+                    UnlockPassword = request.UnlockPassword,
+                    Accessories = request.Accessories,
+                    PhysicalCondition = request.PhysicalCondition,
+                };
 
-                serviceOrder.Device.Type = request.DeviceType;
-                serviceOrder.Device.BrandId = request.BrandId;
-                // serviceOrder.Device.BrandName = request.BrandName;
-                // serviceOrder.Device.ModelId = request.ModelId;
-                serviceOrder.Device.ModelName = request.ModelName;
-                serviceOrder.Device.Color = request.Color;
-                serviceOrder.Device.SerialImei = request.SerialImei;
-                serviceOrder.Device.CustomerReportedIssue = request.CustomerReportedIssue;
-                serviceOrder.Device.UnlockPassword = request.UnlockPassword;
-                serviceOrder.Device.Accessories = request.Accessories;
-                serviceOrder.Device.PhysicalCondition = request.PhysicalCondition;
+                existing.Data.CustomerId = request.CustomerId;
+                existing.Data.Status = string.IsNullOrEmpty(request.Status) ? existing.Data.Status : request.Status;
+                existing.Data.Notes = request.Notes;
+                existing.Data.CancelReason = request.CancelReason;
+                existing.Data.DiscountValue = request.DiscountValue;
+                existing.Data.DiscountType = request.DiscountType;
+                existing.Data.UpdatedAt = DateTime.UtcNow;
+                existing.Data.UpdatedBy = request.UpdatedBy;
 
-                serviceOrder.Laudo.TechnicalReport = request.TechnicalReport;
-                serviceOrder.Laudo.TestsPerformed = request.TestsPerformed;
-                serviceOrder.Laudo.RepairStatus = request.RepairStatus;
+                existing.Data.Laudo.TechnicalReport = request.TechnicalReport;
+                existing.Data.Laudo.TestsPerformed = request.TestsPerformed;
+                existing.Data.Laudo.RepairStatus = request.RepairStatus;
 
-                ResponseApi<ServiceOrder?> response = await repository.UpdateAsync(serviceOrder);
-                if (!response.IsSuccess) return new(null, 400, "Falha ao atualizar Ordem de Serviço.");
-                return new(response.Data, 200, "Ordem de Serviço atualizada com sucesso.");
+                // ResponseApi<ServiceOrder?> response = await repository.UpdateAsync(serviceOrder);
+                // if (!response.IsSuccess) return new(null, 400, "Falha ao atualizar Ordem de Serviço.");
+                return new(null, 200, "Ordem de Serviço atualizada com sucesso.");
             }
             catch
             {

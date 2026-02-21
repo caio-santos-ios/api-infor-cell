@@ -7,6 +7,7 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Status { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public string CancelReason { get; set; } = string.Empty;
+        public string Priority { get; set; } = string.Empty;
 
         // Device
         public string DeviceType { get; set; } = string.Empty;

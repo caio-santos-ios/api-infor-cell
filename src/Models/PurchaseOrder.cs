@@ -26,11 +26,9 @@ namespace api_infor_cell.src.Models
         public DateTime Date { get; set; }
         
         [BsonElement("total")]
-        [BsonRepresentation(BsonType.Decimal128)]
         public decimal Total { get; set; }
 
         [BsonElement("quantity")]
-        [BsonRepresentation(BsonType.Decimal128)]
         public decimal Quantity { get; set; }
     }
 }

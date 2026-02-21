@@ -11,6 +11,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<Customer?>> CreateAsync(CreateCustomerDTO request);
         Task<ResponseApi<Customer?>> CreateMinimalAsync(CreateCustomerMinimalDTO request);
         Task<ResponseApi<Customer?>> UpdateAsync(UpdateCustomerDTO request);
+        Task<ResponseApi<Customer?>> UpdateMinimalAsync(CreateCustomerMinimalDTO request);
         Task<ResponseApi<Customer>> DeleteAsync(string id);
     }
 }

@@ -59,6 +59,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("warrantyOverrideReason")]
         public string WarrantyOverrideReason { get; set; } = string.Empty;
 
+        [BsonElement("priority")]
+        public string Priority { get; set; } = string.Empty;
+
         [BsonElement("device")]
         public ServiceOrderDevice Device { get; set; } = new();
 
@@ -77,13 +80,10 @@ namespace api_infor_cell.src.Models
         [BsonElement("brandId")]
         public string BrandId { get; set; } = string.Empty;
 
-        // [BsonElement("brandName")]
-        // public string BrandName { get; set; } = string.Empty;
-
         [BsonElement("modelId")]
-        // public string ModelId { get; set; } = string.Empty;
+        public string ModelId { get; set; } = string.Empty;
 
-        // [BsonElement("modelName")]
+        [BsonElement("modelName")]
         public string ModelName { get; set; } = string.Empty;
 
         [BsonElement("color")]

@@ -126,7 +126,9 @@ namespace api_infor_cell.src.Services
                     CorporateName = request.CompanyName,
                     TradeName = request.CompanyName,
                     Phone = request.Phone,
-                    Plan = responsePlan.Data.Id
+                    Plan = responsePlan.Data.Id,
+                    Document = request.Document,
+                    Email = request.Email,
                 });
 
                 if(responseCompany.Data is null) return new(null, 400, "Falha ao criar conta.");
