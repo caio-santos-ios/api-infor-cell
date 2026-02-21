@@ -127,7 +127,7 @@ namespace api_infor_cell.src.Repository
         try
         {
             Customer? customer = new();
-              if(!string.IsNullOrEmpty(id))
+            if(!string.IsNullOrEmpty(id))
             {
                 customer = await context.Customers.Find(x => x.Email == email && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
             }
@@ -148,7 +148,7 @@ namespace api_infor_cell.src.Repository
         try
         {
             Customer? customer = new();
-              if(!string.IsNullOrEmpty(id))
+            if(!string.IsNullOrEmpty(id))
             {
                 customer = await context.Customers.Find(x => x.Document == document && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
             }
