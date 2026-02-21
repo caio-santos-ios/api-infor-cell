@@ -24,10 +24,13 @@ namespace api_infor_cell.src.Shared.DTOs
         public string SerialImei { get; set; } = string.Empty;
         
         [Required(ErrorMessage = "A Prioridade é obrigatória.")]
-        [Display(Order = 5)]
+        [Display(Order = 6)]
         public string Priority { get; set; } = string.Empty;
         public string ModelName { get; set; } = string.Empty;
         public string CustomerReportedIssue { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "A Senha de Desbloqueio é obrigatória.")]
+        [Display(Order = 5)]
         public string UnlockPassword { get; set; } = string.Empty;
         public string Accessories { get; set; } = string.Empty;
         public string PhysicalCondition { get; set; } = string.Empty;
