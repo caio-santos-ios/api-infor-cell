@@ -9,7 +9,6 @@ namespace api_infor_cell.src.Services
     public class SubscriptionService
     (
         ISubscriptionRepository repository,
-        IUserRepository userRepository,
         IPlanRepository planRepository,
         ICompanyRepository companyRepository,
         IAddressRepository addressRepository,
@@ -68,8 +67,8 @@ namespace api_infor_cell.src.Services
                 AsaasCardData? cardData = null;
                 if (billingType is "CREDIT_CARD" or "DEBIT_CARD")
                 {
-                    if (string.IsNullOrWhiteSpace(request.CardNumber))
-                        return new(null, 400, "Dados do cartão são obrigatórios para pagamento com cartão");
+                    if (string.IsNullOrWhiteSpace(request.CardNumber)) return new(null, 400, "Dados do cartão são obrigatórios para pagamento com cartão");
+                    if (address.Data is null) return new(null, 400, "Empresa precisa ter um endereço cadastrado");
 
                     cardData = new AsaasCardData
                     {
@@ -162,7 +161,6 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, $"Erro inesperado: {ex.Message}");
             }
         }
-
         public async Task<ResponseApi<Subscription?>> GetCurrentSubscriptionAsync(string userId)
         {
             try
