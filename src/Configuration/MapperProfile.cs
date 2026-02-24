@@ -95,6 +95,9 @@ namespace api_infor_cell.src.Configuration
             
             CreateMap<CreateAdjustmentDTO, Adjustment>().ReverseMap();
             CreateMap<UpdateAdjustmentDTO, Adjustment>().ReverseMap();
+            
+            CreateMap<CreateSituationDTO, Situation>().ReverseMap();
+            CreateMap<UpdateSituationDTO, Situation>().ReverseMap();
             #endregion
 
             #region FINANCIAL

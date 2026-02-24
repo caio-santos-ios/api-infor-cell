@@ -73,6 +73,7 @@ namespace api_infor_cell.src.Services
             
             PaymentMethod paymentMethod = _mapper.Map<PaymentMethod>(request);
             paymentMethod.UpdatedAt = DateTime.UtcNow;
+            paymentMethod.CreatedAt = paymentMethodResponse.Data.CreatedAt;
             paymentMethod.Code = paymentMethodResponse.Data.Code;
 
             ResponseApi<PaymentMethod?> response = await repository.UpdateAsync(paymentMethod);

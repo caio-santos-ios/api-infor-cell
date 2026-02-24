@@ -24,10 +24,13 @@ namespace api_infor_cell.src.Repository
                 new("$limit", pagination.Limit),
 
                 MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+                MongoUtil.Lookup("situations", ["$status"], ["$_id"], "_situation", [["deleted", false]], 1),
                 
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
-                    {"customerName", MongoUtil.First("_customer.tradeName")}
+                    {"customerName", MongoUtil.First("_customer.tradeName")},
+                    {"situationName", MongoUtil.First("_situation.name")},
+                    {"situationStyle", MongoUtil.First("_situation.style")}
                 }),
 
                 new("$match", pagination.PipelineFilter),

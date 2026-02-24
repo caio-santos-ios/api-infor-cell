@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ServiceOrderService(IServiceOrderRepository repository, IMapper _mapper) : IServiceOrderService
+    public class ServiceOrderService(IServiceOrderRepository repository, ISituationRepository situationRepository, IMapper _mapper) : IServiceOrderService
     {
         #region READ
         public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -61,8 +61,10 @@ namespace api_infor_cell.src.Services
             {
                 ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
 
+                ResponseApi<Situation?> situation = await situationRepository.GetByMomentAsync(request.Plan, request.Company, request.Store, "start");
+                
                 ServiceOrder serviceOrder = _mapper.Map<ServiceOrder>(request);
-                serviceOrder.Status = "open";
+                serviceOrder.Status = situation.Data is not null ? situation.Data.Id : "";
                 serviceOrder.OpenedAt = DateTime.UtcNow;
                 serviceOrder.OpenedByUserId = request.CreatedBy;
                 serviceOrder.Code = code.Data.ToString().PadLeft(6, '0');
@@ -136,8 +138,8 @@ namespace api_infor_cell.src.Services
                 existing.Data.Laudo.TestsPerformed = request.TestsPerformed;
                 existing.Data.Laudo.RepairStatus = request.RepairStatus;
 
-                // ResponseApi<ServiceOrder?> response = await repository.UpdateAsync(serviceOrder);
-                // if (!response.IsSuccess) return new(null, 400, "Falha ao atualizar Ordem de Serviço.");
+                ResponseApi<ServiceOrder?> response = await repository.UpdateAsync(existing.Data);
+                if (!response.IsSuccess) return new(null, 400, "Falha ao atualizar Ordem de Serviço.");
                 return new(null, 200, "Ordem de Serviço atualizada com sucesso.");
             }
             catch

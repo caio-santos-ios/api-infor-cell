@@ -155,6 +155,10 @@ namespace api_infor_cell.src.Configuration
         {
             get { return Database.GetCollection<LogApi>("logs"); }
         }       
+        public IMongoCollection<Situation> Situations
+        {
+            get { return Database.GetCollection<Situation>("situations"); }
+        }       
         #endregion
 
         #region FINANCIAL

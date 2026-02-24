@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using api_infor_cell.src.Models;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
@@ -11,5 +12,6 @@ namespace api_infor_cell.src.Shared.DTOs
         [Required(ErrorMessage = "O Nº máximo de parcelas é obrigatório.")]
         [Display(Order = 2)]
         public int NumberOfInstallments { get; set; }
+        public List<Interest> Interest {get;set;} = [];
     }
 }
