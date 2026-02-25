@@ -33,6 +33,9 @@ namespace api_infor_cell.src.Models
         
         [BsonElement("appearsOnPanel")]
         public bool AppearsOnPanel {get; set;}
+
+        [BsonElement("sequence")]
+        public int Sequence {get; set;}
     }
 
     public class Style

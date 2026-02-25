@@ -11,5 +11,6 @@ namespace api_infor_cell.src.Shared.DTOs
         public bool Quite {get; set;}
         public bool GenerateFinancial {get; set;}
         public bool AppearsOnPanel {get; set;}
+        public int Sequence {get; set;}
     }
 }

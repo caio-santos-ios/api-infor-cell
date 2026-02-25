@@ -183,6 +183,29 @@ namespace api_infor_cell.src.Services
             return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
         }
     }
+    public async Task<ResponseApi<Customer?>> UpdateCashbackAsync(UpdateCustomerCashbackDTO request)
+    {
+        try
+        {
+            ResponseApi<Customer?> customer = await repository.GetByIdAsync(request.Id);
+            if(customer.Data is null) return new(null, 400, "Cliente não foi encontrado");
+
+            customer.Data.UpdatedAt = DateTime.UtcNow;
+            customer.Data.UpdatedBy = request.UpdatedBy;
+            customer.Data.Cashbacks = request.Cashbacks;
+            customer.Data.TotalCashback = request.Cashbacks.Sum(x => x.Value);
+            customer.Data.TotalCurrentCashback = request.Cashbacks.Sum(x => x.CurrentValue);
+
+            ResponseApi<Customer?> response = await repository.UpdateAsync(customer.Data);
+
+            if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
+            return new(response.Data, 200, "Cashback adicionado com sucesso.");
+        }
+        catch
+        { 
+            return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+        }
+    }
     #endregion
     
     #region DELETE

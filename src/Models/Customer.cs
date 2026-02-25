@@ -27,5 +27,44 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("phone")]
         public string Phone { get; set; } = string.Empty;
+
+        [BsonElement("cashbacks")]
+        public List<CashbackCustomer> Cashbacks {get;set;} = [];
+
+        [BsonElement("totalCashback")]
+        public decimal TotalCashback { get; set; }
+        
+        [BsonElement("totalCurrentCashback")]
+        public decimal TotalCurrentCashback { get; set; }
+    }
+
+    public class CashbackCustomer
+    {
+        [BsonElement("responsible")]
+        public string Responsible { get; set; } = string.Empty;
+        
+        [BsonElement("description")]
+        public string Description { get; set; } = string.Empty;
+        
+        [BsonElement("originDescription")]
+        public string OriginDescription { get; set; } = string.Empty;
+        
+        [BsonElement("origin")]
+        public string Origin { get; set; } = string.Empty;
+        
+        [BsonElement("originId")]
+        public string OriginId { get; set; } = string.Empty;
+
+        [BsonElement("date")]
+        public DateTime Date { get; set; } = new();
+
+        [BsonElement("value")]
+        public decimal Value { get; set; }
+
+        [BsonElement("currentValue")]
+        public decimal CurrentValue { get; set; }
+
+        [BsonElement("available")]
+        public bool Available { get; set; } = true;
     }
 }

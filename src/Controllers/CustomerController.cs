@@ -72,6 +72,17 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpPut("cashbacks")]
+        public async Task<IActionResult> UpdateCashback([FromBody] UpdateCustomerCashbackDTO body)
+        {
+            if (body == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<Customer?> response = await service.UpdateCashbackAsync(body);
+
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

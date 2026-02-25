@@ -33,5 +33,11 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("value")]
         public decimal Value { get; set; }
+
+        [BsonElement("transactionFee")]
+        public decimal TransactionFee { get; set; }
+
+        [BsonElement("surcharge")]
+        public decimal Surcharge { get; set; }
     }
 }
