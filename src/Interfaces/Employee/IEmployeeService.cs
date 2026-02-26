@@ -9,12 +9,12 @@ namespace api_infor_cell.src.Interfaces
         Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request);
         Task<ResponseApi<dynamic?>> GetLoggedAsync(string id);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
-        Task<ResponseApi<List<Employee>>> GetSellersAsync(string planId, string companyId, string storeId);
-        Task<ResponseApi<List<Employee>>> GetTechniciansAsync(string planId, string companyId, string storeId);
-        Task<ResponseApi<Employee?>> CreateAsync(CreateEmployeeDTO request);
-        Task<ResponseApi<Employee?>> UpdateAsync(UpdateEmployeeDTO request);
-        Task<ResponseApi<Employee?>> UpdateModuleAsync(UpdateModuleEmployeeDTO request);
-        Task<ResponseApi<Employee?>> UpdateCalendarAsync(UpdateCalendarEmployeeDTO request);
-        Task<ResponseApi<Employee>> DeleteAsync(string id);
+        Task<ResponseApi<List<User>>> GetSellersAsync(string planId, string companyId, string storeId);
+        Task<ResponseApi<List<User>>> GetTechniciansAsync(string planId, string companyId, string storeId);
+        // Task<ResponseApi<Employee?>> CreateAsync(CreateEmployeeDTO request);
+        Task<ResponseApi<User?>> UpdateAsync(UpdateUserDTO request);
+        Task<ResponseApi<User?>> UpdateModuleAsync(UpdateModuleEmployeeDTO request);
+        Task<ResponseApi<User?>> UpdateCalendarAsync(UpdateCalendarEmployeeDTO request);
+        Task<ResponseApi<User>> DeleteAsync(string id);
     }
 }

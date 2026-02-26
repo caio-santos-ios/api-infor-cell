@@ -62,6 +62,7 @@ namespace api_infor_cell.src.Services
                 ResponseApi<long> code = await repository.GetNextCodeAsync(request.Plan, request.Company, request.Store);
                 stock.Code = code.Data.ToString().PadLeft(6, '0');
                 decimal qtdSerial = request.Quantity;
+                stock.QuantityAvailable = request.Quantity;
                 
                 ResponseApi<List<Stock>> stocks = await repository.GetByProductId(request.ProductId, request.Plan, request.Company, request.Store);
                 if(stocks.IsSuccess && stocks.Data is not null)

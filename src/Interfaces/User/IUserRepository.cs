@@ -10,6 +10,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<User> pagination);
         Task<ResponseApi<List<dynamic>>> GetSelectBarberAsync(PaginationUtil<User> pagination);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
+        Task<ResponseApi<dynamic?>> GetEmployeeByIdAggregateAsync(string id);
         Task<ResponseApi<dynamic?>> GetLoggedAsync(string id);
         Task<ResponseApi<User?>> GetByIdAsync(string id);
         Task<ResponseApi<User?>> GetByUserNameAsync(string userName);

@@ -30,12 +30,31 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("employee/{id}")]
+        public async Task<IActionResult> GetEmployeeByIdAsync(string id)
+        {
+            ResponseApi<dynamic?> response = await userService.GetEmployeeByIdAggregateAsync(id);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO user)
         {
             if (user == null) return BadRequest("Dados inválidos.");
 
             ResponseApi<User?> response = await userService.CreateAsync(user);
+
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }
+        
+        [Authorize]
+        [HttpPost("employee")]
+        public async Task<IActionResult> CreateEmployee([FromBody] CreateUserEmployeeDTO user)
+        {
+            if (user == null) return BadRequest("Dados inválidos.");
+
+            ResponseApi<User?> response = await userService.CreateEmployeeAsync(user);
 
             return StatusCode(response.StatusCode, new { response.Message, response.Result });
         }

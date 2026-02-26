@@ -115,6 +115,40 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, e.Message); ;
             }
         }
+        public async Task<ResponseApi<dynamic?>> GetEmployeeByIdAggregateAsync(string id)
+        {
+            try
+            {
+                BsonDocument[] pipeline = [
+                    new("$match", new BsonDocument{
+                        {"_id", new ObjectId(id)},
+                        {"deleted", false}
+                    }),
+                    
+                    MongoUtil.Lookup("employees", ["$_id"], ["$userId"], "_employee", [["deleted", false]], 1),
+
+                    new("$addFields", new BsonDocument {
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"dateOfBirth", MongoUtil.First("_employee.dateOfBirth")},
+                        {"cpf", MongoUtil.First("_employee.cpf")},
+                        {"rg", MongoUtil.First("_employee.rg")},
+                        {"type", MongoUtil.First("_employee.type")},
+                    }),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                    }),
+                ];
+
+                BsonDocument? response = await context.Users.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
+                dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
+                return result is null ? new(null, 404, "Usuário não encontrado") : new(result);
+            }
+            catch(Exception e)
+            {
+                return new(null, 500, e.Message); ;
+            }
+        }
         public async Task<ResponseApi<dynamic?>> GetLoggedAsync(string id)
         {
             try

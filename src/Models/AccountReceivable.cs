@@ -22,17 +22,11 @@ namespace api_infor_cell.src.Models
         [BsonElement("customerId")]
         public string CustomerId { get; set; } = string.Empty;
 
-        [BsonElement("customerName")]
-        public string CustomerName { get; set; } = string.Empty;
-
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
 
         [BsonElement("paymentMethodId")]
         public string PaymentMethodId { get; set; } = string.Empty;
-
-        [BsonElement("paymentMethodName")]
-        public string PaymentMethodName { get; set; } = string.Empty;
 
         [BsonElement("chartOfAccountsId")]
         public string ChartOfAccountsId { get; set; } = string.Empty;
@@ -60,5 +54,8 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("notes")]
         public string Notes { get; set; } = string.Empty;
+
+        [BsonElement("issueDate")]
+        public DateTime IssueDate { get; set; }
     }
 }

@@ -31,9 +31,6 @@ namespace api_infor_cell.src.Models
         [BsonElement("installment")]
         public int Installment { get; set; }
 
-        [BsonElement("value")]
-        public decimal Value { get; set; }
-
         [BsonElement("transactionFee")]
         public decimal TransactionFee { get; set; }
 

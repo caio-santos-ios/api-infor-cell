@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class ServiceOrderService(IServiceOrderRepository repository, ISituationRepository situationRepository, IMapper _mapper) : IServiceOrderService
+    public class ServiceOrderService(IServiceOrderRepository repository, ISituationRepository situationRepository, IAccountReceivableService accountReceivableService, IMapper _mapper) : IServiceOrderService
     {
         #region READ
         public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -156,7 +156,7 @@ namespace api_infor_cell.src.Services
                 if (existing.Data is null) return new(null, 404, "Ordem de Serviço não encontrada");
 
                 ServiceOrder serviceOrder = existing.Data;
-                serviceOrder.Status = "closed";
+                serviceOrder.IsClosed = true;
                 serviceOrder.ClosedAt = DateTime.UtcNow;
                 serviceOrder.ClosedByUserId = request.ClosedByUserId;
                 serviceOrder.WarrantyDays = request.WarrantyDays;
@@ -169,7 +169,6 @@ namespace api_infor_cell.src.Services
                     serviceOrder.Payment = new ServiceOrderPayment
                     {
                         PaymentMethodId = request.PaymentMethodId,
-                        // PaymentMethodName = request.PaymentMethodName,
                         NumberOfInstallments = request.NumberOfInstallments,
                         PaidAt = DateTime.UtcNow,
                         PaidByUserId = request.ClosedByUserId
@@ -178,6 +177,42 @@ namespace api_infor_cell.src.Services
 
                 ResponseApi<ServiceOrder?> response = await repository.UpdateAsync(serviceOrder);
                 if (!response.IsSuccess) return new(null, 400, "Falha ao encerrar Ordem de Serviço.");
+
+                ResponseApi<Situation?> situation = await situationRepository.GetByIdAsync(serviceOrder.Status);
+                if(situation.Data is not null)
+                {
+                    if(situation.Data.GenerateFinancial)
+                    {
+                        DateTime issueDate = DateTime.UtcNow;
+
+                        for (int i = 0; i < request.NumberOfInstallments; i++)
+                        {
+                            DateTime currentIssue = issueDate.AddMonths(i);
+                            System.Console.WriteLine(currentIssue);
+                            DateTime dueDate = currentIssue.AddDays(3);
+
+                            await accountReceivableService.CreateAsync(new CreateAccountReceivableDTO()
+                            {
+                                Plan = serviceOrder.Plan,
+                                Company = serviceOrder.Company,
+                                Store = serviceOrder.Store,
+                                CreatedBy = request.UpdatedBy,
+                                CustomerId = serviceOrder.CustomerId,
+                                Description = $"O.S. nº {serviceOrder.Code}",
+                                DueDate = dueDate,
+                                InstallmentNumber = i + 1,
+                                OriginId = serviceOrder.Id,
+                                OriginType = "service-order",
+                                TotalInstallments = request.NumberOfInstallments,
+                                PaymentMethodId = request.PaymentMethodId,
+                                Amount = Math.Truncate(request.Value * 100) / 100,
+                                IssueDate = issueDate,
+                                IsPaymented = true
+                            });
+                        }
+                    }
+                }
+
                 return new(response.Data, 200, "Ordem de Serviço encerrada com sucesso.");
             }
             catch

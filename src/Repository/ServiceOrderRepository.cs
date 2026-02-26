@@ -64,19 +64,37 @@ namespace api_infor_cell.src.Repository
                     {"_id", new ObjectId(id)},
                     {"deleted", false}
                 }),
+
                 MongoUtil.Lookup("customers", ["$customerId"], ["$_id"], "_customer", [["deleted", false]], 1),
+                MongoUtil.Lookup("situations", ["$status"], ["$_id"], "_situation", [["deleted", false]], 1),
+                MongoUtil.Lookup("service_order_items", ["$_id"], ["$serviceOrderId"], "_items", [["deleted", false]], 1),
 
                 new("$addFields", new BsonDocument {
                     {"id", new BsonDocument("$toString", "$_id")},
                     {"customerName", MongoUtil.First("_customer.tradeName")},
                     {"customerEmail", MongoUtil.First("_customer.email")},
                     {"customerPhone", MongoUtil.First("_customer.phone")},
+                    {"statusName", MongoUtil.First("_situation.name")},
+                    {"situationStyle", MongoUtil.First("_situation.style")},
+                    {"items", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_items"},
+                            {"as", "i"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$i._id")},
+                                }
+                            }
+                        })
+                    }
                 }),
 
                 new("$project", new BsonDocument
                 {
                     {"_id", 0},
                     {"_customer", 0},
+                    {"_situation", 0},
+                    {"_items", 0},
                 }),
             ];
 

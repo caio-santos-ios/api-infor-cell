@@ -141,7 +141,7 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            Box? box = await context.Boxes.Find(x => x.CreatedBy == createdBy && !x.Deleted).FirstOrDefaultAsync();
+            Box? box = await context.Boxes.Find(x => x.CreatedBy == createdBy && !x.Deleted && x.Status == "opened").FirstOrDefaultAsync();
             return new(box);
         }
         catch

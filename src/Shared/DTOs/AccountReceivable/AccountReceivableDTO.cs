@@ -33,6 +33,10 @@ namespace api_infor_cell.src.Shared.DTOs
         public DateTime DueDate { get; set; }
 
         public string Notes { get; set; } = string.Empty;
+
+        public DateTime IssueDate { get; set; }
+
+        public bool IsPaymented {get; set; } = false;
     }
 
     public class UpdateAccountReceivableDTO : RequestDTO

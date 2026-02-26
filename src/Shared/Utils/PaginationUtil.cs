@@ -113,17 +113,14 @@ namespace api_infor_cell.src.Shared.Utils
                             break;
 
                         case "date":
-                            BsonDocument valueDt = new(comparison, Convert.ToDateTime(value));
+                            DateTime date = comparison == "$lte" ? Convert.ToDateTime(value).Date.AddDays(1) : Convert.ToDateTime(value).Date;
+                            BsonDocument valueDt = new(comparison, date);
 
                             if (logic == "and")
                             {
-                                // VERIFICAÇÃO DE DUPLICIDADE:
-                                // Se o campo (ex: issueDate) já existe no filtro, mesclamos as condições.
                                 if (pipelineFilter.Contains(field))
                                 {
-                                    // Pega o documento existente (ex: { "$gte": "data1" }) 
-                                    // e adiciona a nova comparação (ex: "$lte": "data2")
-                                    pipelineFilter[field].AsBsonDocument.Add(comparison, Convert.ToDateTime(value));
+                                    pipelineFilter[field].AsBsonDocument.Add(comparison, date);
                                 }
                                 else
                                 {

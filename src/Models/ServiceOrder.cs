@@ -27,6 +27,9 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("closedByUserId")]
         public string ClosedByUserId { get; set; } = string.Empty;
+        
+        [BsonElement("isClosed")]
+        public bool IsClosed { get; set; } = false;
 
         // open | analysis | waiting_approval | waiting_part | in_repair | ready | closed | cancelled
         [BsonElement("status")]

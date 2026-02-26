@@ -54,7 +54,6 @@ namespace api_infor_cell.src.Services
                     LogoCompany = company.Data is not null ? company.Data.Photo : "",
                     NameCompany = company.Data is not null ? company.Data.TradeName : "",
                     NameStore = store.Data is not null ? store.Data.TradeName : "",
-                    TypeUser = user is not null ? user.Type : "",
                     TypePlan = plan.Data is not null ? plan.Data.Type : "",
                     SubscriberPlan =  user!.SubscriberPlan,
                     ExpirationDate = plan.Data!.ExpirationDate,
@@ -300,88 +299,88 @@ namespace api_infor_cell.src.Services
             try
             {
                 ResponseApi<User?> responseUser = await repository.GetByEmailAsync(request.Email);
-                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(request.Email, "");
+                // ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(request.Email, "");
                 
-                User user = new();
+                // User user = new();
 
-                if(responseUser.Data is not null) {
-                    user = new()
-                    {
-                        Password = responseUser.Data.Password,
-                        Company = responseUser.Data.Company,
-                        Store = responseUser.Data.Store,
-                        Photo = responseUser.Data.Photo,
-                        Id = responseUser.Data.Id,
-                        Name = responseUser.Data.Name,
-                        Modules = responseUser.Data.Modules,
-                        Plan = responseUser.Data.Plan,
-                        Email = responseUser.Data.Email
-                    };
-                } else {
+                // if(responseUser.Data is not null) {
+                //     user = new()
+                //     {
+                //         Password = responseUser.Data.Password,
+                //         Company = responseUser.Data.Company,
+                //         Store = responseUser.Data.Store,
+                //         Photo = responseUser.Data.Photo,
+                //         Id = responseUser.Data.Id,
+                //         Name = responseUser.Data.Name,
+                //         Modules = responseUser.Data.Modules,
+                //         Plan = responseUser.Data.Plan,
+                //         Email = responseUser.Data.Email
+                //     };
+                // } else {
 
-                    if(responseEmployee.Data is null) 
+                    if(responseUser.Data is null) 
                     {
                         return new(null, 400, "Dados incorretos");
                     };
 
-                    user = new()
-                    {
-                        Password = responseEmployee.Data.Password,
-                        Company = responseEmployee.Data.Company,
-                        Store = responseEmployee.Data.Store,
-                        Photo = responseEmployee.Data.Photo,
-                        Id = responseEmployee.Data.Id,
-                        Name = responseEmployee.Data.Name,
-                        Modules = responseEmployee.Data.Modules,
-                        Plan = responseEmployee.Data.Plan,
-                        Active = responseEmployee.Data.Active,
-                        Admin = responseEmployee.Data.Admin,
-                        Blocked = responseEmployee.Data.Blocked,
-                        CodeAccess = responseEmployee.Data.CodeAccess,
-                        CodeAccessExpiration = responseEmployee.Data.CodeAccessExpiration,
-                        Companies = responseEmployee.Data.Companies,
-                        CreatedAt = responseEmployee.Data.CreatedAt,
-                        CreatedBy = responseEmployee.Data.CreatedBy,
-                        Deleted = responseEmployee.Data.Deleted,
-                        DeletedAt = responseEmployee.Data.DeletedAt,
-                        Phone = responseEmployee.Data.Phone,
-                        Email = responseEmployee.Data.Email,
-                        // Role = responseEmployee.Data.Role,
-                        Stores = responseEmployee.Data.Stores,
-                        UpdatedAt = responseEmployee.Data.UpdatedAt,
-                        UpdatedBy = responseEmployee.Data.UpdatedBy,
-                        UserName = responseEmployee.Data.UserName,
-                        ValidatedAccess = responseEmployee.Data.ValidatedAccess,
-                        Whatsapp = responseEmployee.Data.Whatsapp
-                    };
-                };
+                //     user = new()
+                //     {
+                //         Password = responseEmployee.Data.Password,
+                //         Company = responseEmployee.Data.Company,
+                //         Store = responseEmployee.Data.Store,
+                //         Photo = responseEmployee.Data.Photo,
+                //         Id = responseEmployee.Data.Id,
+                //         Name = responseEmployee.Data.Name,
+                //         Modules = responseEmployee.Data.Modules,
+                //         Plan = responseEmployee.Data.Plan,
+                //         Active = responseEmployee.Data.Active,
+                //         Admin = responseEmployee.Data.Admin,
+                //         Blocked = responseEmployee.Data.Blocked,
+                //         CodeAccess = responseEmployee.Data.CodeAccess,
+                //         CodeAccessExpiration = responseEmployee.Data.CodeAccessExpiration,
+                //         Companies = responseEmployee.Data.Companies,
+                //         CreatedAt = responseEmployee.Data.CreatedAt,
+                //         CreatedBy = responseEmployee.Data.CreatedBy,
+                //         Deleted = responseEmployee.Data.Deleted,
+                //         DeletedAt = responseEmployee.Data.DeletedAt,
+                //         Phone = responseEmployee.Data.Phone,
+                //         Email = responseEmployee.Data.Email,
+                //         // Role = responseEmployee.Data.Role,
+                //         Stores = responseEmployee.Data.Stores,
+                //         UpdatedAt = responseEmployee.Data.UpdatedAt,
+                //         UpdatedBy = responseEmployee.Data.UpdatedBy,
+                //         UserName = responseEmployee.Data.UserName,
+                //         ValidatedAccess = responseEmployee.Data.ValidatedAccess,
+                //         Whatsapp = responseEmployee.Data.Whatsapp
+                //     };
+                // };
 
                 dynamic access = Util.GenerateCodeAccess();
 
-                user.CodeAccess = access.CodeAccess;
-                user.CodeAccessExpiration = access.CodeAccessExpiration;
-                user.ValidatedAccess = false;
+                responseUser.Data.CodeAccess = access.CodeAccess;
+                responseUser.Data.CodeAccessExpiration = access.CodeAccessExpiration;
+                responseUser.Data.ValidatedAccess = false;
 
-                string template = MailTemplate.ForgotPasswordWeb(user.Name, user.CodeAccess);
+                string template = MailTemplate.ForgotPasswordWeb(responseUser.Data.Name, responseUser.Data.CodeAccess);
 
                 await mailHandler.SendMailAsync(request.Email, "Redefinição de Senha", template);
 
                 if(responseUser.Data is not null) 
                 {
-                    ResponseApi<User?> response = await repository.UpdateAsync(user);
+                    ResponseApi<User?> response = await repository.UpdateAsync(responseUser.Data);
                     if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
-                }
-                else 
-                {
-                    if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
+                };
+                // else 
+                // {
+                //     if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
                     
-                    responseEmployee.Data.CodeAccess = access.CodeAccess;
-                    responseEmployee.Data.CodeAccessExpiration = access.CodeAccessExpiration;
-                    responseEmployee.Data.ValidatedAccess = false;
+                //     responseEmployee.Data.CodeAccess = access.CodeAccess;
+                //     responseEmployee.Data.CodeAccessExpiration = access.CodeAccessExpiration;
+                //     responseEmployee.Data.ValidatedAccess = false;
                 
-                    ResponseApi<Employee?> response = await employeeRepository.UpdateAsync(responseEmployee.Data);
-                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
-                }
+                //     ResponseApi<Employee?> response = await employeeRepository.UpdateAsync(responseEmployee.Data);
+                //     if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                // }
 
                 return new(null, 200, "Foi enviado um e-mail para redefinir sua senha");
             }
@@ -399,47 +398,47 @@ namespace api_infor_cell.src.Services
                 if (request.Password != request.NewPassword) return new(null, 400, "As senhas não podem ser diferentes");
 
                 ResponseApi<User?> responseUser = await repository.GetByCodeAccessAsync(request.CodeAccess);
-                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByCodeAccessAsync(request.CodeAccess);
+                // ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByCodeAccessAsync(request.CodeAccess);
 
-                User user = new();
-                if(responseUser.Data is not null) 
-                {
-                    user.CodeAccessExpiration = responseUser.Data.CodeAccessExpiration;
-                }
-                else 
-                {
-                    if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
-                    user.CodeAccessExpiration = responseEmployee.Data.CodeAccessExpiration;                   
-                }
+                // User user = new();
+                // if(responseUser.Data is not null) 
+                // {
+                //     user.CodeAccessExpiration = responseUser.Data.CodeAccessExpiration;
+                // }
+                // else 
+                // {
+                //     if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
+                //     user.CodeAccessExpiration = responseEmployee.Data.CodeAccessExpiration;                   
+                // }
 
-                if(user is null) return new(null, 400, "Falha ao alterar senha");
+                if(responseUser.Data is null) return new(null, 400, "Falha ao alterar senha");
 
-                if(user.CodeAccessExpiration < DateTime.UtcNow) return new(null, 400, "Código expirou, solicite um novo e-mail.");
+                if(responseUser.Data.CodeAccessExpiration < DateTime.UtcNow) return new(null, 400, "Código expirou, solicite um novo e-mail.");
                 
                 if(Validator.IsReliable(request.Password).Equals("Ruim")) return new(null, 400, $"Senha é muito fraca");
 
-                if(responseUser.Data is not null) 
-                {
-                    user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-                    user.ValidatedAccess = true;
-                    user.CodeAccess = "";
-                    user.CodeAccessExpiration = null;
+                responseUser.Data.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                responseUser.Data.ValidatedAccess = true;
+                responseUser.Data.CodeAccess = "";
+                responseUser.Data.CodeAccessExpiration = null;
 
-                    ResponseApi<User?> response = await repository.UpdateAsync(user);
-                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
-                }
-                else 
-                {
-                    if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
+                ResponseApi<User?> response = await repository.UpdateAsync(responseUser.Data);
+                if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                // if(responseUser.Data is not null) 
+                // {
+                // }
+                // else 
+                // {
+                //     if(responseEmployee.Data is null) return new(null, 400, "Falha ao redefinir senha");
 
-                    responseEmployee.Data.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);                    
-                    responseEmployee.Data.CodeAccess = "";
-                    responseEmployee.Data.CodeAccessExpiration = null;
-                    responseEmployee.Data.ValidatedAccess = true;
+                //     responseEmployee.Data.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);                    
+                //     responseEmployee.Data.CodeAccess = "";
+                //     responseEmployee.Data.CodeAccessExpiration = null;
+                //     responseEmployee.Data.ValidatedAccess = true;
                 
-                    ResponseApi<Employee?> response = await employeeRepository.UpdateAsync(responseEmployee.Data);
-                    if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
-                };
+                //     ResponseApi<Employee?> response = await employeeRepository.UpdateAsync(responseEmployee.Data);
+                //     if(!response.IsSuccess) return new(null, 400, "Falha ao redefinir senha");
+                // };
 
                 return new(null, 200, "Senha alterada com sucesso");
             }
@@ -490,18 +489,16 @@ namespace api_infor_cell.src.Services
         private async Task<ResponseApi<User?>> GetUserToken (string email)
         {
             ResponseApi<User?> responseUser = await repository.GetByEmailAsync(email);
-            ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByEmailAsync(email, "");
-            
-            User user = new();
+            if(responseUser.Data is null) 
+            {
+                return new(null, 400, "Dados incorretos");
+            };
 
-            if(responseUser.Data is not null) {
-                user = responseUser.Data;
-            } else {
-                if(responseEmployee.Data is null) 
-                {
-                    return new(null, 400, "Dados incorretos");
-                };
+            if(responseUser.Data.Role == Enums.User.RoleEnum.Employee) {
 
+                ResponseApi<Employee?> responseEmployee = await employeeRepository.GetByUserIdAsync(responseUser.Data.Id);
+                if(responseEmployee.Data is null) return new(null, 400, "Dados incorretos");
+                
                 DayOfWeek today = DateTime.Now.DayOfWeek;
                 TimeSpan now = DateTime.Now.TimeOfDay;
                 Calendar calendar = responseEmployee.Data.Calendar;
@@ -522,26 +519,10 @@ namespace api_infor_cell.src.Services
                 if(times.Count == 0) return new(null, 400, "Fora do horário permitido");
                 bool isBetween = now >= times.Min() && now <= times.Max();
                 if(!isBetween) return new(null, 400, "Fora do horário permitido");
-                if(responseEmployee.Data.Stores.Count == 0) return new(null, 400, "O colaborador não possui nenhuma loja vinculada ao seu perfil.");
-
-                user = new()
-                {
-                    Password = responseEmployee.Data.Password,
-                    Company = responseEmployee.Data.Company,
-                    Store = responseEmployee.Data.Store,
-                    Photo = responseEmployee.Data.Photo,
-                    Id = responseEmployee.Data.Id,
-                    Name = responseEmployee.Data.Name,
-                    Modules = responseEmployee.Data.Modules,
-                    Plan = responseEmployee.Data.Plan,
-                    Email = responseEmployee.Data.Email,
-                    Companies = responseEmployee.Data.Companies,
-                    Stores = responseEmployee.Data.Stores,
-                    Master = false
-                };
+                if(responseUser.Data.Stores.Count == 0) return new(null, 400, "O colaborador não possui nenhuma loja vinculada ao seu perfil.");
             };
 
-            return new(user);
+            return new(responseUser.Data);
         }
     }
 }

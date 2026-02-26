@@ -52,6 +52,13 @@ namespace api_infor_cell.src.Services
                 accountReceivable.Status = "open";
                 accountReceivable.AmountPaid = 0;
 
+                if(request.IsPaymented)
+                {
+                    accountReceivable.AmountPaid = request.Amount;
+                    accountReceivable.PaidAt = DateTime.UtcNow;
+                    accountReceivable.Status = "paid";
+                }
+
                 ResponseApi<Models.AccountReceivable?> response = await repository.CreateAsync(accountReceivable);
                 if (response.Data is null) return new(null, 400, "Falha ao criar conta a receber.");
                 return new(response.Data, 201, "Conta a receber criada com sucesso.");
@@ -74,7 +81,7 @@ namespace api_infor_cell.src.Services
                 Models.AccountReceivable accountReceivable = _mapper.Map<Models.AccountReceivable>(request);
                 accountReceivable.UpdatedAt = DateTime.UtcNow;
                 accountReceivable.UpdatedBy = request.UpdatedBy;
-                // Preserva campos gerados
+
                 accountReceivable.Code = existing.Data.Code;
                 accountReceivable.Status = existing.Data.Status;
                 accountReceivable.AmountPaid = existing.Data.AmountPaid;

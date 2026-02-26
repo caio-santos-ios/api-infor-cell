@@ -43,6 +43,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("quantity")]
         public decimal Quantity { get; set; }
 
+        [BsonElement("quantityAvailable")]
+        public decimal QuantityAvailable { get; set; }
+
         [BsonElement("price")]
         public decimal Price { get; set; }
 
@@ -66,5 +69,11 @@ namespace api_infor_cell.src.Models
 
         [BsonElement("originId")]
         public string OriginId { get; set; } = string.Empty;
+        
+        [BsonElement("isReserved")]
+        public bool IsReserved { get; set; } = false;
+        
+        [BsonElement("customerIdReserved")]
+        public List<string> CustomerIdReserved { get; set; } = [];
     }
 }

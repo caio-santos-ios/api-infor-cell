@@ -103,11 +103,11 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Lojas");
         }
     }
-    public async Task<ResponseApi<SalesOrderItem?>> GetByProductIdAsync(string productId, string barcode, string plan, string company, string store)
+    public async Task<ResponseApi<SalesOrderItem?>> GetByProductIdAsync(string productId, string codeVariation, string plan, string company, string store)
     {
         try
         {
-            SalesOrderItem? salesOrderItem = await context.SalesOrderItems.Find(x => x.ProductId == productId && x.Barcode == barcode && x.Plan == plan && x.Company == company && x.Store == store && !x.Deleted).FirstOrDefaultAsync();
+            SalesOrderItem? salesOrderItem = await context.SalesOrderItems.Find(x => x.ProductId == productId && x.CodeVariation == codeVariation && x.Plan == plan && x.Company == company && x.Store == store && !x.Deleted).FirstOrDefaultAsync();
             return new(salesOrderItem);
         }
         catch

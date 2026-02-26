@@ -32,7 +32,7 @@ namespace api_infor_cell.src.Controllers
         [HttpGet("select/sellers")]
         public async Task<IActionResult> GetSelectSellers([FromQuery] string plan, [FromQuery] string company, [FromQuery] string store)
         {
-            ResponseApi<List<Employee>> response = await service.GetSellersAsync(plan, company, store);
+            ResponseApi<List<User>> response = await service.GetSellersAsync(plan, company, store);
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
@@ -40,28 +40,18 @@ namespace api_infor_cell.src.Controllers
         [HttpGet("select/technicians")]
         public async Task<IActionResult> GetSelectTechnicians([FromQuery] string plan, [FromQuery] string company, [FromQuery] string store)
         {
-            ResponseApi<List<Employee>> response = await service.GetTechniciansAsync(plan, company, store);
+            ResponseApi<List<User>> response = await service.GetTechniciansAsync(plan, company, store);
             return StatusCode(response.StatusCode, new { response.Result });
         }
         
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateEmployeeDTO body)
-        {
-            if (body == null) return BadRequest("Dados inválidos.");
-
-            ResponseApi<Employee?> response = await service.CreateAsync(body);
-
-            return StatusCode(response.StatusCode, new { response.Result });
-        }
         
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateEmployeeDTO body)
+        public async Task<IActionResult> Update([FromBody] UpdateUserDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Employee?> response = await service.UpdateAsync(body);
+            ResponseApi<User?> response = await service.UpdateAsync(body);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }
@@ -72,7 +62,7 @@ namespace api_infor_cell.src.Controllers
         {
             if (request == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Employee?> response = await service.UpdateModuleAsync(request);
+            ResponseApi<User?> response = await service.UpdateModuleAsync(request);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }        
@@ -83,7 +73,7 @@ namespace api_infor_cell.src.Controllers
         {
             if (request == null) return BadRequest("Dados inválidos.");
 
-            ResponseApi<Employee?> response = await service.UpdateCalendarAsync(request);
+            ResponseApi<User?> response = await service.UpdateCalendarAsync(request);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }        
@@ -102,7 +92,7 @@ namespace api_infor_cell.src.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            ResponseApi<Employee> response = await service.DeleteAsync(id);
+            ResponseApi<User> response = await service.DeleteAsync(id);
 
             return StatusCode(response.StatusCode, new { response.Result });
         }

@@ -27,39 +27,34 @@ namespace api_infor_cell.src.Repository
                     { "_id", new BsonDocument 
                         { 
                             { "productId", "$productId" }, 
-                            // { "supplierId", "$supplierId" }, 
-                            // { "purchaseOrderItemId", "$purchaseOrderItemId" } 
                         } 
                     },
 
                     { "quantity", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantity")) },
+                    { "quantityAvailable", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantityAvailable")) },
                     { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
                     { "createdAt", MongoUtil.First("createdAt") },
                     { "store", MongoUtil.First("store") },
                     { "originDescription", MongoUtil.First("originDescription") },
                     { "variations", MongoUtil.First("variations") },
+                    { "isReserved", MongoUtil.First("isReserved") },
+                    { "customerIdReserved", new BsonDocument("$push", "$customerIdReserved") },
                 }),
 
 
                 new("$addFields", new BsonDocument
                 {
                     { "productId", "$_id.productId" },
-                    // { "supplierId", "$_id.supplierId" },
-                    // { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
 
                     { "id", new BsonDocument("$concat", new BsonArray 
                         { 
                             "$_id.productId", 
-                            // "_", 
-                            // "$_id.supplierId", 
-                            // "_", 
-                            // "$_id.purchaseOrderItemId" 
                         }) 
                     },
                     {"productName", MongoUtil.First("_product.name")},
                     {"productHasSerial", MongoUtil.First("_product.hasSerial")},
                     {"productHasVariations", MongoUtil.First("_product.hasVariations")},
-                    // {"variations", MongoUtil.First("_product.variations")},
+                    {"productMinimumStock", MongoUtil.First("_product.minimumStock")},
                 }),
 
                 MongoUtil.Lookup("products", ["$productId"], ["$_id"], "_product", [["deleted", false]], 1),
@@ -77,10 +72,9 @@ namespace api_infor_cell.src.Repository
                 {
                     {"productName", MongoUtil.First("_product.name")},
                     {"supplierName", MongoUtil.First("_supplier.tradeName")},
-                    // {"variations", MongoUtil.First("_product.variations")},
-                    // {"productHasSerial", MongoUtil.First("_product.variations")},
                     {"productHasSerial", MongoUtil.First("_product.hasSerial")},
                     {"productHasVariations", MongoUtil.First("_product.hasVariations")},
+                    {"productMinimumStock", MongoUtil.First("_product.minimumStock")},
                     {"purchaseOrderDate", MongoUtil.First("_purchaseOrder.date")},
                 }),
 
@@ -285,6 +279,18 @@ namespace api_infor_cell.src.Repository
         {
             Stock stock = await context.Stocks.Find(x => x.ProductId == productId && x.ForSale == "yes" && x.Quantity > 0 && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).FirstOrDefaultAsync();
             return new(stock);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Estoque");
+        }
+    }
+    public async Task<ResponseApi<List<Stock>>> GetVerifyStockAll(string productId, string planId, string companyId, string storeId)
+    {
+        try
+        {
+            List<Stock> stocks = await context.Stocks.Find(x => x.ProductId == productId && x.ForSale == "yes" && x.Quantity > 0 && x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            return new(stocks);
         }
         catch
         {

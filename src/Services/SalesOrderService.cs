@@ -90,7 +90,8 @@ namespace api_infor_cell.src.Services
                         CreatedAt = DateTime.UtcNow,
                         SalesOrderId = response.Data.Id,
                         VariationId = request.VariationId,
-                        Barcode = request.Barcode,
+                        CodeVariation = request.CodeVariation,
+                        Serial = request.Serial
                     });
                 };
                 
@@ -137,15 +138,14 @@ namespace api_infor_cell.src.Services
                 {
                     foreach (SalesOrderItem salesOrderItem in items.Data)
                     {
-                        ResponseApi<Stock?> stock = await stockRepository.GetVerifyStock(salesOrderItem.ProductId, salesOrderItem.Plan, salesOrderItem.Company, salesOrderItem.Store);
                         ResponseApi<Product?> product = await productRepository.GetByIdAsync(salesOrderItem.ProductId);
-                        
                         if(product.Data is null) return new(null, 404, "Algum dos Produtos não tem estoque disponível");
                         
-                        if(stock.Data is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
-
                         if(product.Data.HasVariations == "yes")
                         {
+                            ResponseApi<Stock?> stock = await stockRepository.GetVerifyStock(salesOrderItem.ProductId, salesOrderItem.Plan, salesOrderItem.Company, salesOrderItem.Store);
+                            
+                            if(stock.Data is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
                             if(product.Data.HasSerial == "yes")
                             {
                                 bool hasStockAvailable = false;
@@ -169,7 +169,7 @@ namespace api_infor_cell.src.Services
                             }
                             else
                             {
-                                VariationProduct? variation = stock.Data.Variations.Where(v => v.Barcode == salesOrderItem.Barcode).FirstOrDefault();
+                                VariationProduct? variation = stock.Data.Variations.Where(v => v.Code.ToString() == salesOrderItem.CodeVariation).FirstOrDefault();
                                 if(variation is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
                                 
                                 stock.Data.UpdatedAt = DateTime.UtcNow;
@@ -182,14 +182,33 @@ namespace api_infor_cell.src.Services
                         } 
                         else
                         {
-                            VariationProduct? variation = stock.Data.Variations.Where(v => v.Barcode == salesOrderItem.Barcode).FirstOrDefault();
-                            if(variation is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
-                            
-                            stock.Data.UpdatedAt = DateTime.UtcNow;
-                            stock.Data.UpdatedBy = request.UpdatedBy;
-                            stock.Data.Quantity -= salesOrderItem.Quantity;
+                            ResponseApi<List<Stock>> stocks = await stockRepository.GetVerifyStockAll(salesOrderItem.ProductId, salesOrderItem.Plan, salesOrderItem.Company, salesOrderItem.Store);
+                            if(stocks.Data is null) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
 
-                            await stockRepository.UpdateAsync(stock.Data);
+                            decimal totalStock = stocks.Data.Sum(x => x.QuantityAvailable);
+                            if(totalStock < salesOrderItem.Quantity) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
+
+                            decimal accumulated = 0;
+                            foreach (Stock stock in stocks.Data)
+                            {
+                                if(accumulated == salesOrderItem.Quantity) continue;
+
+                                decimal total = stock.Quantity - salesOrderItem.Quantity;
+
+                                if(total < 0) 
+                                {
+                                    total += salesOrderItem.Quantity;
+                                };
+
+                                stock.UpdatedAt = DateTime.UtcNow;
+                                stock.UpdatedBy = request.UpdatedBy;
+                                stock.Quantity -= total < 0 ? stock.Quantity : total;
+                                stock.QuantityAvailable -= total < 0 ? stock.QuantityAvailable : total;
+
+                                await stockRepository.UpdateAsync(stock);
+
+                                accumulated += total;
+                            }
                         }
                     }
                 };

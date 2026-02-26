@@ -9,7 +9,7 @@ using api_infor_cell.src.Shared.Validators;
 
 namespace api_infor_cell.src.Services
 {
-    public class UserService(IUserRepository userRepository, SmsHandler smsHandler, MailHandler mailHandler, CloudinaryHandler cloudinaryHandler) : IUserService
+    public class UserService(IUserRepository userRepository, IProfilePermissionRepository profilePermissionRepository, IEmployeeRepository employeeRepository, SmsHandler smsHandler, MailHandler mailHandler, CloudinaryHandler cloudinaryHandler) : IUserService
     {
         #region CREATE
         public async Task<ResponseApi<User?>> CreateAsync(CreateUserDTO request)
@@ -81,6 +81,66 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
             }
         }
+        public async Task<ResponseApi<User?>> CreateEmployeeAsync(CreateUserEmployeeDTO request)
+        {
+            try
+            {
+                ResponseApi<User?> isEmail = await userRepository.GetByEmailAsync(request.Email);
+                if(isEmail.Data is not null || !Validator.IsEmail(request.Email)) return new(null, 400, "E-mail inválido.");
+
+                dynamic access = Util.GenerateCodeAccess();
+
+                ResponseApi<ProfilePermission?> profile = await profilePermissionRepository.GetByIdAsync(request.Type);
+
+                User user = new()
+                {
+                    UserName = $"usuário{access.CodeAccess}",
+                    Email = request.Email,
+                    Phone = request.Phone,
+                    Name = request.Name,
+                    Password = BCrypt.Net.BCrypt.HashPassword(access.CodeAccess),
+                    CodeAccess = "",
+                    CodeAccessExpiration = null,
+                    ValidatedAccess = true,
+                    Modules = profile.Data is null ? new() : profile.Data.Modules,
+                    Admin = request.Admin,
+                    Blocked = false,
+                    Companies = [request.Company],
+                    Stores = request.Stores,
+                    Role = Enums.User.RoleEnum.Employee,
+                    Company = request.Company,
+                    Store = request.Store,
+                    Plan = request.Plan
+                };
+
+                ResponseApi<User?> response = await userRepository.CreateAsync(user);
+                if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
+                
+                string messageCode = $"Seu código de verificação é: {access.CodeAccess}";
+                
+                await smsHandler.SendMessageAsync(request.Phone, messageCode);
+
+                await employeeRepository.CreateAsync(new ()
+                {
+                    Active = true,
+                    Calendar = new(),
+                    Cpf = request.CPF,
+                    CreatedBy = request.CreatedBy,
+                    DateOfBirth = request.DateOfBirth,
+                    Phone = request.Phone,
+                    Rg = request.Rg,
+                    Type = request.Type,
+                    Whatsapp = request.Whatsapp,
+                    UserId = user.Id
+                });
+                
+                return new(user, 201, "Profissional criado com sucesso, primeiro acesso ao Telemovvi foi enviado ao e-mail do profissional.");
+            }
+            catch
+            {                
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde");
+            }
+        }
         #endregion
         
         #region READ
@@ -103,6 +163,19 @@ namespace api_infor_cell.src.Services
             try
             {
                 ResponseApi<dynamic?> user = await userRepository.GetByIdAggregateAsync(id);
+                if(user.Data is null) return new(null, 404, "Usuário não encontrado");
+                return new(user.Data);
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
+        }
+        public async Task<ResponseApi<dynamic?>> GetEmployeeByIdAggregateAsync(string id)
+        {
+            try
+            {
+                ResponseApi<dynamic?> user = await userRepository.GetEmployeeByIdAggregateAsync(id);
                 if(user.Data is null) return new(null, 404, "Usuário não encontrado");
                 return new(user.Data);
             }

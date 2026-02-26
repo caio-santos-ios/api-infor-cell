@@ -8,7 +8,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class CustomerService(ICustomerRepository repository, IMapper _mapper) : ICustomerService
+    public class CustomerService(ICustomerRepository repository, IStockRepository stockRepository, IMapper _mapper) : ICustomerService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)
@@ -96,7 +96,7 @@ namespace api_infor_cell.src.Services
                 Store = request.Store,
                 CreatedBy = request.CreatedBy,
                 CorporateName = request.CorporateName,
-                TradeName = request.TradeName,
+                TradeName = request.Type == "F" ? request.CorporateName : request.TradeName,
                 Type = request.Type,
                 Document = request.Document,
                 Email = request.Email,
@@ -135,10 +135,16 @@ namespace api_infor_cell.src.Services
             ResponseApi<Customer?> existedEmail = await repository.GetByEmailAsync(request.Email, request.Id);
             if(existedEmail.Data is not null) return new(null, 400, "Este e-mail já está sendo utilizado por outro Cliente");
             
-            Customer Customer = _mapper.Map<Customer>(request);
-            Customer.UpdatedAt = DateTime.UtcNow;
+            Customer customer = _mapper.Map<Customer>(request);
+            customer.UpdatedAt = DateTime.UtcNow;
+            customer.CreatedAt = CustomerResponse.Data.CreatedAt;
 
-            ResponseApi<Customer?> response = await repository.UpdateAsync(Customer);
+            if(request.Type == "F")
+            {
+                customer.TradeName = request.CorporateName;
+            };
+
+            ResponseApi<Customer?> response = await repository.UpdateAsync(customer);
             if(!response.IsSuccess) return new(null, 400, "Falha ao atualizar");
             return new(response.Data, 201, "Atualizada com sucesso");
         }
@@ -147,7 +153,6 @@ namespace api_infor_cell.src.Services
             return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
         }
     }
-
     public async Task<ResponseApi<Customer?>> UpdateMinimalAsync(CreateCustomerMinimalDTO request)
     {
         try
@@ -168,7 +173,7 @@ namespace api_infor_cell.src.Services
                 Store = request.Store,
                 CreatedBy = request.CreatedBy,
                 CorporateName = request.CorporateName,
-                TradeName = request.TradeName,
+                TradeName = request.Type == "F" ? request.CorporateName : request.TradeName,
                 Type = request.Type,
                 Document = request.Document,
                 Email = request.Email,
@@ -199,6 +204,51 @@ namespace api_infor_cell.src.Services
             ResponseApi<Customer?> response = await repository.UpdateAsync(customer.Data);
 
             if(response.Data is null) return new(null, 400, "Falha ao criar Cliente.");
+
+            if(!string.IsNullOrEmpty(request.ProductId))
+            {
+                ResponseApi<Stock?> stock = await stockRepository.GetVerifyStock(request.ProductId, response.Data.Plan, response.Data.Company, response.Data.Store);
+                if(stock.Data is null) return new(null, 400, "Sem estoque do produto 1"); 
+
+                stock.Data.UpdatedAt = DateTime.UtcNow;
+                stock.Data.UpdatedBy = request.UpdatedBy;
+                stock.Data.QuantityAvailable -= 1;
+
+                if(stock.Data.HasProductVariations == "yes")
+                {
+                    if(stock.Data.HasProductSerial == "yes") 
+                    {
+                        bool hasAvailable = false;
+                        foreach (VariationProduct variationProduct in stock.Data.Variations)
+                        {
+                            if(variationProduct.Stock == 0 || hasAvailable) continue;
+                            
+                            VariationItemSerial? serial = variationProduct.Serials.Where(x => x.HasAvailable).FirstOrDefault();
+                            
+                            if(serial is not null)
+                            {
+                                serial.HasAvailable = false;
+                                hasAvailable = true;
+                            }
+                        };
+
+                        if(!hasAvailable) return new(null, 400, "Sem estoque do produto"); 
+                    }
+                    else
+                    {
+                        VariationProduct? variationProduct = stock.Data.Variations.Where(x => x.Stock > 0).FirstOrDefault();
+                        if(variationProduct is null) return new(null, 400, "Sem estoque do produto"); 
+
+                        variationProduct.Stock -= 1;
+                    }
+                }
+
+                stock.Data.CustomerIdReserved.Add(response.Data.Id);
+                stock.Data.IsReserved = true;
+                
+                await stockRepository.UpdateAsync(stock.Data);
+            }
+
             return new(response.Data, 200, "Cashback adicionado com sucesso.");
         }
         catch

@@ -23,13 +23,20 @@ namespace api_infor_cell.src.Repository
                 new("$sort", pagination.PipelineSort),
                 new("$skip", pagination.Skip),
                 new("$limit", pagination.Limit),
-                new("$addFields", new BsonDocument
-                {
-                    {"id", new BsonDocument("$toString", "$_id")},
-                }),
+
+                MongoUtil.Lookup("profile_permissions", ["$type"], ["$_id"], "_permissions", [["deleted", false]], 1),
+
                 new("$project", new BsonDocument
                 {
                     {"_id", 0}, 
+                    {"id", new BsonDocument("$toString", "$_id")},
+                    {"typeName", MongoUtil.First("_permissions.name")},
+                    {"teste", "$_permissions"},
+                    {"name", 1},
+                    {"email", 1},
+                    {"cpf", 1},
+                    {"dateOfBirth", 1},
+                    {"createdAt", 1}
                 }),
                 new("$sort", pagination.PipelineSort),
             };
@@ -119,27 +126,39 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Profissionais");
         }
     } 
-    public async Task<ResponseApi<Employee?>> GetByEmailAsync(string email, string id)
+    public async Task<ResponseApi<Employee?>> GetByUserIdAsync(string userId)
     {
         try
         {
-            Employee? employee = new();
-            if(!string.IsNullOrEmpty(id))
-            {
-                employee = await context.Employees.Find(x => x.Email == email && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
-            }
-            else
-            {
-                employee = await context.Employees.Find(x => x.Email == email && !x.Deleted).FirstOrDefaultAsync();
-            };
-
+            Employee? employee = await context.Employees.Find(x => x.UserId == userId && !x.Deleted).FirstOrDefaultAsync();
             return new(employee);
         }
         catch
         {
             return new(null, 500, "Falha ao buscar Profissionais");
         }
-    }
+    } 
+    // public async Task<ResponseApi<Employee?>> GetByEmailAsync(string email, string id)
+    // {
+    //     try
+    //     {
+    //         Employee? employee = new();
+    //         if(!string.IsNullOrEmpty(id))
+    //         {
+    //             employee = await context.Employees.Find(x => x.Email == email && x.Id != id && !x.Deleted).FirstOrDefaultAsync();
+    //         }
+    //         else
+    //         {
+    //             employee = await context.Employees.Find(x => x.Email == email && !x.Deleted).FirstOrDefaultAsync();
+    //         };
+
+    //         return new(employee);
+    //     }
+    //     catch
+    //     {
+    //         return new(null, 500, "Falha ao buscar Profissionais");
+    //     }
+    // }
     public async Task<ResponseApi<Employee?>> GetByCpfAsync(string cpf, string id)
     {
         try
@@ -161,18 +180,18 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Profissionais");
         }
     }
-    public async Task<ResponseApi<Employee?>> GetByCodeAccessAsync(string codeAccess)
-    {
-        try
-        {
-            Employee? employee = await context.Employees.Find(x => x.CodeAccess == codeAccess && !x.ValidatedAccess && !x.Deleted).FirstOrDefaultAsync();
-            return new(employee);
-        }
-        catch
-        {
-            return new(null, 500, "Falha ao buscar usuário");
-        }
-    }
+    // public async Task<ResponseApi<Employee?>> GetByCodeAccessAsync(string codeAccess)
+    // {
+    //     try
+    //     {
+    //         Employee? employee = await context.Employees.Find(x => x.CodeAccess == codeAccess && !x.ValidatedAccess && !x.Deleted).FirstOrDefaultAsync();
+    //         return new(employee);
+    //     }
+    //     catch
+    //     {
+    //         return new(null, 500, "Falha ao buscar usuário");
+    //     }
+    // }
     public async Task<ResponseApi<dynamic?>> GetLoggedAsync(string id)
     {
         try
@@ -276,33 +295,33 @@ namespace api_infor_cell.src.Repository
         List<BsonDocument> results = await context.Employees.Aggregate<BsonDocument>(pipeline).ToListAsync();
         return results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).Count();
     }
-    public async Task<ResponseApi<List<Employee>>> GetSellersAsync(string planId, string companyId, string storeId)
+    public async Task<ResponseApi<List<User>>> GetSellersAsync(string planId, string companyId, string storeId)
     {
         try
         {
             List<User> users = await context.Users.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted && x.Admin && x.Master).ToListAsync();
-            List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
-            List<Employee> sellers = [];
+            // List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            List<User> sellers = [];
 
-            foreach (Employee employee in employees)
-            {
-                Module? moduleCommercial = employee.Modules.Where(m => m.Code == "C").FirstOrDefault();
-                if(moduleCommercial is not null)
-                {
-                    Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "C1").FirstOrDefault();
-                    if(routineSalerOrder is not null)
-                    {
-                        if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
-                        {
-                            sellers.Add(new () 
-                            {
-                                Id = employee.Id,
-                                Name = employee.Name
-                            });
-                        }
-                    };
-                };
-            };
+            // foreach (Employee employee in employees)
+            // {
+            //     Module? moduleCommercial = employee.Modules.Where(m => m.Code == "C").FirstOrDefault();
+            //     if(moduleCommercial is not null)
+            //     {
+            //         Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "C1").FirstOrDefault();
+            //         if(routineSalerOrder is not null)
+            //         {
+            //             if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
+            //             {
+            //                 sellers.Add(new () 
+            //                 {
+            //                     Id = employee.Id,
+            //                     Name = employee.Name
+            //                 });
+            //             }
+            //         };
+            //     };
+            // };
 
             foreach (User user in users)
             {
@@ -319,33 +338,33 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Vendedores");
         }
     } 
-    public async Task<ResponseApi<List<Employee>>> GetTechniciansAsync(string planId, string companyId, string storeId)
+    public async Task<ResponseApi<List<User>>> GetTechniciansAsync(string planId, string companyId, string storeId)
     {
         try
         {
             List<User> users = await context.Users.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted && x.Admin && x.Master).ToListAsync();
-            List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
-            List<Employee> sellers = [];
+            // List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
+            List<User> sellers = [];
 
-            foreach (Employee employee in employees)
-            {
-                Module? moduleCommercial = employee.Modules.Where(m => m.Code == "D").FirstOrDefault();
-                if(moduleCommercial is not null)
-                {
-                    Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "D1").FirstOrDefault();
-                    if(routineSalerOrder is not null)
-                    {
-                        if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
-                        {
-                            sellers.Add(new () 
-                            {
-                                Id = employee.Id,
-                                Name = employee.Name
-                            });
-                        }
-                    };
-                };
-            };
+            // foreach (Employee employee in employees)
+            // {
+            //     Module? moduleCommercial = employee.Modules.Where(m => m.Code == "D").FirstOrDefault();
+            //     if(moduleCommercial is not null)
+            //     {
+            //         Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "D1").FirstOrDefault();
+            //         if(routineSalerOrder is not null)
+            //         {
+            //             if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
+            //             {
+            //                 sellers.Add(new () 
+            //                 {
+            //                     Id = employee.Id,
+            //                     Name = employee.Name
+            //                 });
+            //             }
+            //         };
+            //     };
+            // };
 
             foreach (User user in users)
             {
