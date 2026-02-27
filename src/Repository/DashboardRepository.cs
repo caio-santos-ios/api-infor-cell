@@ -8,7 +8,7 @@ namespace api_infor_cell.src.Repository
 {
     public class DashboardRepository(AppDbContext context) : IDashboardRepository
     {
-        public async Task<ResponseApi<dynamic>> GetCardsAsync(string startDate, string endDate, string storeId)
+        public async Task<ResponseApi<dynamic>> GetCardsAsync(string plan, string company, string store)
         {
             try
             {
@@ -17,18 +17,61 @@ namespace api_infor_cell.src.Repository
                 DateTime endOfMonth = startOfMonth.AddMonths(1);
                 DateTime startOfPrevMonth = startOfMonth.AddMonths(-1);
 
-                var salesMonth = await context.SalesOrders.Find(x => x.CreatedAt >= startOfMonth).Project(x => new { x.Total, x.Status }).ToListAsync();
-                var salesPrevMonth = await context.SalesOrders.Find(x => x.CreatedAt >= startOfPrevMonth && x.CreatedAt < startOfMonth).Project(x => new { x.Total }).ToListAsync();
+                var filterSalesMonth = Builders<SalesOrder>.Filter.Gte(x => x.CreatedAt, startOfMonth);
+
+                filterSalesMonth &= Builders<SalesOrder>.Filter.Eq(x => x.Plan, plan);
+                filterSalesMonth &= Builders<SalesOrder>.Filter.Eq(x => x.Company, company);
+                filterSalesMonth &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+
+                if (store != "all") filterSalesMonth &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+
+                var filterSalesPrevMonth = Builders<SalesOrder>.Filter.Gte(x => x.CreatedAt, startOfPrevMonth);
+
+                if (store != "all") filterSalesPrevMonth &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+                filterSalesPrevMonth &= Builders<SalesOrder>.Filter.Lte(x => x.CreatedAt, startOfMonth);
+                filterSalesPrevMonth &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+
+
+                var salesMonth = await context.SalesOrders.Find(filterSalesMonth).Project(x => new { x.Total, x.Status }).ToListAsync();
+                var salesPrevMonth = await context.SalesOrders.Find(filterSalesPrevMonth).Project(x => new { x.Total }).ToListAsync();
                 decimal totalSales = salesMonth.Sum(s => s.Total);
                 decimal prevTotalSales = salesPrevMonth.Sum(s => s.Total);
 
                 var stockData = await context.Products.Find(_ => true).Project(x => new { x.PriceTotal, x.QuantityStock }).ToListAsync();
 
-                var custMonth = await context.Customers.CountDocumentsAsync(x => x.CreatedAt >= startOfMonth);
-                var custPrevMonth = await context.Customers.CountDocumentsAsync(x => x.CreatedAt >= startOfPrevMonth && x.CreatedAt < startOfMonth);
+                var filterCustMonth = Builders<Customer>.Filter.Gte(x => x.CreatedAt, startOfMonth);
+                filterCustMonth &= Builders<Customer>.Filter.Eq(x => x.Deleted, false);
+                filterCustMonth &= Builders<Customer>.Filter.Eq(x => x.Plan, plan);
+                filterCustMonth &= Builders<Customer>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filterCustMonth &= Builders<Customer>.Filter.Eq(x => x.Store, store);
+
+                var custMonth = await context.Customers.CountDocumentsAsync(filterCustMonth);
                 
-                List<AccountReceivable> accountsReceivable = await context.AccountsReceivable.Find(x => x.CreatedAt >= startOfMonth && !x.Deleted && x.DueDate < endOfMonth).ToListAsync();
-                List<AccountPayable> accountsPayable = await context.AccountsPayable.Find(x => x.CreatedAt >= startOfMonth && !x.Deleted && x.DueDate < endOfMonth).ToListAsync();
+                var filterPrevMonth = Builders<Customer>.Filter.Gte(x => x.CreatedAt, startOfPrevMonth);
+                filterPrevMonth &= Builders<Customer>.Filter.Lte(x => x.CreatedAt, startOfMonth);
+                filterPrevMonth &= Builders<Customer>.Filter.Eq(x => x.Deleted, false);
+                filterPrevMonth &= Builders<Customer>.Filter.Eq(x => x.Plan, plan);
+                filterPrevMonth &= Builders<Customer>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filterPrevMonth &= Builders<Customer>.Filter.Eq(x => x.Store, store);
+
+                var custPrevMonth = await context.Customers.CountDocumentsAsync(filterPrevMonth);
+                
+                var filterReceivable = Builders<AccountReceivable>.Filter.Gte(x => x.CreatedAt, startOfMonth);
+                filterReceivable &= Builders<AccountReceivable>.Filter.Lt(x => x.DueDate, endOfMonth);
+                filterReceivable &= Builders<AccountReceivable>.Filter.Eq(x => x.Deleted, false);
+                filterReceivable &= Builders<AccountReceivable>.Filter.Eq(x => x.Plan, plan);
+                filterReceivable &= Builders<AccountReceivable>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filterReceivable &= Builders<AccountReceivable>.Filter.Eq(x => x.Store, store);
+
+                List<AccountReceivable> accountsReceivable = await context.AccountsReceivable.Find(filterReceivable).ToListAsync();
+                
+                var filterPayable = Builders<AccountPayable>.Filter.Gte(x => x.CreatedAt, startOfMonth);
+                filterPayable &= Builders<AccountPayable>.Filter.Lt(x => x.DueDate, endOfMonth);
+                filterPayable &= Builders<AccountPayable>.Filter.Eq(x => x.Deleted, false);
+                filterPayable &= Builders<AccountPayable>.Filter.Eq(x => x.Plan, plan);
+                filterPayable &= Builders<AccountPayable>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filterPayable &= Builders<AccountPayable>.Filter.Eq(x => x.Store, store);
+                List<AccountPayable> accountsPayable = await context.AccountsPayable.Find(filterPayable).ToListAsync();
 
 
                 dynamic obj = new
@@ -72,11 +115,17 @@ namespace api_infor_cell.src.Repository
             catch { return new ResponseApi<dynamic>(null, 500, "Erro ao carregar cards."); }
         }
 
-        public async Task<ResponseApi<dynamic>> GetRecentOrdersAsync(string startDate, string endDate, string storeId)
+        public async Task<ResponseApi<dynamic>> GetRecentOrdersAsync(string plan, string company, string store)
         {
             try
             {
-                var recent = await context.SalesOrders.Find(x => !x.Deleted && x.CreatedAt.Date == DateTime.UtcNow.Date)
+                var filter = Builders<SalesOrder>.Filter.Eq(x => x.CreatedAt.Date, DateTime.UtcNow.Date);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Plan, plan);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filter &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+
+                var recent = await context.SalesOrders.Find(filter)
                     .SortByDescending(x => x.CreatedAt)
                     .Limit(3)
                     .ToListAsync();
@@ -99,14 +148,21 @@ namespace api_infor_cell.src.Repository
             }
         }
 
-        public async Task<ResponseApi<dynamic>> GetMonthlySalesAsync(string startDate, string endDate, string storeId)
+        public async Task<ResponseApi<dynamic>> GetMonthlySalesAsync(string plan, string company, string store)
         {
             try
             {
                 var year = DateTime.UtcNow.Year;
                 var totals = new double[12];
                 var counts = new int[12];
-                var salesYear = await context.SalesOrders.Find(x => x.CreatedAt.Year == year).Project(x => new { x.Total, x.CreatedAt }).ToListAsync();
+
+                var filter = Builders<SalesOrder>.Filter.Eq(x => x.CreatedAt.Year, year);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Plan, plan);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filter &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+
+                var salesYear = await context.SalesOrders.Find(filter).Project(x => new { x.Total, x.CreatedAt }).ToListAsync();
 
                 for (int i = 1; i <= 12; i++) {
                     var monthSales = salesYear.Where(s => s.CreatedAt.Month == i).ToList();
@@ -118,7 +174,7 @@ namespace api_infor_cell.src.Repository
             catch { return new ResponseApi<dynamic>(null, 500, "Erro ao carregar vendas mensais."); }
         }
 
-        public async Task<ResponseApi<dynamic>> GetMonthlyTargetAsync(string startDate, string endDate, string storeId)
+        public async Task<ResponseApi<dynamic>> GetMonthlyTargetAsync(string plan, string company, string store)
         {
             try
             {
@@ -126,9 +182,29 @@ namespace api_infor_cell.src.Repository
                 DateTime startM = new(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                 DateTime startP = startM.AddMonths(-1);
 
-                var curS = await context.SalesOrders.Find(x => x.CreatedAt >= startM).Project(x => x.Total).ToListAsync();
-                var preS = await context.SalesOrders.Find(x => x.CreatedAt >= startP && x.CreatedAt < startM).Project(x => x.Total).ToListAsync();
-                var todS = await context.SalesOrders.Find(x => x.CreatedAt >= now.Date).Project(x => x.Total).ToListAsync();
+                var filter = Builders<SalesOrder>.Filter.Gte(x => x.CreatedAt, startM);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Plan, plan);
+                filter &= Builders<SalesOrder>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filter &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+                
+                var curS = await context.SalesOrders.Find(filter).Project(x => x.Total).ToListAsync();
+
+                var filterPre = Builders<SalesOrder>.Filter.Gte(x => x.CreatedAt, startP);
+                filterPre &= Builders<SalesOrder>.Filter.Lt(x => x.CreatedAt, startM);
+                filterPre &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+                filterPre &= Builders<SalesOrder>.Filter.Eq(x => x.Plan, plan);
+                filterPre &= Builders<SalesOrder>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filterPre &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+
+                var preS = await context.SalesOrders.Find(filterPre).Project(x => x.Total).ToListAsync();
+
+                var filterTod = Builders<SalesOrder>.Filter.Gte(x => x.CreatedAt, now.Date);
+                filterTod &= Builders<SalesOrder>.Filter.Eq(x => x.Deleted, false);
+                filterTod &= Builders<SalesOrder>.Filter.Eq(x => x.Plan, plan);
+                filterTod &= Builders<SalesOrder>.Filter.Eq(x => x.Company, company);
+                if (store != "all") filterTod &= Builders<SalesOrder>.Filter.Eq(x => x.Store, store);
+                var todS = await context.SalesOrders.Find(filterTod).Project(x => x.Total).ToListAsync();
 
                 decimal cur = curS.Sum();
                 decimal pre = preS.Sum();

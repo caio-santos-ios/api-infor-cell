@@ -15,33 +15,33 @@ namespace api_infor_cell.src.Controllers
 
         [Authorize]
         [HttpGet("cards")]
-        public async Task<IActionResult> GetCards()
+        public async Task<IActionResult> GetCards([FromQuery] string selectedStore)
         {
-            ResponseApi<dynamic?> response = await service.GetCardsAsync(Plan, Company, Store);
+            ResponseApi<dynamic?> response = await service.GetCardsAsync(Plan, Company, selectedStore);
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [Authorize]
         [HttpGet("monthly-sales")]
-        public async Task<IActionResult> GetMonthlySales()
+        public async Task<IActionResult> GetMonthlySales([FromQuery] string selectedStore)
         {
-            ResponseApi<dynamic?> response = await service.GetMonthlySalesAsync(Plan, Company, Store);
+            ResponseApi<dynamic?> response = await service.GetMonthlySalesAsync(Plan, Company, selectedStore);
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [Authorize]
         [HttpGet("monthly-target")]
-        public async Task<IActionResult> GetMonthlyTarget()
+        public async Task<IActionResult> GetMonthlyTarget([FromQuery] string selectedStore)
         {
-            ResponseApi<dynamic?> response = await service.GetMonthlyTargetAsync(Plan, Company, Store);
+            ResponseApi<dynamic?> response = await service.GetMonthlyTargetAsync(Plan, Company, selectedStore);
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [Authorize]
         [HttpGet("recent-orders")]
-        public async Task<IActionResult> GetRecentOrders()
+        public async Task<IActionResult> GetRecentOrders([FromQuery] string selectedStore)
         {
-            ResponseApi<dynamic?> response = await service.GetRecentOrdersAsync(Plan, Company, Store);
+            ResponseApi<dynamic?> response = await service.GetRecentOrdersAsync(Plan, Company, selectedStore);
             return StatusCode(response.StatusCode, new { response.Result });
         }
     }
