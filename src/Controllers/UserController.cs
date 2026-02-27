@@ -22,6 +22,14 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("employee")]
+        public async Task<IActionResult> GetEmployeeAll()
+        {
+            PaginationApi<List<dynamic>> response = await userService.GetEmployeeAllAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+        }
+        
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {

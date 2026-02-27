@@ -9,7 +9,7 @@ using AutoMapper;
 
 namespace api_infor_cell.src.Services
 {
-    public class EmployeeService(IEmployeeRepository repository, IUserRepository userRepository, IProfilePermissionRepository profilePermissionRepository, MailHandler mailHandler, IMapper _mapper) : IEmployeeService
+    public class EmployeeService(IEmployeeRepository repository, IUserRepository userRepository, IMapper _mapper) : IEmployeeService
 {
     #region READ
     public async Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request)

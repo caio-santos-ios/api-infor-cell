@@ -52,6 +52,9 @@ namespace api_infor_cell.src.Models
         [BsonElement("dueDate")]
         public DateTime DueDate { get; set; }
 
+        [BsonElement("issueDate")]
+        public DateTime IssueDate { get; set; }
+
         [BsonElement("paidAt")]
         public DateTime? PaidAt { get; set; }
 

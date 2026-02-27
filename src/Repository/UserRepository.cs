@@ -59,6 +59,50 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, e.Message); ;
             }
         }
+        public async Task<ResponseApi<List<dynamic>>> GetEmployeeAllAsync(PaginationUtil<User> pagination)
+        {
+            try
+            {
+                List<BsonDocument> pipeline = new()
+                {
+                    new("$match", pagination.PipelineFilter),
+                    new("$sort", pagination.PipelineSort),
+                    new("$skip", pagination.Skip),
+                    new("$limit", pagination.Limit),
+                    
+                    MongoUtil.Lookup("employees", ["$_id"], ["$userId"], "_employee", [["deleted", false]], 1),
+                    new("$addFields", new BsonDocument {
+                        {"type", MongoUtil.First("_employee.type")}
+                    }),
+                    MongoUtil.Lookup("profile_permissions", ["$type"], ["$_id"], "_permissions", [["deleted", false]], 1),
+
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"name", 1},
+                        {"email", 1},
+                        {"admin", 1},
+                        {"blocked", 1},
+                        {"photo", 1},
+                        {"createdAt", 1},
+                        {"dateOfBirth", MongoUtil.First("_employee.dateOfBirth")},
+                        {"cpf", MongoUtil.First("_employee.cpf")},
+                        {"rg", MongoUtil.First("_employee.rg")},
+                        {"typeName", MongoUtil.First("_permissions.name")},
+                    }),
+                    new("$sort", pagination.PipelineSort),
+                };
+
+                List<BsonDocument> results = await context.Users.Aggregate<BsonDocument>(pipeline).ToListAsync();
+                List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+                return new(list);
+            }
+            catch(Exception e)
+            {
+                return new(null, 500, e.Message); ;
+            }
+        }
         public async Task<ResponseApi<List<dynamic>>> GetSelectBarberAsync(PaginationUtil<User> pagination)
         {
             try

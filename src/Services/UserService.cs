@@ -6,10 +6,11 @@ using api_infor_cell.src.Shared.DTOs;
 using api_infor_cell.src.Shared.Templates;
 using api_infor_cell.src.Shared.Utils;
 using api_infor_cell.src.Shared.Validators;
+using CloudinaryDotNet;
 
 namespace api_infor_cell.src.Services
 {
-    public class UserService(IUserRepository userRepository, IProfilePermissionRepository profilePermissionRepository, IEmployeeRepository employeeRepository, SmsHandler smsHandler, MailHandler mailHandler, CloudinaryHandler cloudinaryHandler) : IUserService
+    public class UserService(IUserRepository userRepository, IProfilePermissionRepository profilePermissionRepository, IEmployeeRepository employeeRepository, ICompanyRepository companyRepository, IStoreRepository storeRepository, SmsHandler smsHandler, MailHandler mailHandler, CloudinaryHandler cloudinaryHandler) : IUserService
     {
         #region CREATE
         public async Task<ResponseApi<User?>> CreateAsync(CreateUserDTO request)
@@ -114,11 +115,14 @@ namespace api_infor_cell.src.Services
                 };
 
                 ResponseApi<User?> response = await userRepository.CreateAsync(user);
-                if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
+                if(response.Data is null) return new(null, 400, "Falha ao cadastrar Profissional.");
                 
                 string messageCode = $"Seu código de verificação é: {access.CodeAccess}";
+
+                ResponseApi<Company?> company = await companyRepository.GetByIdAsync(request.Company);
+                if(company.Data is null) return new(null, 400, "Falha ao cadastrar Profissional.");
                 
-                await smsHandler.SendMessageAsync(request.Phone, messageCode);
+                await mailHandler.SendMailAsync(request.Email, "Bem-vindo à equipe", MailTemplate.NewEmployee(request.Name, company.Data.CorporateName, profile.Data!.Name, user.Email, access.CodeAccess));
 
                 await employeeRepository.CreateAsync(new ()
                 {
@@ -150,6 +154,20 @@ namespace api_infor_cell.src.Services
             {
                 PaginationUtil<User> pagination = new(request.QueryParams);
                 ResponseApi<List<dynamic>> users = await userRepository.GetAllAsync(pagination);
+                int count = await userRepository.GetCountDocumentsAsync(pagination);
+                return new(users.Data, count, pagination.PageNumber, pagination.PageSize);
+            }
+            catch
+            {
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+            }
+        }
+        public async Task<PaginationApi<List<dynamic>>> GetEmployeeAllAsync(GetAllDTO request)
+        {
+            try
+            {
+                PaginationUtil<User> pagination = new(request.QueryParams);
+                ResponseApi<List<dynamic>> users = await userRepository.GetEmployeeAllAsync(pagination);
                 int count = await userRepository.GetCountDocumentsAsync(pagination);
                 return new(users.Data, count, pagination.PageNumber, pagination.PageSize);
             }

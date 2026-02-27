@@ -52,12 +52,6 @@ namespace api_infor_cell.src.Models
         [BsonElement("variationsCode")]
         public List<string> VariationsCode { get; set; } = [];
 
-        [BsonElement("sku")]
-        public string Sku { get; set; } = string.Empty;
-
-        [BsonElement("barcode")]
-        public string Barcode { get; set; } = string.Empty;
-
         [BsonElement("unitOfMeasure")]
         public string UnitOfMeasure { get; set; } = string.Empty;
 
@@ -124,26 +118,14 @@ namespace api_infor_cell.src.Models
         [BsonElement("cst")]
         public decimal Cst { get; set; }
 
-        // [BsonElement("cstIcms")]
-        // public string CstIcms { get; set; } = string.Empty;
-
         [BsonElement("icms")]
         public decimal Icms { get; set; }
         
         [BsonElement("pis")]
         public decimal Pis { get; set; }
 
-        // [BsonElement("cstPis")]
-        // public string CstPis { get; set; } = string.Empty;
-
-        // [BsonElement("cstCofins")]
-        // public decimal CstCofins { get; set; }
-
         [BsonElement("cofins")]
         public decimal Cofins { get; set; }
-
-        // [BsonElement("cstIpi")]
-        // public string CstIpi { get; set; } = string.Empty;
 
         [BsonElement("ipi")]
         public decimal Ipi { get; set; }

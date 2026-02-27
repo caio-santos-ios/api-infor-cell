@@ -43,7 +43,10 @@ namespace api_infor_cell.src.Models
         [BsonElement("serial")]
         public string Serial { get; set; } = string.Empty;
 
-        [BsonElement("stockId")]
-        public string StockId { get; set; } = string.Empty;
+        [BsonElement("stockIds")]
+        public List<string> StockIds { get; set; } = [];
+        
+        [BsonElement("status")]
+        public string Status { get; set; } = string.Empty;
     }
 }

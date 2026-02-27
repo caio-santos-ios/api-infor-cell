@@ -121,18 +121,15 @@ namespace api_infor_cell.src.Repository
                         { 
                             { "productId", "$productId" }, 
                             { "store", "$store" }, 
-                            // { "supplierId", "$supplierId" }, 
-                            // { "purchaseOrderItemId", "$purchaseOrderItemId" } 
                         } 
                     },
 
                     { "quantity", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantity")) },
+                    { "quantityAvailable", new BsonDocument("$sum", new BsonDocument("$toDouble", "$quantityAvailable")) },
                     { "cost", new BsonDocument("$sum", new BsonDocument("$toDouble", "$cost")) },
                     { "createdAt", MongoUtil.First("createdAt") },
                     { "store", MongoUtil.First("store") },
                     { "originDescription", MongoUtil.First("originDescription") },
-                    // { "variations", MongoUtil.First("variations") },
-                    // { "variations", "$variations" },
                     { "variations", new BsonDocument("$push", "$variations") },
                 }),
 
@@ -141,15 +138,12 @@ namespace api_infor_cell.src.Repository
                 {
                     { "productId", "$_id.productId" },
                     { "store", "$_id.store" },
-                    // { "purchaseOrderItemId", "$_id.purchaseOrderItemId" },
 
                     { "id", new BsonDocument("$concat", new BsonArray 
                         { 
                             "$_id.productId", 
                             "_", 
                             "$_id.store", 
-                            // "_", 
-                            // "$_id.purchaseOrderItemId" 
                         }) 
                     },
                     {"productName", MongoUtil.First("_product.name")},

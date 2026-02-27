@@ -10,6 +10,9 @@ namespace api_infor_cell.src.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = string.Empty;
 
+        [BsonElement("type")]
+        public string Type { get; set; } = string.Empty;
+        
         [BsonElement("salesOrderItemId")]
         public string SalesOrderItemId { get; set; } = string.Empty;
         
@@ -25,16 +28,16 @@ namespace api_infor_cell.src.Models
         [BsonElement("originDescription")]
         public string OriginDescription { get; set; } = string.Empty;
 
-        [BsonElement("variations")]
-        public List<VariationProduct> Variations {get;set;} = [];
-        
-        [BsonElement("variationsCode")]
-        public List<string> VariationsCode { get; set; } = [];
-
-        [BsonElement("cost")]
-        public decimal Cost { get; set; }
-
         [BsonElement("releasedStock")]
         public bool ReleasedStock { get; set; } = false;
+
+        [BsonElement("generateCashback")]
+        public bool GenerateCashback { get; set; } = false;
+
+        [BsonElement("balance")]
+        public decimal Balance { get; set; } = 0;
+
+        [BsonElement("typeBalance")]
+        public string TypeBalance { get; set; } = string.Empty;
     }
 }

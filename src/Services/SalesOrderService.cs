@@ -188,28 +188,28 @@ namespace api_infor_cell.src.Services
                             decimal totalStock = stocks.Data.Sum(x => x.QuantityAvailable);
                             if(totalStock < salesOrderItem.Quantity) return new(null, 404, $"O Produto [{product.Data.Code} - {product.Data.Name}] não tem estoque disponível");
 
-                            decimal accumulated = 0;
+                            decimal remaining = salesOrderItem.Quantity;
+
                             foreach (Stock stock in stocks.Data)
                             {
-                                if(accumulated == salesOrderItem.Quantity) continue;
+                                if (stock.QuantityAvailable == 0) continue;
+                                if (remaining <= 0) break;
 
-                                decimal total = stock.Quantity - salesOrderItem.Quantity;
+                                decimal toDeduct = Math.Min(stock.QuantityAvailable, remaining);
 
-                                if(total < 0) 
-                                {
-                                    total += salesOrderItem.Quantity;
-                                };
-
+                                stock.Quantity -= toDeduct;
+                                stock.QuantityAvailable -= toDeduct;
                                 stock.UpdatedAt = DateTime.UtcNow;
                                 stock.UpdatedBy = request.UpdatedBy;
-                                stock.Quantity -= total < 0 ? stock.Quantity : total;
-                                stock.QuantityAvailable -= total < 0 ? stock.QuantityAvailable : total;
 
                                 await stockRepository.UpdateAsync(stock);
 
-                                accumulated += total;
+                                salesOrderItem.StockIds.Add(stock.Id);
+                                remaining -= toDeduct;
                             }
                         }
+                        
+                        await salesOrderItemRepository.UpdateAsync(salesOrderItem);
                     }
                 };
 

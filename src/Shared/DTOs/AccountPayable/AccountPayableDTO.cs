@@ -31,7 +31,7 @@ namespace api_infor_cell.src.Shared.DTOs
         [Required(ErrorMessage = "A Data de Vencimento é obrigatória.")]
         [Display(Order = 3)]
         public DateTime DueDate { get; set; }
-
+        public DateTime IssueDate { get; set; }
         public string Notes { get; set; } = string.Empty;
     }
 

@@ -6,8 +6,8 @@ namespace api_infor_cell.src.Interfaces
 {
     public interface IUserRepository
     {
-        Task<ResponseApi<User?>> CreateAsync(User user);
         Task<ResponseApi<List<dynamic>>> GetAllAsync(PaginationUtil<User> pagination);
+        Task<ResponseApi<List<dynamic>>> GetEmployeeAllAsync(PaginationUtil<User> pagination);
         Task<ResponseApi<List<dynamic>>> GetSelectBarberAsync(PaginationUtil<User> pagination);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
         Task<ResponseApi<dynamic?>> GetEmployeeByIdAggregateAsync(string id);
@@ -20,6 +20,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<User?>> GetByCompanyIdAsync(string companyId);
         Task<int> GetCountDocumentsAsync(PaginationUtil<User> pagination);
         Task<bool> GetAccessValitedAsync(string codeAccess);
+        Task<ResponseApi<User?>> CreateAsync(User user);
         Task<ResponseApi<User?>> UpdateCodeAccessAsync(string userId, string codeAccess);
         Task<ResponseApi<User?>> UpdateAsync(User request);
         Task<ResponseApi<User?>> ValidatedAccessAsync(string codeAccess);

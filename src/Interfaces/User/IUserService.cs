@@ -7,6 +7,7 @@ namespace api_infor_cell.src.Interfaces
     public interface IUserService
     {
         Task<PaginationApi<List<dynamic>>> GetAllAsync(GetAllDTO request, string userId);
+        Task<PaginationApi<List<dynamic>>> GetEmployeeAllAsync(GetAllDTO request);
         Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id);
         Task<ResponseApi<dynamic?>> GetEmployeeByIdAggregateAsync(string id);
         Task<ResponseApi<dynamic?>> GetLoggedAsync(string id);
