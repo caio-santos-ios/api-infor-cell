@@ -125,6 +125,17 @@ namespace api_infor_cell.src.Handlers
 
         // ─── PAYMENTS (para obter QR Code PIX / Boleto) ───────────────────────────
 
+        /// <summary>Busca histórico de pagamentos de uma assinatura (últimas 12 cobranças)</summary>
+        public async Task<List<AsaasPaymentDetailResponse>> GetPaymentHistoryAsync(string subscriptionId)
+        {
+            using var client = CreateClient();
+            var resp = await client.GetAsync($"{_baseUrl}/subscriptions/{subscriptionId}/payments?limit=12&offset=0");
+            if (!resp.IsSuccessStatusCode) return [];
+            var json = await resp.Content.ReadAsStringAsync();
+            var list = JsonSerializer.Deserialize<AsaasListResponse<AsaasPaymentDetailResponse>>(json, JsonOpts);
+            return list?.Data ?? [];
+        }
+
         /// <summary>Busca o último pagamento pendente de uma assinatura</summary>
         public async Task<AsaasPaymentDetailResponse?> GetLastPaymentFromSubscriptionAsync(string subscriptionId)
         {
@@ -213,6 +224,10 @@ namespace api_infor_cell.src.Handlers
         public string BankSlipUrl { get; set; } = string.Empty;
         [JsonPropertyName("dueDate")]
         public string DueDate { get; set; } = string.Empty;
+        [JsonPropertyName("paymentDate")]
+        public string? PaymentDate { get; set; }
+        [JsonPropertyName("billingType")]
+        public string BillingType { get; set; } = string.Empty;
         [JsonPropertyName("value")]
         public decimal Value { get; set; }
     }

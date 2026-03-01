@@ -1,3 +1,4 @@
+using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
 using api_infor_cell.src.Shared.DTOs;
@@ -11,5 +12,6 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<Subscription?>> GetByPlanAsync(string plan);
         Task<ResponseApi<Subscription?>> CancelSubscriptionAsync(string userId);
         Task<ResponseApi<string>> HandleWebhookAsync(AsaasWebhookDTO webhook);
+        Task<ResponseApi<List<AsaasPaymentDetailResponse>>> GetPaymentHistoryAsync(string userId);
     }
 }

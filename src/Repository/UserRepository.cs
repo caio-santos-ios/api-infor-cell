@@ -210,9 +210,17 @@ namespace api_infor_cell.src.Repository
 
                     MongoUtil.Lookup("companies", ["$company"], ["$_id"], "_company", [["deleted", false]], 1),
 
+                    MongoUtil.Lookup("companies", ["$plan"], ["$plan"], "_companyAll", [["deleted", false]]),
+                    
                     MongoUtil.Lookup("stores", ["$store"], ["$_id"], "_store", [["deleted", false]], 1),
+                    
+                    MongoUtil.Lookup("stores", ["$plan"], ["$plan"], "_storeAll", [["deleted", false]]),
 
                     MongoUtil.Lookup("addresses", ["$id"], ["$parentId"], "_address", [["deleted", false]], 1),
+
+                    MongoUtil.Lookup("plans", ["$plan"], ["$_id"], "_plan", [["deleted", false]], 1),
+                    
+                    MongoUtil.Lookup("subscriptions", ["$plan"], ["$planId"], "_subscriptions", [["deleted", false]], 1),
 
                     new("$addFields", new BsonDocument
                     {
@@ -229,6 +237,8 @@ namespace api_infor_cell.src.Repository
                         {"logoCompany", MongoUtil.First("_company.photo") },
                         {"nameCompany", MongoUtil.First("_company.tradeName") },
                         {"nameStore", MongoUtil.First("_store.tradeName") },
+                        {"namePlan", MongoUtil.First("_plan.type") },
+                        {"subscriberPlan", MongoUtil.First("_subscriptions.active") },
                     }),
 
                     new("$addFields", new BsonDocument
@@ -260,10 +270,17 @@ namespace api_infor_cell.src.Repository
                         {"photo", 1},
                         {"phone", 1},
                         {"whatsapp", 1},
+                        {"stores", 1},
+                        {"companies", 1},
+                        {"createdAt", 1},
                         {"logoCompany", MongoUtil.ValidateNull("logoCompany", "")},
                         {"nameCompany", MongoUtil.ValidateNull("nameCompany", "")},
+                        {"namePlan", MongoUtil.ValidateNull("namePlan", "")},
+                        {"subscriberPlan", MongoUtil.ValidateNull("subscriberPlan", "")},
                         {"nameStore", MongoUtil.ValidateNull("nameStore", "")},
-                        {"address", 1}
+                        {"address", 1},
+                        {"storesAll", "$_storeAll"},
+                        {"companiesAll", "$_companyAll"},
                     }),
                 ];
 

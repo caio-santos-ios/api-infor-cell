@@ -210,6 +210,22 @@ namespace api_infor_cell.src.Services
             }
         }
 
+        public async Task<ResponseApi<List<AsaasPaymentDetailResponse>>> GetPaymentHistoryAsync(string userId)
+        {
+            try
+            {
+                ResponseApi<Subscription?> subResp = await repository.GetByUserIdAsync(userId);
+                if (subResp.Data is null) return new([], 200, "Sem assinatura ativa");
+
+                List<AsaasPaymentDetailResponse> history = await asaasHandler.GetPaymentHistoryAsync(subResp.Data.AsaasSubscriptionId);
+                return new(history, 200, "ok");
+            }
+            catch
+            {
+                return new(null, 500, "Erro ao buscar histórico de pagamentos");
+            }
+        }
+
         public async Task<ResponseApi<string>> HandleWebhookAsync(AsaasWebhookDTO webhook)
         {
             try

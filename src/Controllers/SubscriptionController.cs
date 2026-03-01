@@ -39,6 +39,18 @@ namespace api_infor_cell.src.Controllers
             return StatusCode(response.StatusCode, new { response.Result });
         }
 
+        /// <summary>Busca histórico de pagamentos da assinatura do usuário logado</summary>
+        [Authorize]
+        [HttpGet("payments")]
+        public async Task<IActionResult> GetPaymentHistory()
+        {
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null) return Unauthorized();
+
+            var response = await service.GetPaymentHistoryAsync(userId);
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+
         /// <summary>Busca a assinatura ativa do usuário logado</summary>
         [Authorize]
         [HttpGet("plan")]
