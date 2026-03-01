@@ -1,7 +1,6 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using api_infor_cell.src.Shared.Utils;
 
 namespace api_infor_cell.src.Handlers
 {
@@ -13,11 +12,7 @@ namespace api_infor_cell.src.Handlers
     /// </summary>
     public class AsaasHandler()
     {
-        // DEV
-        // private readonly string _apiKey = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmMzYmNlNDJmLWU1MjQtNGJlNy1hYjQ0LWY0YzIyYTJiMGNjZTo6JGFhY2hfZjFkMDEyZGQtYTgwMy00MDIxLTljZTctYmQwZjg4NTYwYzI0";
-        
-        // PROD 
-        private readonly string _apiKey = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjhlMzgyMzM2LThkNDYtNGQ1MC1iYWZjLTVmZGRlNDgzZWQ5Nzo6JGFhY2hfOWIzNGRmMzUtMWE5Yy00OWQzLTllNGMtZmVlZWIyODgzOGI3";
+        private readonly string _apiKey = Environment.GetEnvironmentVariable("ASAAS_API_KEY") ?? "";
         private readonly string _baseUrl = Environment.GetEnvironmentVariable("URI_ASAAS") ?? "";
 
         private HttpClient CreateClient()
