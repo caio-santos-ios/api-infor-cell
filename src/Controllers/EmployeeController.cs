@@ -47,7 +47,7 @@ namespace api_infor_cell.src.Controllers
         
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateUserDTO body)
+        public async Task<IActionResult> Update([FromBody] UpdateUserEmployeeDTO body)
         {
             if (body == null) return BadRequest("Dados inválidos.");
 

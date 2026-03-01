@@ -26,13 +26,13 @@ namespace api_infor_cell.src.Controllers
             ResponseApi<dynamic?> response = await genericTableService.GetByIdAggregateAsync(id);
             return StatusCode(response.StatusCode, new { response.Message, response.Result });
         }
-       
+
         [Authorize]
         [HttpGet("table/{table}")]
         public async Task<IActionResult> GetByTableAsync(string table)
         {
             ResponseApi<List<dynamic>> response = await genericTableService.GetByTableAggregateAsync(table);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            return StatusCode(response.StatusCode, new { response.Result });
         }
         
         [Authorize]

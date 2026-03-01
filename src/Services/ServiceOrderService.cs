@@ -1,4 +1,3 @@
-using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
@@ -181,14 +180,13 @@ namespace api_infor_cell.src.Services
                 ResponseApi<Situation?> situation = await situationRepository.GetByIdAsync(serviceOrder.Status);
                 if(situation.Data is not null)
                 {
-                    if(situation.Data.GenerateFinancial)
+                    if(situation.Data.GenerateFinancial && !serviceOrder.IsWarrantyInternal && !string.IsNullOrEmpty(request.PaymentMethodId))
                     {
                         DateTime issueDate = DateTime.UtcNow;
 
                         for (int i = 0; i < request.NumberOfInstallments; i++)
                         {
                             DateTime currentIssue = issueDate.AddMonths(i);
-                            System.Console.WriteLine(currentIssue);
                             DateTime dueDate = currentIssue.AddDays(3);
 
                             await accountReceivableService.CreateAsync(new CreateAccountReceivableDTO()

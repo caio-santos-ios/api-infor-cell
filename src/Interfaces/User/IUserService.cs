@@ -15,7 +15,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<User?>> CreateAsync(CreateUserDTO user);
         Task<ResponseApi<User?>> CreateEmployeeAsync(CreateUserEmployeeDTO user);
         Task<ResponseApi<User?>> UpdateAsync(UpdateUserDTO user);
-        Task<ResponseApi<User?>> UpdateModuleAsync(UpdateUserDTO user);
+        Task<ResponseApi<User?>> UpdateModuleAsync(UpdateUserModuleDTO user);
         Task<ResponseApi<User?>> UpdateStoreAsync(UpdateUserDTO user);
         Task<ResponseApi<User?>> SavePhotoProfileAsync(SaveUserPhotoDTO user);
         Task<ResponseApi<User?>> ResendCodeAccessAsync(UpdateUserDTO user);

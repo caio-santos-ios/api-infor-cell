@@ -11,6 +11,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<GenericTable?>> GetByIdAsync(string id);
         Task<ResponseApi<List<dynamic>>> GetByTableAggregateAsync(string table);
         Task<ResponseApi<GenericTable?>> GetByCodeAsync(string code, string table, string? id = null);
+        Task<ResponseApi<long>> GetNextCodeAsync(string table, string plan, string company, string store);
         Task<int> GetCountDocumentsAsync(PaginationUtil<GenericTable> pagination);
         Task<ResponseApi<GenericTable?>> CreateAsync(GenericTable user);
         Task<ResponseApi<GenericTable?>> UpdateAsync(GenericTable request);

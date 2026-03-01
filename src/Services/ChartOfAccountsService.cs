@@ -8,18 +8,18 @@ namespace api_infor_cell.src.Services
 {
     public class ChartOfAccountsService(IChartOfAccountsRepository repository) : IChartOfAccountsService
     {
-        public async Task<ResponseApi<dynamic?>> GetAllAsync(Dictionary<string, string> queries, RequestDTO requestDTO)
+        public async Task<ResponseApi<dynamic?>> GetAllAsync(GetAllDTO request)
         {
             try
             {
-                PaginationUtil<ChartOfAccounts> pagination = new(queries);
+                PaginationUtil<ChartOfAccounts> pagination = new(request.QueryParams);
 
-                List<dynamic> list = (await repository.GetAllAsync(pagination)).Data ?? [];
+                ResponseApi<List<dynamic>> list = await repository.GetAllAsync(pagination);
                 int count = await repository.GetCountDocumentsAsync(pagination);
 
                 dynamic response = new
                 {
-                    data = list,
+                    data = list.Data,
                     page = pagination.PageNumber,
                     pageSize = pagination.PageSize,
                     count

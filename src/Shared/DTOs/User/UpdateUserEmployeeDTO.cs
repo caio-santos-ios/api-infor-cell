@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace api_infor_cell.src.Shared.DTOs
 {
-    public class UpdateEmployeeDTO : RequestDTO
+    public class UpdateUserEmployeeDTO : RequestDTO
     {
-        public string Id { get; set; } = string.Empty;
-
+        public string Id {get;set;} = string.Empty;
+        
         [Required(ErrorMessage = "O Nome é obrigatório.")]
         [Display(Order = 1)]
         public string Name {get;set;} = string.Empty;
@@ -21,12 +21,7 @@ namespace api_infor_cell.src.Shared.DTOs
         [Required(ErrorMessage = "O Telefone é obrigatório.")]
         [Display(Order = 4)]
         public string Phone {get;set;} = string.Empty;
-
-        [Required(ErrorMessage = "O Tipo é obrigatório.")]
-        [Display(Order = 5)]
-        public string Type { get; set; } = string.Empty; 
-        public string UserName {get;set;} = string.Empty;
-        public string Password {get;set;} = string.Empty;
+        public string Rg {get;set;} = string.Empty;
         public string Whatsapp {get;set;} = string.Empty;
         public bool Blocked {get;set;} = false;
         public bool Admin {get;set;} = false;
@@ -36,6 +31,11 @@ namespace api_infor_cell.src.Shared.DTOs
         public string Photo {get;set;} = string.Empty;
         public List<string> Companies {get;set;} = [];
         public List<string> Stores {get;set;} = [];
+        public List<ModuleCreateDTO> Modules {get;set;} = [];
+        
+        [Required(ErrorMessage = "O Tipo é obrigatório.")]
+        [Display(Order = 5)]
+        public string Type { get; set; } = string.Empty; 
         public DateTime? DateOfBirth { get; set; } 
     }
 }

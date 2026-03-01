@@ -98,6 +98,10 @@ namespace api_infor_cell.src.Configuration
             
             CreateMap<CreateSituationDTO, Situation>().ReverseMap();
             CreateMap<UpdateSituationDTO, Situation>().ReverseMap();
+
+            CreateMap<CreateSituationDTO, Situation>().ReverseMap();
+            CreateMap<UpdateUserDTO, Employee>().ReverseMap();
+            CreateMap<UpdateUserDTO, User>().ReverseMap();
             #endregion
 
             #region FINANCIAL
@@ -109,6 +113,10 @@ namespace api_infor_cell.src.Configuration
 
             CreateMap<CreatePaymentMethodDTO, PaymentMethod>().ReverseMap();
             CreateMap<UpdatePaymentMethodDTO, PaymentMethod>().ReverseMap();
+            #endregion
+
+            #region  FISCAL
+            
             #endregion
         }
     }

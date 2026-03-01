@@ -13,10 +13,10 @@ namespace api_infor_cell.src.Controllers
     {
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] Dictionary<string, string> queries, [FromBody] RequestDTO requestDTO)
+        public async Task<IActionResult> GetAll()
         {
-            ResponseApi<dynamic?> response = await service.GetAllAsync(queries, requestDTO);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
+            ResponseApi<dynamic?> response = await service.GetAllAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
         }
 
         [Authorize]

@@ -80,7 +80,7 @@ namespace api_infor_cell.src.Controllers
         
         [Authorize]
         [HttpPut("modules")]
-        public async Task<IActionResult> UpdateModules([FromBody] UpdateUserDTO user)
+        public async Task<IActionResult> UpdateModules([FromBody] UpdateUserModuleDTO user)
         {
             if (user == null) return BadRequest("Dados inválidos.");
 

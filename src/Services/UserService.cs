@@ -10,7 +10,7 @@ using CloudinaryDotNet;
 
 namespace api_infor_cell.src.Services
 {
-    public class UserService(IUserRepository userRepository, IProfilePermissionRepository profilePermissionRepository, IEmployeeRepository employeeRepository, ICompanyRepository companyRepository, IStoreRepository storeRepository, SmsHandler smsHandler, MailHandler mailHandler, CloudinaryHandler cloudinaryHandler) : IUserService
+    public class UserService(IUserRepository userRepository, IProfilePermissionRepository profilePermissionRepository, IEmployeeRepository employeeRepository, ICompanyRepository companyRepository, SmsHandler smsHandler, MailHandler mailHandler, CloudinaryHandler cloudinaryHandler) : IUserService
     {
         #region CREATE
         public async Task<ResponseApi<User?>> CreateAsync(CreateUserDTO request)
@@ -267,7 +267,7 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
-        public async Task<ResponseApi<User?>> UpdateModuleAsync(UpdateUserDTO request)
+        public async Task<ResponseApi<User?>> UpdateModuleAsync(UpdateUserModuleDTO request)
         {
             try
             {

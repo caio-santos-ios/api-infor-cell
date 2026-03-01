@@ -12,7 +12,7 @@ namespace api_infor_cell.src.Interfaces
         Task<ResponseApi<List<User>>> GetSellersAsync(string planId, string companyId, string storeId);
         Task<ResponseApi<List<User>>> GetTechniciansAsync(string planId, string companyId, string storeId);
         // Task<ResponseApi<Employee?>> CreateAsync(CreateEmployeeDTO request);
-        Task<ResponseApi<User?>> UpdateAsync(UpdateUserDTO request);
+        Task<ResponseApi<User?>> UpdateAsync(UpdateUserEmployeeDTO request);
         Task<ResponseApi<User?>> UpdateModuleAsync(UpdateModuleEmployeeDTO request);
         Task<ResponseApi<User?>> UpdateCalendarAsync(UpdateCalendarEmployeeDTO request);
         Task<ResponseApi<User>> DeleteAsync(string id);

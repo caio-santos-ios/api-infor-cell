@@ -40,7 +40,7 @@ namespace api_infor_cell.src.Repository
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Item da O.S.");
         }
     }
     
@@ -64,11 +64,11 @@ namespace api_infor_cell.src.Repository
 
             BsonDocument? response = await context.ServiceOrderItems.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync();
             dynamic? result = response is null ? null : BsonSerializer.Deserialize<dynamic>(response);
-            return result is null ? new(null, 404, "Lojas não encontrado") : new(result);
+            return result is null ? new(null, 404, "Item da O.S. não encontrado") : new(result);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Item da O.S.");
         }
     }
     
@@ -76,12 +76,24 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            ServiceOrderItem? address = await context.ServiceOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            return new(address);
+            ServiceOrderItem? items = await context.ServiceOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            return new(items);
         }
         catch
         {
-            return new(null, 500, "Falha ao buscar Lojas");
+            return new(null, 500, "Falha ao buscar Item da O.S.");
+        }
+    }
+    public async Task<ResponseApi<List<ServiceOrderItem>>> GetByServiceOrderIdAsync(string serviceOrderId)
+    {
+        try
+        {
+            List<ServiceOrderItem> items = await context.ServiceOrderItems.Find(x => x.ServiceOrderId == serviceOrderId && !x.Deleted).ToListAsync();
+            return new(items);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Item da O.S.");
         }
     }
     
@@ -108,33 +120,33 @@ namespace api_infor_cell.src.Repository
     #endregion
     
     #region CREATE
-    public async Task<ResponseApi<ServiceOrderItem?>> CreateAsync(ServiceOrderItem address)
+    public async Task<ResponseApi<ServiceOrderItem?>> CreateAsync(ServiceOrderItem items)
     {
         try
         {
-            await context.ServiceOrderItems.InsertOneAsync(address);
+            await context.ServiceOrderItems.InsertOneAsync(items);
 
-            return new(address, 201, "Lojas criada com sucesso");
+            return new(items, 201, "Item da O.S. criada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao criar Lojas");  
+            return new(null, 500, "Falha ao criar Item da O.S.");  
         }
     }
     #endregion
     
     #region UPDATE
-    public async Task<ResponseApi<ServiceOrderItem?>> UpdateAsync(ServiceOrderItem address)
+    public async Task<ResponseApi<ServiceOrderItem?>> UpdateAsync(ServiceOrderItem items)
     {
         try
         {
-            await context.ServiceOrderItems.ReplaceOneAsync(x => x.Id == address.Id, address);
+            await context.ServiceOrderItems.ReplaceOneAsync(x => x.Id == items.Id, items);
 
-            return new(address, 201, "Lojas atualizada com sucesso");
+            return new(items, 201, "Item da O.S. atualizada com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao atualizar Lojas");
+            return new(null, 500, "Falha ao atualizar Item da O.S.");
         }
     }
     #endregion
@@ -144,18 +156,18 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            ServiceOrderItem? address = await context.ServiceOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
-            if(address is null) return new(null, 404, "Lojas não encontrado");
-            address.Deleted = true;
-            address.DeletedAt = DateTime.UtcNow;
+            ServiceOrderItem? items = await context.ServiceOrderItems.Find(x => x.Id == id && !x.Deleted).FirstOrDefaultAsync();
+            if(items is null) return new(null, 404, "Item da O.S. não encontrado");
+            items.Deleted = true;
+            items.DeletedAt = DateTime.UtcNow;
 
-            await context.ServiceOrderItems.ReplaceOneAsync(x => x.Id == id, address);
+            await context.ServiceOrderItems.ReplaceOneAsync(x => x.Id == id, items);
 
-            return new(address, 204, "Lojas excluída com sucesso");
+            return new(items, 204, "Item da O.S. excluída com sucesso");
         }
         catch
         {
-            return new(null, 500, "Falha ao excluír Lojas");
+            return new(null, 500, "Falha ao excluír Item da O.S.");
         }
     }
     #endregion

@@ -183,6 +183,15 @@ namespace api_infor_cell.src.Configuration
             get { return Database.GetCollection<Subscription>("subscriptions"); }
         }
         #endregion
+
+        #region FISCAL
+        public IMongoCollection<FiscalDocument> FiscalDocuments => Database.GetCollection<FiscalDocument>("fiscal_documents");
+
+        public IMongoCollection<FiscalEvent> FiscalEvents => Database.GetCollection<FiscalEvent>("fiscal_events");
+
+        public IMongoCollection<FiscalConfig> FiscalConfigs => Database.GetCollection<FiscalConfig>("fiscal_configs");
+
+        #endregion
     }
 }
 

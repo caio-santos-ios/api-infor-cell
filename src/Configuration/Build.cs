@@ -155,6 +155,11 @@ namespace api_infor_cell.src.Configuration
             builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
+            // FISCAL
+            builder.Services.AddTransient<IFiscalDocumentService, FiscalDocumentService>();
+            builder.Services.AddTransient<IFiscalDocumentRepository, FiscalDocumentRepository>();
+            builder.Services.AddTransient<ISefazProvider, SefazProvider>();
+
             // Handlers
             builder.Services.AddTransient<SmsHandler>();
             builder.Services.AddTransient<MailHandler>();

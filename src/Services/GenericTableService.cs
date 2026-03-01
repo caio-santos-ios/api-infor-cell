@@ -60,10 +60,15 @@ namespace api_infor_cell.src.Services
                 ResponseApi<GenericTable?> genericTableExisted = await genericTableRepository.GetByCodeAsync(request.Code, request.Table);
                 if(genericTableExisted.Data is not null) return new(null, 400, "Código já existente");
 
+                if(request.CodeAutomatic) {
+                    ResponseApi<long> code = await genericTableRepository.GetNextCodeAsync(request.Table, request.Plan, request.Company, request.Store);
+                    genericTable.Code = code.Data.ToString().PadLeft(6, '0'); 
+                } 
+
                 ResponseApi<GenericTable?> response = await genericTableRepository.CreateAsync(genericTable);
 
                 if(response.Data is null) return new(null, 400, "Falha ao criar conta.");
-                return new(response.Data, 201, "Tabela Genérica criada com sucesso.");
+                return new(response.Data, 201, "Adicionado com sucesso.");
             }
             catch
             {                

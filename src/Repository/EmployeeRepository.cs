@@ -307,28 +307,7 @@ namespace api_infor_cell.src.Repository
                 (x.Admin || x.Master || x.Role == Enums.User.RoleEnum.Employee) 
             ).ToListAsync();
 
-            // List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
             List<User> sellers = [];
-
-            // foreach (Employee employee in employees)
-            // {
-            //     Module? moduleCommercial = employee.Modules.Where(m => m.Code == "C").FirstOrDefault();
-            //     if(moduleCommercial is not null)
-            //     {
-            //         Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "C1").FirstOrDefault();
-            //         if(routineSalerOrder is not null)
-            //         {
-            //             if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
-            //             {
-            //                 sellers.Add(new () 
-            //                 {
-            //                     Id = employee.Id,
-            //                     Name = employee.Name
-            //                 });
-            //             }
-            //         };
-            //     };
-            // };
 
             foreach (User user in users)
             {
@@ -371,36 +350,44 @@ namespace api_infor_cell.src.Repository
     {
         try
         {
-            List<User> users = await context.Users.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted && x.Admin && x.Master).ToListAsync();
-            // List<Employee> employees = await context.Employees.Find(x => x.Plan == planId && x.Company == companyId && x.Store == storeId && !x.Deleted).ToListAsync();
-            List<User> sellers = [];
+            List<User> users = await context.Users.Find(x => 
+                x.Plan == planId &&
+                x.Company == companyId &&
+                x.Store == storeId && 
+                !x.Deleted && 
+                (x.Admin || x.Master || x.Role == Enums.User.RoleEnum.Employee) 
+            ).ToListAsync();
 
-            // foreach (Employee employee in employees)
-            // {
-            //     Module? moduleCommercial = employee.Modules.Where(m => m.Code == "D").FirstOrDefault();
-            //     if(moduleCommercial is not null)
-            //     {
-            //         Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "D1").FirstOrDefault();
-            //         if(routineSalerOrder is not null)
-            //         {
-            //             if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
-            //             {
-            //                 sellers.Add(new () 
-            //                 {
-            //                     Id = employee.Id,
-            //                     Name = employee.Name
-            //                 });
-            //             }
-            //         };
-            //     };
-            // };
+            List<User> sellers = [];
 
             foreach (User user in users)
             {
-                sellers.Add(new () {
-                    Id = user.Id,
-                    Name = user.Name
-                });
+                if(user.Master || user.Admin)
+                {
+                    sellers.Add(new () {
+                        Id = user.Id,
+                        Name = user.Name
+                    });
+                }
+                else
+                {
+                    Module? moduleCommercial = user.Modules.Where(m => m.Code == "D").FirstOrDefault();
+                    if(moduleCommercial is not null)
+                    {
+                        Routine? routineSalerOrder = moduleCommercial.Routines.Where(r => r.Code == "D1").FirstOrDefault();
+                        if(routineSalerOrder is not null)
+                        {
+                            if(routineSalerOrder.Permissions.Create && routineSalerOrder.Permissions.Update && routineSalerOrder.Permissions.Read)
+                            {
+                                sellers.Add(new () 
+                                {
+                                    Id = user.Id,
+                                    Name = user.Name
+                                });
+                            }
+                        };
+                    };
+                }
             }
 
             return new(sellers);

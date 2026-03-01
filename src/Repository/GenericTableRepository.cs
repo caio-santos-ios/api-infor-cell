@@ -159,6 +159,18 @@ namespace api_infor_cell.src.Repository
                 return new(null, 500, "Falha ao buscar Tabela Genérica"); ;
             }
         }
+        public async Task<ResponseApi<long>> GetNextCodeAsync(string table, string plan, string company, string store)
+        {
+            try
+            {
+                long code = await context.GenericTables.Find(x => x.Plan == plan && x.Company == company && x.Store == store && x.Table == table).CountDocumentsAsync() + 1;
+                return new(code);
+            }
+            catch
+            {
+                return new(0, 500, "Falha ao buscar Lojas");
+            }
+        }
         public async Task<int> GetCountDocumentsAsync(PaginationUtil<GenericTable> pagination)
         {
             List<BsonDocument> pipeline = new()

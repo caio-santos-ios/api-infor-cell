@@ -7,7 +7,7 @@ namespace api_infor_cell.src.Interfaces
 {
     public interface IChartOfAccountsService
     {
-        Task<ResponseApi<dynamic?>> GetAllAsync(Dictionary<string, string> queries, RequestDTO requestDTO);
+        Task<ResponseApi<dynamic?>> GetAllAsync(GetAllDTO request);
         Task<ResponseApi<dynamic?>> GetByIdAsync(string id);
         Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId);
         Task<ResponseApi<ChartOfAccounts?>> CreateAsync(ChartOfAccounts chartOfAccounts);

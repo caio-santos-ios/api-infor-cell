@@ -150,7 +150,7 @@ namespace api_infor_cell.src.Repository
             var filters = new List<FilterDefinition<ServiceOrder>>
             {
                 filterBuilder.Eq(x => x.Deleted, false),
-                filterBuilder.Eq(x => x.Status, "closed"),
+                filterBuilder.Eq(x => x.IsClosed, true),
                 filterBuilder.Gt(x => x.WarrantyUntil, DateTime.UtcNow),
             };
 
