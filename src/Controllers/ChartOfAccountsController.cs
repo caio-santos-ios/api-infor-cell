@@ -47,17 +47,6 @@ namespace api_infor_cell.src.Controllers
         }
 
         [Authorize]
-        [HttpGet("next-code")]
-        public async Task<IActionResult> GetNextCode()
-        {
-            string plan    = User.FindFirst("plan")?.Value    ?? string.Empty;
-            string company = User.FindFirst("company")?.Value ?? string.Empty;
-
-            ResponseApi<long> response = await service.GetNextCodeAsync(plan, company);
-            return StatusCode(response.StatusCode, new { response.Message, response.Result });
-        }
-
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ChartOfAccounts chartOfAccounts)
         {

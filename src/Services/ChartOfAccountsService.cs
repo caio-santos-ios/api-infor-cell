@@ -60,20 +60,7 @@ namespace api_infor_cell.src.Services
                 return new(null, 500, "Falha ao buscar Conta");
             }
         }
-
-        public async Task<ResponseApi<long>> GetNextCodeAsync(string planId, string companyId)
-        {
-            try
-            {
-                // long nextCode = (await repository.GetNextCodeAsync(planId, companyId)).Data;
-                return new();
-            }
-            catch
-            {
-                return new(1, 500, "Falha ao buscar próximo código");
-            }
-        }
-
+        
         public async Task<ResponseApi<ChartOfAccounts?>> CreateAsync(ChartOfAccounts chartOfAccounts)
         {
             try

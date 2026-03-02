@@ -43,6 +43,107 @@ namespace api_infor_cell.src.Repository
             return new(null, 500, "Falha ao buscar Clientes");
         }
     }
+    public async Task<ResponseApi<List<dynamic>>> GetMovementAsync(PaginationUtil<Customer> pagination)
+    {
+        try
+        {
+            List<BsonDocument> pipeline = new()
+            {
+                new("$addFields", new BsonDocument
+                {
+                    {"id", new BsonDocument("$toString", "$_id")},
+                }),
+                new("$match", pagination.PipelineFilter),
+                new("$sort", pagination.PipelineSort),
+                new("$skip", pagination.Skip),
+                new("$limit", pagination.Limit),
+
+                MongoUtil.Lookup("sales_orders", ["$_id"], ["$customerId"], "_salesOrder", [["deleted", false]], 1),
+                MongoUtil.Lookup("accounts_receivable", ["$_id"], ["$customerId"], "_accountsReceivable", [["deleted", false]], 1),
+                MongoUtil.Lookup("service_orders", ["$_id"], ["$customerId"], "_serviceOrders", [["deleted", false]], 1),
+                MongoUtil.Lookup("situations", ["$plan", "$company", "$store"], ["$plan", "$company", "$store"], "_situations", [["deleted", false]]),
+                
+                new("$project", new BsonDocument
+                {
+                    {"_id", 0}, 
+                    {"tradeName", 1},
+                    {"salesOrder", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_salesOrder"},
+                            {"as", "s"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$s._id")},
+                                    {"code", "$$s.code"},
+                                    {"total", "$$s.total"},
+                                    {"status", "$$s.status"},
+                                    {"quantity", "$$s.quantity"},
+                                    {"createdAt", "$$s.createdAt"},
+                                }
+                            }
+                        })
+                    },
+                    {"accountsReceivable", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_accountsReceivable"},
+                            {"as", "s"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$s._id")},
+                                    {"code", "$$s.code"},
+                                    {"amount", "$$s.amount"},
+                                    {"amountPaid", "$$s.amountPaid"},
+                                    {"dueDate", "$$s.dueDate"},
+                                    {"issueDate", "$$s.issueDate"},
+                                    {"status", "$$s.status"},
+                                    {"createdAt", "$$s.createdAt"},
+                                }
+                            }
+                        })
+                    },
+                    {"serviceOrders", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_serviceOrders"},
+                            {"as", "s"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$s._id")},
+                                    {"code", "$$s.code"},
+                                    {"totalAmount", "$$s.totalAmount"},
+                                    {"status", "$$s.status"},
+                                    {"device", "$$s.device"},
+                                    {"createdAt", "$$s.createdAt"}
+                                }
+                            }
+                        })
+                    },
+                    {"situations", new BsonDocument("$map", new BsonDocument 
+                        {
+                            {"input", "$_situations"},
+                            {"as", "s"},
+                            {"in", new BsonDocument 
+                                {
+                                    {"id", new BsonDocument("$toString", "$$s._id")},
+                                    {"code", "$$s.code"},
+                                    {"name", "$$s.name"},
+                                    {"createdAt", "$$s.createdAt"}
+                                }
+                            }
+                        })
+                    },
+                }),
+                new("$sort", pagination.PipelineSort),
+            };
+
+            List<BsonDocument> results = await context.Customers.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return new(list);
+        }
+        catch
+        {
+            return new(null, 500, "Falha ao buscar Clientes");
+        }
+    }
     
     public async Task<ResponseApi<dynamic?>> GetByIdAggregateAsync(string id)
     {

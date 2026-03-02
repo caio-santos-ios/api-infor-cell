@@ -20,6 +20,14 @@ namespace api_infor_cell.src.Controllers
         }
         
         [Authorize]
+        [HttpGet("movement")]
+        public async Task<IActionResult> GetMovement()
+        {
+            ResponseApi<List<dynamic>> response = await service.GetMovementAsync(new(Request.Query));
+            return StatusCode(response.StatusCode, new { response.Result });
+        }
+        
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {

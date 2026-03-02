@@ -116,7 +116,7 @@ namespace api_infor_cell.src.Repository
                     });
 
                 // ── Pipeline de agregação por conta + mês ─────────────────────────────
-                BsonDocument BuildPipeline(BsonDocument matchExtra) => new BsonDocument();
+                // BsonDocument BuildPipeline(BsonDocument matchExtra) => new BsonDocument();
 
                 List<BsonDocument> AggPipeline(BsonDocument extraMatch) => new()
                 {

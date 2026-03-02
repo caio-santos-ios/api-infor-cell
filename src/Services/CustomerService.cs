@@ -1,4 +1,3 @@
-using api_infor_cell.src.Handlers;
 using api_infor_cell.src.Interfaces;
 using api_infor_cell.src.Models;
 using api_infor_cell.src.Models.Base;
@@ -19,6 +18,19 @@ namespace api_infor_cell.src.Services
             ResponseApi<List<dynamic>> Customers = await repository.GetAllAsync(pagination);
             int count = await repository.GetCountDocumentsAsync(pagination);
             return new(Customers.Data, count, pagination.PageNumber, pagination.PageSize);
+        }
+        catch
+        {
+            return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+        }
+    }
+    public async Task<ResponseApi<List<dynamic>>> GetMovementAsync(GetAllDTO request)
+    {
+        try
+        {
+            PaginationUtil<Customer> pagination = new(request.QueryParams);
+            ResponseApi<List<dynamic>> Customers = await repository.GetMovementAsync(pagination);
+            return new(Customers.Data);
         }
         catch
         {
